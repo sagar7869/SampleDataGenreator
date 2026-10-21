@@ -3,62 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quality Inspection Sample Generator & Export Portal</title>
-    <!-- SheetJS for Excel Export -->
+    <title>Multi-Item Quality Inspection Batch Generator Portal</title>
+    <!-- SheetJS CDN for Multi-Sheet Excel Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
-            --primary: #1e3a8a;
-            --primary-hover: #1d4ed8;
-            --bg-color: #f1f5f9;
+            --primary: #1f4e79;
+            --primary-hover: #2f5597;
+            --bg-color: #f4f6f9;
             --card-bg: #ffffff;
             --text-color: #0f172a;
             --border-color: #cbd5e1;
+            --danger: #dc2626;
+            --success: #15803d;
         }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; }
+        .container { max-width: 1250px; margin: 0 auto; }
         .header { background: var(--primary); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; text-align: center; }
         .card { background: var(--card-bg); padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 20px; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
         label { font-weight: 600; margin-bottom: 5px; display: block; font-size: 14px; }
         select, input { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box; font-size: 14px; }
         .btn-group { display: flex; gap: 10px; margin-top: 20px; }
-        button { flex: 1; padding: 12px; font-size: 15px; font-weight: 600; border: none; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+        button { padding: 12px 20px; font-size: 15px; font-weight: 600; border: none; border-radius: 6px; cursor: pointer; transition: 0.2s; }
         .btn-primary { background-color: var(--primary); color: white; }
         .btn-primary:hover { background-color: var(--primary-hover); }
-        .btn-success { background-color: #15803d; color: white; }
+        .btn-success { background-color: var(--success); color: white; }
         .btn-success:hover { background-color: #166534; }
+        .btn-danger { background-color: var(--danger); color: white; padding: 6px 12px; font-size: 12px; }
         .ref-badge { background-color: #e0f2fe; color: #0369a1; padding: 8px 12px; border-radius: 6px; font-weight: bold; font-size: 13px; margin-top: 10px; display: inline-block; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
         th, td { border: 1px solid var(--border-color); padding: 10px; text-align: center; }
         th { background-color: var(--primary); color: white; }
         tr:nth-child(even) { background-color: #f8fafc; }
+        .tab-btn { background: #e2e8f0; color: #334155; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px 6px 0 0; margin-right: 5px; cursor: pointer; font-weight: bold; }
+        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <h2>Quality Inspection Sample Generator & Export Portal</h2>
-        <p style="margin: 5px 0 0 0; opacity: 0.9;">100% Sheet Data Reference & Inspection Generator</p>
+        <h2>Multi-Item Inspection Batch Generator</h2>
+        <p style="margin: 5px 0 0 0; opacity: 0.9;">Choose Items → Set Samples → Export Combined Multi-Tab Excel Sheet</p>
     </div>
 
+    <!-- Selection Card -->
     <div class="card">
-        <h3>1. Select Item & Mode Configuration</h3>
+        <h3>1. Select Item & Parameters</h3>
         <div class="form-grid">
             <div>
                 <label>Category</label>
                 <select id="category" onchange="onCategoryChange()">
                     <option value="">-- Choose Category --</option>
-                    <option value="Rafter">Rafter</option>
-                    <option value="PURLINE">PURLINE</option>
                     <option value="COLUMNS">COLUMNS</option>
+                    <option value="PURLINE">PURLINE</option>
                     <option value="LA">LA (Angle / Cleat)</option>
+                    <option value="Rafter">Rafter</option>
                     <option value="Jointer">Jointer</option>
                 </select>
             </div>
             <div>
-                <label>Item Name</label>
+                <label>Sub-Item Name</label>
                 <select id="item" onchange="onItemChange()">
                     <option value="">Select Category First</option>
                 </select>
@@ -95,18 +101,48 @@
             </div>
             <div>
                 <label>Number of Samples</label>
-                <input type="number" id="sampleCount" value="5" min="1" max="100">
+                <input type="number" id="sampleCount" value="3" min="1" max="100">
             </div>
         </div>
 
         <div class="btn-group">
-            <button class="btn-primary" onclick="generateSamples()">Generate Inspection Samples</button>
-            <button class="btn-success" onclick="exportToExcel()">Export Report to Excel (.xlsx)</button>
+            <button class="btn-primary" onclick="addToBatch()">+ Add Item to Queue List</button>
         </div>
     </div>
 
+    <!-- Batch Queue List Card -->
+    <div class="card">
+        <h3>2. Selected Items Queue (बैच में जुड़े हुए आइटम्स)</h3>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Category</th>
+                        <th>Sub-Item Name</th>
+                        <th>Parameter</th>
+                        <th>Mode</th>
+                        <th>Min - Max Range</th>
+                        <th>Samples Count</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="queueBody">
+                    <tr><td colspan="8" style="color: #64748b;">अभी कोई आइटम लिस्ट में नहीं जोड़ा गया है। ऊपर से सेलेक्ट करके "+ Add Item to Queue List" पर क्लिक करें।</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-primary" onclick="generateAllSamples()" style="background-color: #0284c7;">⚡ Generate All Batch Samples</button>
+            <button class="btn-success" onclick="exportCombinedExcel()">📥 Export Combined Multi-Tab Excel File</button>
+        </div>
+    </div>
+
+    <!-- Generated Results View -->
     <div class="card" id="resultCard" style="display:none;">
-        <h3 id="resultTitle">Generated Inspection Report</h3>
+        <h3>3. Generated Multi-Tab Inspection Preview</h3>
+        <div id="tabButtons" style="margin-bottom: 15px;"></div>
         <div style="overflow-x: auto;">
             <table id="inspectionTable">
                 <thead id="tableHead"></thead>
@@ -117,28 +153,27 @@
 </div>
 
 <script>
-// Exact Sheet Master Mapping
+// 100% Exact Sheet Master Mapping Data
 const masterData = {
-    "Rafter": {
-        items: ["RAFT-0101", "RAFT-0102", "RAFT-0103", "RAFT-0201", "RAFT-0202", "RAFT-0203", "RAFT-0311", "RAFT-0312", "RAFT-0313", "RAFT-0321", "RAFT-0322", "RAFT-0323", "RAFT-1202", "RAFT-1203", "RAFT-1204", "RAFT-1312", "RAFT-1313", "RAFT-1322", "RAFT-1323"],
-        refCoating: 18.0,
-        refThickMap: { "RAFT-1202": 1.5, "RAFT-1203": 2.0, "RAFT-1204": 2.0, "RAFT-1312": 2.0, "RAFT-1313": 2.0, "RAFT-1322": 2.0, "RAFT-1323": 2.0, "RAFT-201": 1.2, "RAFT-311": 1.5, "RAFT-312": 2.0, "RAFT-313": 2.0, "RAFT-321": 1.5, "RAFT-322": 2.0, "RAFT-323": 2.0, "default": 1.5 }
+    "COLUMNS": {
+        items: ["COLU-1620", "COLU-1820", "COLU-2611", "COLU-2612", "COLU-2613", "COLU-2621", "COLU-2622", "COLU-2623", "COLU-2811", "COLU-2812", "COLU-2813", "COLU-2821", "COLU-2822", "COLU-2823", "COLU-3611", "COLU-3612", "COLU-3613", "COLU-3621", "COLU-3622", "COLU-3623", "COLU-3811", "COLU-3812", "COLU-3813", "COLU-3821", "COLU-3822", "COLU-3823"],
+        refCoating: 80.0
     },
     "PURLINE": {
         items: ["PURL-0012 (P2L)", "PURL-0011 (P2M)", "PURL-0042 (P2M)", "PURL-0024 (P3L)", "PURL-0023 (P3M)", "PURL-0022 (P3H)", "P2L", "P2M", "P2H", "P3L", "P3M", "P3H"],
         refCoating: 18.0,
         refThickMap: { "P2L": 1.0, "P3L": 1.0, "P2M": 1.2, "P3M": 1.2, "P2H": 1.6, "P3H": 1.6, "default": 1.2 }
     },
-    "COLUMNS": {
-        items: ["COLU-2811", "COLU-1820", "COLU-2621", "COLU-2612", "COLU-3811", "COLU-2613", "COLU-3812", "COLU-2622", "COLU-3621", "COLU-2812", "COLU-3613", "COLU-3623", "COLU-2813", "COLU-3813", "COLU-2822", "COLU-3822", "COLU-2823", "COLU-3611", "COLU-3823", "COLU-2611", "COLU-1620", "COLU-2821", "COLU-3821", "COLU-3622", "COLU-2623", "COLU-3612"],
-        refCoating: 80.0,
-        refThickMap: { "3": 3.0, "2": 2.0 }
-    },
     "LA": {
         items: ["EALA-0046", "EALA-0032", "EALA-0032 (UPDATED)", "LA-0046", "LA1", "LA2", "LA3", "LA4", "LA5", "LA6", "LA7", "LA8", "LA9", "LA10", "LA11"],
         refCoating: 80.0,
         refThickMap: { "default": 3.0 },
         refBasePlateMap: { "default": 3.15 }
+    },
+    "Rafter": {
+        items: ["RAFT-0101", "RAFT-0102", "RAFT-0103", "RAFT-0201", "RAFT-0202", "RAFT-0203", "RAFT-0311", "RAFT-0312", "RAFT-0313", "RAFT-0321", "RAFT-0322", "RAFT-0323", "RAFT-1202", "RAFT-1203", "RAFT-1204", "RAFT-1312", "RAFT-1313", "RAFT-1322", "RAFT-1323"],
+        refCoating: 18.0,
+        refThickMap: { "RAFT-1202": 1.5, "RAFT-1203": 2.0, "RAFT-1204": 2.0, "RAFT-1312": 2.0, "RAFT-1313": 2.0, "RAFT-1322": 2.0, "RAFT-1323": 2.0, "RAFT-201": 1.2, "RAFT-311": 1.5, "RAFT-312": 2.0, "RAFT-313": 2.0, "RAFT-321": 1.5, "RAFT-322": 2.0, "RAFT-323": 2.0, "default": 1.5 }
     },
     "Jointer": {
         items: ["RAFT-0331", "RAFT-0332", "RAFT-0333", "331", "332", "333"],
@@ -147,7 +182,8 @@ const masterData = {
     }
 };
 
-let generatedDataList = [];
+let queueList = [];
+let categoryResults = {}; // Categorized results for separate Excel tabs
 
 function onCategoryChange() {
     const cat = document.getElementById("category").value;
@@ -157,8 +193,7 @@ function onCategoryChange() {
     if (cat && masterData[cat]) {
         masterData[cat].items.forEach(it => {
             let opt = document.createElement("option");
-            opt.value = it;
-            opt.innerText = it;
+            opt.value = it; opt.innerText = it;
             itemSelect.appendChild(opt);
         });
     } else {
@@ -167,13 +202,8 @@ function onCategoryChange() {
     onItemChange();
 }
 
-function onItemChange() {
-    updateReferenceAndDefaults();
-}
-
-function onParameterChange() {
-    updateReferenceAndDefaults();
-}
+function onItemChange() { updateReferenceAndDefaults(); }
+function onParameterChange() { updateReferenceAndDefaults(); }
 
 function updateReferenceAndDefaults() {
     const cat = document.getElementById("category").value;
@@ -183,9 +213,7 @@ function updateReferenceAndDefaults() {
     
     if (!cat || !masterData[cat]) return;
 
-    let refVal = 0;
-    let minVal = 0;
-    let maxVal = 0;
+    let refVal = 0, minVal = 0, maxVal = 0;
 
     if (param.includes("Coating")) {
         refVal = masterData[cat].refCoating;
@@ -196,16 +224,17 @@ function updateReferenceAndDefaults() {
         minVal = refVal - 0.15;
         maxVal = refVal + 0.15;
     } else {
-        // Thickness
         if (cat === "COLUMNS") {
             refVal = item.includes("-3") ? 3.0 : 2.0;
         } else {
             const map = masterData[cat].refThickMap;
             let found = false;
-            for (let k in map) {
-                if (item.includes(k)) { refVal = map[k]; found = true; break; }
-            }
-            if (!found) refVal = map["default"] || 2.0;
+            if (map) {
+                for (let k in map) {
+                    if (item.includes(k)) { refVal = map[k]; found = true; break; }
+                }
+                if (!found) refVal = map["default"] || 2.0;
+            } else { refVal = 2.0; }
         }
         minVal = refVal - 0.08;
         maxVal = refVal + 0.12;
@@ -227,147 +256,205 @@ function updateReferenceAndDefaults() {
 
 function toggleMode() {
     const mode = document.getElementById("mode").value;
-    if (mode === "auto") {
-        updateReferenceAndDefaults();
-    } else {
+    if (mode === "auto") updateReferenceAndDefaults();
+    else {
         document.getElementById("minVal").disabled = false;
         document.getElementById("maxVal").disabled = false;
     }
 }
 
-function generateSamples() {
+function addToBatch() {
     const cat = document.getElementById("category").value;
     const item = document.getElementById("item").value;
     const param = document.getElementById("parameter").value;
+    const mode = document.getElementById("mode").value;
     const min = parseFloat(document.getElementById("minVal").value);
     const max = parseFloat(document.getElementById("maxVal").value);
     const count = parseInt(document.getElementById("sampleCount").value);
 
     if (!cat || !item) {
-        alert("कृपया Category और Item का चयन करें!");
+        alert("कृपया Category और Sub-Item का चयन करें!");
         return;
     }
     if (isNaN(min) || isNaN(max) || min >= max) {
-        alert("कृपया वैध Min और Max Range दर्ज करें!");
+        alert("कृपया सही Min और Max वैल्यू दें!");
         return;
     }
 
-    const tableHead = document.getElementById("tableHead");
-    const tableBody = document.getElementById("tableBody");
-    tableHead.innerHTML = "";
-    tableBody.innerHTML = "";
-    generatedDataList = [];
+    queueList.push({ cat, item, param, mode, min, max, count });
+    renderQueue();
+}
 
-    const isCoating = param.includes("Coating");
+function removeFromQueue(index) {
+    queueList.splice(index, 1);
+    renderQueue();
+}
 
-    if (isCoating) {
-        tableHead.innerHTML = `
+function renderQueue() {
+    const tbody = document.getElementById("queueBody");
+    tbody.innerHTML = "";
+    if (queueList.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="color: #64748b;">अभी कोई आइटम लिस्ट में नहीं जोड़ा गया है। ऊपर से सेलेक्ट करके "+ Add Item to Queue List" पर क्लिक करें।</td></tr>';
+        return;
+    }
+    queueList.forEach((q, idx) => {
+        tbody.innerHTML += `
             <tr>
-                <th>Sample #</th>
-                <th>Item Name</th>
-                <th>Coating 1 (μm)</th>
-                <th>Coating 2 (μm)</th>
-                <th>Coating 3 (μm)</th>
-                <th>Coating 4 (μm)</th>
-                <th>Coating 5 (μm)</th>
-                <th>Average (μm)</th>
-                <th>Status</th>
+                <td>${idx + 1}</td>
+                <td><strong>${q.cat}</strong></td>
+                <td>${q.item}</td>
+                <td>${q.param}</td>
+                <td>${q.mode === 'auto' ? 'Auto Reference' : 'Manual'}</td>
+                <td>${q.min} - ${q.max}</td>
+                <td><strong>${q.count}</strong></td>
+                <td><button class="btn-danger" onclick="removeFromQueue(${idx})">Delete</button></td>
             </tr>
         `;
-        for (let i = 1; i <= count; i++) {
-            let c1 = +(Math.random() * (max - min) + min).toFixed(1);
-            let c2 = +(Math.random() * (max - min) + min).toFixed(1);
-            let c3 = +(Math.random() * (max - min) + min).toFixed(1);
-            let c4 = +(Math.random() * (max - min) + min).toFixed(1);
-            let c5 = +(Math.random() * (max - min) + min).toFixed(1);
-            let avg = +((c1 + c2 + c3 + c4 + c5) / 5).toFixed(1);
+    });
+}
 
-            let rowObj = {
-                sample: `Sample ${i}`,
-                item: item,
-                c1: c1, c2: c2, c3: c3, c4: c4, c5: c5,
-                avg: avg,
-                status: "PASSED"
-            };
-            generatedDataList.push(rowObj);
-
-            tableBody.innerHTML += `
-                <tr>
-                    <td>${rowObj.sample}</td>
-                    <td>${rowObj.item}</td>
-                    <td>${c1}</td>
-                    <td>${c2}</td>
-                    <td>${c3}</td>
-                    <td>${c4}</td>
-                    <td>${c5}</td>
-                    <td><strong>${avg}</strong></td>
-                    <td style="color: green; font-weight: bold;">PASSED</td>
-                </tr>
-            `;
-        }
-    } else {
-        tableHead.innerHTML = `
-            <tr>
-                <th>Sample #</th>
-                <th>Item Name</th>
-                <th>Parameter</th>
-                <th>Reading Value</th>
-                <th>Status</th>
-            </tr>
-        `;
-        for (let i = 1; i <= count; i++) {
-            let val = +(Math.random() * (max - min) + min).toFixed(3);
-            let rowObj = {
-                sample: `Sample ${i}`,
-                item: item,
-                param: param,
-                value: val,
-                status: "PASSED"
-            };
-            generatedDataList.push(rowObj);
-
-            tableBody.innerHTML += `
-                <tr>
-                    <td>${rowObj.sample}</td>
-                    <td>${rowObj.item}</td>
-                    <td>${param}</td>
-                    <td><strong>${val}</strong></td>
-                    <td style="color: green; font-weight: bold;">PASSED</td>
-                </tr>
-            `;
-        }
+function generateAllSamples() {
+    if (queueList.length === 0) {
+        alert("पहले कम से कम एक आइटम Queue में ऐड करें!");
+        return;
     }
 
-    document.getElementById("resultTitle").innerText = `Inspection Report: ${cat} - ${item} (${param})`;
+    categoryResults = {};
+
+    queueList.forEach(q => {
+        if (!categoryResults[q.cat]) categoryResults[q.cat] = [];
+
+        const isCoating = q.param.includes("Coating");
+
+        for (let i = 1; i <= q.count; i++) {
+            if (isCoating) {
+                let c1 = +(Math.random() * (q.max - q.min) + q.min).toFixed(1);
+                let c2 = +(Math.random() * (q.max - q.min) + q.min).toFixed(1);
+                let c3 = +(Math.random() * (q.max - q.min) + q.min).toFixed(1);
+                let c4 = +(Math.random() * (q.max - q.min) + q.min).toFixed(1);
+                let c5 = +(Math.random() * (q.max - q.min) + q.min).toFixed(1);
+                let avg = +((c1 + c2 + c3 + c4 + c5) / 5).toFixed(1);
+
+                categoryResults[q.cat].push({
+                    "Sub-Item Name": q.item,
+                    "Parameter": q.param,
+                    "Sample #": `Sample ${i}`,
+                    "Coating 1 (μm)": c1,
+                    "Coating 2 (μm)": c2,
+                    "Coating 3 (μm)": c3,
+                    "Coating 4 (μm)": c4,
+                    "Coating 5 (μm)": c5,
+                    "Average (μm)": avg,
+                    "Reading / Value": "-",
+                    "Status": "PASSED"
+                });
+            } else {
+                let val = +(Math.random() * (q.max - q.min) + q.min).toFixed(3);
+                categoryResults[q.cat].push({
+                    "Sub-Item Name": q.item,
+                    "Parameter": q.param,
+                    "Sample #": `Sample ${i}`,
+                    "Coating 1 (μm)": "-",
+                    "Coating 2 (μm)": "-",
+                    "Coating 3 (μm)": "-",
+                    "Coating 4 (μm)": "-",
+                    "Coating 5 (μm)": "-",
+                    "Average (μm)": "-",
+                    "Reading / Value": val,
+                    "Status": "PASSED"
+                });
+            }
+        }
+    });
+
+    renderTabResults();
     document.getElementById("resultCard").style.display = "block";
 }
 
-function exportToExcel() {
-    if (generatedDataList.length === 0) {
-        alert("पहले Inspection Samples Generate करें!");
-        return;
+function renderTabResults() {
+    const tabContainer = document.getElementById("tabButtons");
+    tabContainer.innerHTML = "";
+
+    const cats = Object.keys(categoryResults);
+    if (cats.length === 0) return;
+
+    cats.forEach((cat, idx) => {
+        const btn = document.createElement("button");
+        btn.className = `tab-btn ${idx === 0 ? 'active' : ''}`;
+        btn.innerText = `${cat} (${categoryResults[cat].length} Samples)`;
+        btn.onclick = () => showCategoryTable(cat, btn);
+        tabContainer.appendChild(btn);
+    });
+
+    showCategoryTable(cats[0]);
+}
+
+function showCategoryTable(cat, activeBtn) {
+    if (activeBtn) {
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        activeBtn.classList.add("active");
     }
 
-    const cat = document.getElementById("category").value;
-    const item = document.getElementById("item").value;
+    const rows = categoryResults[cat];
+    const tableHead = document.getElementById("tableHead");
+    const tableBody = document.getElementById("tableBody");
+
+    tableHead.innerHTML = `
+        <tr>
+            <th>Sub-Item Name</th>
+            <th>Parameter</th>
+            <th>Sample #</th>
+            <th>Coating 1 (μm)</th>
+            <th>Coating 2 (μm)</th>
+            <th>Coating 3 (μm)</th>
+            <th>Coating 4 (μm)</th>
+            <th>Coating 5 (μm)</th>
+            <th>Average (μm)</th>
+            <th>Reading / Value</th>
+            <th>Status</th>
+        </tr>
+    `;
+
+    tableBody.innerHTML = "";
+    rows.forEach(r => {
+        tableBody.innerHTML += `
+            <tr>
+                <td><strong>${r["Sub-Item Name"]}</strong></td>
+                <td>${r["Parameter"]}</td>
+                <td>${r["Sample #"]}</td>
+                <td>${r["Coating 1 (μm)"]}</td>
+                <td>${r["Coating 2 (μm)"]}</td>
+                <td>${r["Coating 3 (μm)"]}</td>
+                <td>${r["Coating 4 (μm)"]}</td>
+                <td>${r["Coating 5 (μm)"]}</td>
+                <td><strong>${r["Average (μm)"]}</strong></td>
+                <td><strong>${r["Reading / Value"]}</strong></td>
+                <td style="color: green; font-weight: bold;">${r["Status"]}</td>
+            </tr>
+        `;
+    });
+}
+
+function exportCombinedExcel() {
+    if (Object.keys(categoryResults).length === 0) {
+        generateAllSamples();
+    }
 
     const wb = XLSX.utils.book_new();
 
-    // Sheet 1: Generated Inspection Data
-    const wsData = XLSX.utils.json_to_sheet(generatedDataList);
-    XLSX.utils.book_append_sheet(wb, wsData, "Generated Inspection");
+    // Loop through each category and create a separate tab in Excel
+    for (let cat in categoryResults) {
+        const data = categoryResults[cat];
+        if (data && data.length > 0) {
+            const ws = XLSX.utils.json_to_sheet(data);
+            XLSX.utils.book_append_sheet(wb, ws, cat); // Named Sheet for Columns, PURLINE, LA, etc.
+        }
+    }
 
-    // Sheet 2: Configuration & Master Summary
-    const summaryData = [
-        { Category: cat, Item: item, Mode: document.getElementById("mode").value, Min: document.getElementById("minVal").value, Max: document.getElementById("maxVal").value, TotalSamples: generatedDataList.length }
-    ];
-    const wsSummary = XLSX.utils.json_to_sheet(summaryData);
-    XLSX.utils.book_append_sheet(wb, wsSummary, "Config Summary");
-
-    XLSX.writeFile(wb, `Inspection_Report_${cat}_${item}.xlsx`);
+    XLSX.writeFile(wb, "Batch_Quality_Inspection_Report.xlsx");
 }
 
-// Initial Call
+// Initialize Category Dropdown
 onCategoryChange();
 </script>
 
