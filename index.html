@@ -3,37 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi-Item Quality Inspection Batch Generator Portal</title>
-    <!-- SheetJS CDN for Multi-Sheet Excel Export -->
+    <title>Quality Inspection Portal</title>
+    <!-- SheetJS CDN for Excel Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
-            --primary: #1f4e79;
-            --primary-hover: #2f5597;
-            --bg-color: #f4f6f9;
+            --primary: #1e3a8a;
+            --primary-hover: #1d4ed8;
+            --bg-color: #f8fafc;
             --card-bg: #ffffff;
-            --text-color: #0f172a;
-            --border-color: #cbd5e1;
-            --danger: #dc2626;
+            --border: #cbd5e1;
+            --text: #0f172a;
+            --danger: #ef4444;
             --success: #15803d;
         }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; }
-        .container { max-width: 1250px; margin: 0 auto; }
-        .header { background: var(--primary); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; text-align: center; }
-        .card { background: var(--card-bg); padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 20px; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
-        label { font-weight: 600; margin-bottom: 5px; display: block; font-size: 14px; }
-        select, input { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box; font-size: 14px; }
-        .btn-group { display: flex; gap: 10px; margin-top: 20px; }
-        button { padding: 12px 20px; font-size: 15px; font-weight: 600; border: none; border-radius: 6px; cursor: pointer; transition: 0.2s; }
-        .btn-primary { background-color: var(--primary); color: white; }
-        .btn-primary:hover { background-color: var(--primary-hover); }
-        .btn-success { background-color: var(--success); color: white; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text); margin: 0; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { background: var(--primary); color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; }
+        
+        /* Mode Switcher Buttons */
+        .mode-switcher { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; }
+        .mode-btn { padding: 12px 25px; font-size: 15px; font-weight: bold; border: 2px solid var(--primary); background: white; color: var(--primary); border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .mode-btn.active { background: var(--primary); color: white; }
+
+        .card { background: var(--card-bg); padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 20px; border: 1px solid var(--border); }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; }
+        label { font-weight: 600; margin-bottom: 5px; display: block; font-size: 13px; }
+        select, input[type="text"], input[type="number"] { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        
+        /* Searchable Autocomplete Styles */
+        .autocomplete-container { position: relative; }
+        .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid var(--border); border-radius: 0 0 6px 6px; max-height: 180px; overflow-y: auto; z-index: 99; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: none; }
+        .autocomplete-item { padding: 10px; cursor: pointer; font-size: 14px; border-bottom: 1px solid #f1f5f9; }
+        .autocomplete-item:hover { background-color: #eff6ff; color: var(--primary); font-weight: 600; }
+
+        .checkbox-group { display: flex; flex-wrap: wrap; gap: 15px; padding: 10px; background: #f1f5f9; border-radius: 6px; border: 1px solid var(--border); }
+        .checkbox-item { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; cursor: pointer; }
+        .checkbox-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+
+        .btn { padding: 12px 20px; font-weight: 600; border: none; border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 14px; }
+        .btn-primary { background-color: var(--primary); color: white; width: 100%; margin-top: 15px; font-size: 16px; }
+        .btn-success { background-color: var(--success); color: white; font-size: 15px; padding: 10px 20px; border-radius: 6px; }
         .btn-success:hover { background-color: #166534; }
-        .btn-danger { background-color: var(--danger); color: white; padding: 6px 12px; font-size: 12px; }
-        .ref-badge { background-color: #e0f2fe; color: #0369a1; padding: 8px 12px; border-radius: 6px; font-weight: bold; font-size: 13px; margin-top: 10px; display: inline-block; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
-        th, td { border: 1px solid var(--border-color); padding: 10px; text-align: center; }
+        
+        /* Selected Items Box Styling */
+        .selected-box { border: 2px dashed #94a3b8; padding: 15px; border-radius: 8px; background-color: #f1f5f9; margin-top: 10px; min-height: 60px; }
+        .tag-container { display: flex; flex-wrap: wrap; gap: 8px; }
+        .item-tag { background: #3b82f6; color: white; border-radius: 20px; padding: 6px 14px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .item-tag span.remove-btn { color: #fca5a5; cursor: pointer; font-weight: bold; font-size: 15px; }
+        .item-tag span.remove-btn:hover { color: white; }
+
+        /* Preview Header & Table Styles */
+        .preview-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        th, td { border: 1px solid var(--border); padding: 8px; text-align: center; }
         th { background-color: var(--primary); color: white; }
         tr:nth-child(even) { background-color: #f8fafc; }
         .tab-btn { background: #e2e8f0; color: #334155; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px 6px 0 0; margin-right: 5px; cursor: pointer; font-weight: bold; }
@@ -44,152 +67,238 @@
 
 <div class="container">
     <div class="header">
-        <h2>Multi-Item Inspection Batch Generator</h2>
-        <p style="margin: 5px 0 0 0; opacity: 0.9;">Choose Items → Set Samples → Export Combined Multi-Tab Excel Sheet</p>
+        <h2>Quality Inspection Management Portal</h2>
+        <p style="margin: 5px 0 0 0; opacity: 0.9;">Single Item Mode &nbsp;|&nbsp; Group Batch Multi-Tab Mode</p>
     </div>
 
-    <!-- Selection Card -->
-    <div class="card">
-        <h3>1. Select Item & Parameters</h3>
-        <div class="form-grid">
-            <div>
-                <label>Category</label>
-                <select id="category" onchange="onCategoryChange()">
-                    <option value="">-- Choose Category --</option>
-                    <option value="COLUMNS">COLUMNS</option>
-                    <option value="PURLINE">PURLINE</option>
-                    <option value="LA">LA (Angle / Cleat)</option>
-                    <option value="Rafter">Rafter</option>
-                    <option value="Jointer">Jointer</option>
-                </select>
+    <!-- Mode Switcher Buttons -->
+    <div class="mode-switcher">
+        <button class="mode-btn active" id="btnSingleMode" onclick="switchMode('single')">📌 Single Item Generator</button>
+        <button class="mode-btn" id="btnGroupMode" onclick="switchMode('group')">📁 Group / Multiple Batch Portal</button>
+    </div>
+
+    <!-- ================= MODE 1: SINGLE ITEM GENERATOR ================= -->
+    <div id="singleModeSection">
+        <div class="card">
+            <h3>Single Item Inspection Setup</h3>
+            <div class="form-grid">
+                <div>
+                    <label>Category</label>
+                    <select id="singleCategory" onchange="onSingleCategoryChange()">
+                        <option value="">-- Choose Category --</option>
+                        <option value="COLUMNS">COLUMNS</option>
+                        <option value="PURLINE">PURLINE</option>
+                        <option value="LA">LA (Angle / Cleat)</option>
+                        <option value="Rafter">Rafter</option>
+                        <option value="Jointer">Jointer</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Sub-Item Name</label>
+                    <select id="singleItemSelect">
+                        <option value="">पहले Category चुनें</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Generation Mode</label>
+                    <select id="singleMode" onchange="toggleSingleMode()">
+                        <option value="auto">Auto Reference Mode (From Sheet)</option>
+                        <option value="manual">Manual Custom Range Mode</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Sample Quantity</label>
+                    <input type="number" id="singleCount" value="3" min="1" max="100">
+                </div>
             </div>
-            <div>
-                <label>Sub-Item Name</label>
-                <select id="item" onchange="onItemChange()">
-                    <option value="">Select Category First</option>
-                </select>
+
+            <div style="margin-top: 15px;">
+                <label>Select Parameters Required (Checkboxes):</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-item"><input type="checkbox" id="sChkCoating" checked> Coating (μm) [5 Spot Readings + Avg]</label>
+                    <label class="checkbox-item"><input type="checkbox" id="sChkThickness" checked> Thickness (mm)</label>
+                    <label class="checkbox-item"><input type="checkbox" id="sChkBasePlate"> Base Plate Thickness (mm)</label>
+                </div>
             </div>
-            <div>
-                <label>Parameter Type</label>
-                <select id="parameter" onchange="onParameterChange()">
-                    <option value="Coating (μm)">Coating (μm)</option>
-                    <option value="Thickness (mm)">Thickness (mm)</option>
-                    <option value="Base Plate Thickness (mm)">Base Plate Thickness (mm)</option>
-                </select>
+
+            <div id="singleRangePanel" class="form-grid" style="margin-top: 15px; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid var(--border);">
+                <div>
+                    <label>Coating Min - Max (μm)</label>
+                    <div style="display: flex; gap: 5px;">
+                        <input type="number" id="sCoatMin" value="60" disabled>
+                        <input type="number" id="sCoatMax" value="100" disabled>
+                    </div>
+                </div>
+                <div>
+                    <label>Thickness Min - Max (mm)</label>
+                    <div style="display: flex; gap: 5px;">
+                        <input type="number" id="sThickMin" step="0.001" value="1.95" disabled>
+                        <input type="number" id="sThickMax" step="0.001" value="2.10" disabled>
+                    </div>
+                </div>
+                <div>
+                    <label>Base Plate Min - Max (mm)</label>
+                    <div style="display: flex; gap: 5px;">
+                        <input type="number" id="sBaseMin" step="0.001" value="3.0" disabled>
+                        <input type="number" id="sBaseMax" step="0.001" value="3.3" disabled>
+                    </div>
+                </div>
             </div>
-            <div>
-                <label>Generation Mode</label>
-                <select id="mode" onchange="toggleMode()">
-                    <option value="auto">Auto Reference Mode (From Sheet)</option>
-                    <option value="manual">Manual Range Mode (Custom Min/Max)</option>
-                </select>
-            </div>
+
+            <button class="btn btn-primary" onclick="generateSingleReport()">⚡ Generate Report</button>
         </div>
 
-        <div id="refBadge" class="ref-badge" style="display:none;">
-            Sheet Reference Value: <span id="refValText">-</span>
-        </div>
-
-        <div class="form-grid" style="margin-top: 15px;">
-            <div>
-                <label>Min Limit</label>
-                <input type="number" id="minVal" step="0.001" placeholder="Minimum Value">
+        <!-- Single Preview Display -->
+        <div class="card" id="singlePreviewCard" style="display:none;">
+            <div class="preview-header">
+                <h3 style="margin: 0;">Generated Inspection Report Display</h3>
+                <button class="btn btn-success" onclick="downloadSingleExcel()">📥 Download Excel Report</button>
             </div>
-            <div>
-                <label>Max Limit</label>
-                <input type="number" id="maxVal" step="0.001" placeholder="Maximum Value">
+            <div style="overflow-x: auto; max-height: 400px;">
+                <table>
+                    <thead id="singleHead"></thead>
+                    <tbody id="singleBody"></tbody>
+                </table>
             </div>
-            <div>
-                <label>Number of Samples</label>
-                <input type="number" id="sampleCount" value="3" min="1" max="100">
-            </div>
-        </div>
-
-        <div class="btn-group">
-            <button class="btn-primary" onclick="addToBatch()">+ Add Item to Queue List</button>
         </div>
     </div>
 
-    <!-- Batch Queue List Card -->
-    <div class="card">
-        <h3>2. Selected Items Queue (बैच में जुड़े हुए आइटम्स)</h3>
-        <div style="overflow-x: auto;">
-            <table>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Category</th>
-                        <th>Sub-Item Name</th>
-                        <th>Parameter</th>
-                        <th>Mode</th>
-                        <th>Min - Max Range</th>
-                        <th>Samples Count</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="queueBody">
-                    <tr><td colspan="8" style="color: #64748b;">अभी कोई आइटम लिस्ट में नहीं जोड़ा गया है। ऊपर से सेलेक्ट करके "+ Add Item to Queue List" पर क्लिक करें।</td></tr>
-                </tbody>
-            </table>
+    <!-- ================= MODE 2: GROUP BATCH PORTAL ================= -->
+    <div id="groupModeSection" style="display: none;">
+        <!-- Step 1: Select Category & Items with Search -->
+        <div class="card">
+            <h3>Step 1: Select Category & Search/Add Sub-Items</h3>
+            <div class="form-grid">
+                <div>
+                    <label>1. Category चुनें</label>
+                    <select id="category" onchange="onCategoryChange()">
+                        <option value="">-- Choose Category --</option>
+                        <option value="COLUMNS">COLUMNS</option>
+                        <option value="PURLINE">PURLINE</option>
+                        <option value="LA">LA (Angle / Cleat)</option>
+                        <option value="Rafter">Rafter</option>
+                        <option value="Jointer">Jointer</option>
+                    </select>
+                </div>
+                
+                <div class="autocomplete-container">
+                    <label>2. Sub-Item Search & Add (टाइप करें या क्लिक करके चुनें)</label>
+                    <input type="text" id="itemSearchInput" placeholder="पहले Category चुनें..." autocomplete="off" onfocus="showDropdown()" oninput="filterItems()" disabled>
+                    <div id="autocompleteList" class="autocomplete-list"></div>
+                </div>
+            </div>
+
+            <!-- Selected Items Box -->
+            <label style="margin-top: 15px;">चुने हुए सब-आइटम्स (Selected Items List):</label>
+            <div class="selected-box">
+                <div id="selectedTags" class="tag-container">
+                    <span style="color: #94a3b8; font-size: 13px;">अभी कोई आइटम सेलेक्ट नहीं हुआ है। ऊपर से खोजकर चुनें।</span>
+                </div>
+            </div>
         </div>
 
-        <div class="btn-group">
-            <button class="btn-primary" onclick="generateAllSamples()" style="background-color: #0284c7;">⚡ Generate All Batch Samples</button>
-            <button class="btn-success" onclick="exportCombinedExcel()">📥 Export Combined Multi-Tab Excel File</button>
-        </div>
-    </div>
+        <!-- Step 2: Parameters & Quantity Configuration -->
+        <div class="card">
+            <h3>Step 2: Select Parameters (Checkboxes) & Quantities</h3>
+            
+            <label>1. Select Parameter(s) Required:</label>
+            <div class="checkbox-group">
+                <label class="checkbox-item"><input type="checkbox" id="chkCoating" checked> Coating (μm) [5 Spot Readings + Avg]</label>
+                <label class="checkbox-item"><input type="checkbox" id="chkThickness" checked> Thickness (mm)</label>
+                <label class="checkbox-item"><input type="checkbox" id="chkBasePlate"> Base Plate Thickness (mm)</label>
+            </div>
 
-    <!-- Generated Results View -->
-    <div class="card" id="resultCard" style="display:none;">
-        <h3>3. Generated Multi-Tab Inspection Preview</h3>
-        <div id="tabButtons" style="margin-bottom: 15px;"></div>
-        <div style="overflow-x: auto;">
-            <table id="inspectionTable">
-                <thead id="tableHead"></thead>
-                <tbody id="tableBody"></tbody>
-            </table>
+            <div class="form-grid" style="margin-top: 15px;">
+                <div>
+                    <label>Generation Mode</label>
+                    <select id="mode" onchange="toggleMode()">
+                        <option value="auto">Auto Reference Mode (From Sheet)</option>
+                        <option value="manual">Manual Custom Range Mode</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Quantity of Samples (प्रति आइटम कितने सैम्पल?)</label>
+                    <input type="number" id="sampleCount" value="3" min="1" max="100">
+                </div>
+            </div>
+
+            <!-- Manual Custom Overrides -->
+            <div id="manualPanel" class="form-grid" style="margin-top: 15px; display: none; background: #fff7ed; padding: 15px; border-radius: 6px; border: 1px solid #ffedd5;">
+                <div>
+                    <label>Coating Min-Max (μm)</label>
+                    <div style="display: flex; gap: 5px;">
+                        <input type="number" id="coatMin" value="60">
+                        <input type="number" id="coatMax" value="100">
+                    </div>
+                </div>
+                <div>
+                    <label>Thickness Min-Max (mm)</label>
+                    <div style="display: flex; gap: 5px;">
+                        <input type="number" id="thickMin" step="0.001" value="1.95">
+                        <input type="number" id="thickMax" step="0.001" value="2.10">
+                    </div>
+                </div>
+                <div>
+                    <label>Base Plate Min-Max (mm)</label>
+                    <div style="display: flex; gap: 5px;">
+                        <input type="number" id="baseMin" step="0.001" value="3.0">
+                        <input type="number" id="baseMax" step="0.001" value="3.3">
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="generateGroupReport()">⚡ Generate Report</button>
+        </div>
+
+        <!-- Step 3: Display & Download Card -->
+        <div class="card" id="groupPreviewCard" style="display:none;">
+            <div class="preview-header">
+                <h3 style="margin: 0;">Generated Multi-Tab Inspection Report Display</h3>
+                <button class="btn btn-success" onclick="downloadGroupExcel()">📥 Download Complete Multi-Tab Excel Report</button>
+            </div>
+            <div id="groupTabButtons" style="margin-bottom: 15px;"></div>
+            <div style="overflow-x: auto; max-height: 400px;">
+                <table>
+                    <thead id="groupPreviewHead"></thead>
+                    <tbody id="groupPreviewBody"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-// 100% Exact Sheet Master Mapping Data
 const masterData = {
-    "COLUMNS": {
-        items: ["COLU-1620", "COLU-1820", "COLU-2611", "COLU-2612", "COLU-2613", "COLU-2621", "COLU-2622", "COLU-2623", "COLU-2811", "COLU-2812", "COLU-2813", "COLU-2821", "COLU-2822", "COLU-2823", "COLU-3611", "COLU-3612", "COLU-3613", "COLU-3621", "COLU-3622", "COLU-3623", "COLU-3811", "COLU-3812", "COLU-3813", "COLU-3821", "COLU-3822", "COLU-3823"],
-        refCoating: 80.0
-    },
-    "PURLINE": {
-        items: ["PURL-0012 (P2L)", "PURL-0011 (P2M)", "PURL-0042 (P2M)", "PURL-0024 (P3L)", "PURL-0023 (P3M)", "PURL-0022 (P3H)", "P2L", "P2M", "P2H", "P3L", "P3M", "P3H"],
-        refCoating: 18.0,
-        refThickMap: { "P2L": 1.0, "P3L": 1.0, "P2M": 1.2, "P3M": 1.2, "P2H": 1.6, "P3H": 1.6, "default": 1.2 }
-    },
-    "LA": {
-        items: ["EALA-0046", "EALA-0032", "EALA-0032 (UPDATED)", "LA-0046", "LA1", "LA2", "LA3", "LA4", "LA5", "LA6", "LA7", "LA8", "LA9", "LA10", "LA11"],
-        refCoating: 80.0,
-        refThickMap: { "default": 3.0 },
-        refBasePlateMap: { "default": 3.15 }
-    },
-    "Rafter": {
-        items: ["RAFT-0101", "RAFT-0102", "RAFT-0103", "RAFT-0201", "RAFT-0202", "RAFT-0203", "RAFT-0311", "RAFT-0312", "RAFT-0313", "RAFT-0321", "RAFT-0322", "RAFT-0323", "RAFT-1202", "RAFT-1203", "RAFT-1204", "RAFT-1312", "RAFT-1313", "RAFT-1322", "RAFT-1323"],
-        refCoating: 18.0,
-        refThickMap: { "RAFT-1202": 1.5, "RAFT-1203": 2.0, "RAFT-1204": 2.0, "RAFT-1312": 2.0, "RAFT-1313": 2.0, "RAFT-1322": 2.0, "RAFT-1323": 2.0, "RAFT-201": 1.2, "RAFT-311": 1.5, "RAFT-312": 2.0, "RAFT-313": 2.0, "RAFT-321": 1.5, "RAFT-322": 2.0, "RAFT-323": 2.0, "default": 1.5 }
-    },
-    "Jointer": {
-        items: ["RAFT-0331", "RAFT-0332", "RAFT-0333", "331", "332", "333"],
-        refCoating: 0.0,
-        refThickMap: { "default": 2.0 }
-    }
+    "COLUMNS": { items: ["COLU-1620", "COLU-1820", "COLU-2611", "COLU-2612", "COLU-2613", "COLU-2621", "COLU-2622", "COLU-2623", "COLU-2811", "COLU-2812", "COLU-2813", "COLU-2821", "COLU-2822", "COLU-2823", "COLU-3611", "COLU-3612", "COLU-3613", "COLU-3621", "COLU-3622", "COLU-3623", "COLU-3811", "COLU-3812", "COLU-3813", "COLU-3821", "COLU-3822", "COLU-3823"] },
+    "PURLINE": { items: ["PURL-0012 (P2L)", "PURL-0011 (P2M)", "PURL-0042 (P2M)", "PURL-0024 (P3L)", "PURL-0023 (P3M)", "PURL-0022 (P3H)", "P2L", "P2M", "P2H", "P3L", "P3M", "P3H"] },
+    "LA": { items: ["EALA-0032", "EALA-0046", "LA-0046"] },
+    "Rafter": { items: ["RAFT-0101", "RAFT-0102", "RAFT-0103", "RAFT-0201", "RAFT-0202", "RAFT-0203", "RAFT-0311", "RAFT-0312", "RAFT-0313", "RAFT-0321", "RAFT-0322", "RAFT-0323", "RAFT-1202", "RAFT-1203", "RAFT-1204", "RAFT-1312", "RAFT-1313", "RAFT-1322", "RAFT-1323"] },
+    "Jointer": { items: ["RAFT-0331", "RAFT-0332", "RAFT-0333", "331", "332", "333"] }
 };
 
-let queueList = [];
-let categoryResults = {}; // Categorized results for separate Excel tabs
+function switchMode(mode) {
+    if (mode === 'single') {
+        document.getElementById('singleModeSection').style.display = 'block';
+        document.getElementById('groupModeSection').style.display = 'none';
+        document.getElementById('btnSingleMode').classList.add('active');
+        document.getElementById('btnGroupMode').classList.remove('active');
+    } else {
+        document.getElementById('singleModeSection').style.display = 'none';
+        document.getElementById('groupModeSection').style.display = 'block';
+        document.getElementById('btnSingleMode').classList.remove('active');
+        document.getElementById('btnGroupMode').classList.add('active');
+    }
+}
 
-function onCategoryChange() {
-    const cat = document.getElementById("category").value;
-    const itemSelect = document.getElementById("item");
+// --- SINGLE MODE LOGIC ---
+let singleGeneratedRows = [];
+let currentSingleItemName = "";
+let currentSingleCat = "";
+
+function onSingleCategoryChange() {
+    const cat = document.getElementById("singleCategory").value;
+    const itemSelect = document.getElementById("singleItemSelect");
     itemSelect.innerHTML = "";
-    
     if (cat && masterData[cat]) {
         masterData[cat].items.forEach(it => {
             let opt = document.createElement("option");
@@ -197,265 +306,306 @@ function onCategoryChange() {
             itemSelect.appendChild(opt);
         });
     } else {
-        itemSelect.innerHTML = '<option value="">Select Category First</option>';
+        itemSelect.innerHTML = '<option value="">पहले Category चुनें</option>';
     }
-    onItemChange();
 }
 
-function onItemChange() { updateReferenceAndDefaults(); }
-function onParameterChange() { updateReferenceAndDefaults(); }
+function toggleSingleMode() {
+    const mode = document.getElementById("singleMode").value;
+    const isManual = (mode === "manual");
+    document.getElementById("sCoatMin").disabled = !isManual;
+    document.getElementById("sCoatMax").disabled = !isManual;
+    document.getElementById("sThickMin").disabled = !isManual;
+    document.getElementById("sThickMax").disabled = !isManual;
+    document.getElementById("sBaseMin").disabled = !isManual;
+    document.getElementById("sBaseMax").disabled = !isManual;
 
-function updateReferenceAndDefaults() {
+    if (!isManual) {
+        document.getElementById("sCoatMin").value = 60;
+        document.getElementById("sCoatMax").value = 100;
+        document.getElementById("sThickMin").value = 1.95;
+        document.getElementById("sThickMax").value = 2.10;
+        document.getElementById("sBaseMin").value = 3.0;
+        document.getElementById("sBaseMax").value = 3.3;
+    }
+}
+
+function generateSingleReport() {
+    currentSingleCat = document.getElementById("singleCategory").value;
+    currentSingleItemName = document.getElementById("singleItemSelect").value;
+    const count = parseInt(document.getElementById("singleCount").value);
+
+    if (!currentSingleCat || !currentSingleItemName) {
+        alert("कृपया Category और Sub-Item चुनें!");
+        return;
+    }
+
+    const doCoating = document.getElementById("sChkCoating").checked;
+    const doThickness = document.getElementById("sChkThickness").checked;
+    const doBasePlate = document.getElementById("sChkBasePlate").checked;
+
+    if (!doCoating && !doThickness && !doBasePlate) {
+        alert("कृपया कम से कम एक Parameter Checkbox चुनें!");
+        return;
+    }
+
+    const coatMin = parseFloat(document.getElementById("sCoatMin").value);
+    const coatMax = parseFloat(document.getElementById("sCoatMax").value);
+    const thickMin = parseFloat(document.getElementById("sThickMin").value);
+    const thickMax = parseFloat(document.getElementById("sThickMax").value);
+    const baseMin = parseFloat(document.getElementById("sBaseMin").value);
+    const baseMax = parseFloat(document.getElementById("sBaseMax").value);
+
+    singleGeneratedRows = [];
+
+    for (let i = 1; i <= count; i++) {
+        let row = { "Sub-Item Name": currentSingleItemName, "Sample #": `Sample ${i}` };
+
+        if (doCoating) {
+            let c1 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
+            let c2 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
+            let c3 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
+            let c4 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
+            let c5 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
+            row["Coating 1 (μm)"] = c1; row["Coating 2 (μm)"] = c2; row["Coating 3 (μm)"] = c3; row["Coating 4 (μm)"] = c4; row["Coating 5 (μm)"] = c5;
+            row["Coating Avg (μm)"] = +((c1+c2+c3+c4+c5)/5).toFixed(1);
+        }
+        if (doThickness) {
+            row["Thickness (mm)"] = +(Math.random() * (thickMax - thickMin) + thickMin).toFixed(3);
+        }
+        if (doBasePlate) {
+            row["Base Plate (mm)"] = +(Math.random() * (baseMax - baseMin) + baseMin).toFixed(3);
+        }
+        row["Status"] = "PASSED";
+        singleGeneratedRows.push(row);
+    }
+
+    // Display Table
+    const head = document.getElementById("singleHead");
+    const body = document.getElementById("singleBody");
+    const cols = Object.keys(singleGeneratedRows[0]);
+
+    head.innerHTML = `<tr>${cols.map(c => `<th>${c}</th>`).join("")}</tr>`;
+    body.innerHTML = "";
+    singleGeneratedRows.forEach(r => {
+        body.innerHTML += `<tr>${cols.map(c => `<td>${r[c]}</td>`).join("")}</tr>`;
+    });
+
+    document.getElementById("singlePreviewCard").style.display = "block";
+}
+
+function downloadSingleExcel() {
+    if (singleGeneratedRows.length === 0) return;
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(singleGeneratedRows);
+    XLSX.utils.book_append_sheet(wb, ws, currentSingleCat);
+    XLSX.writeFile(wb, `Single_Inspection_${currentSingleItemName}.xlsx`);
+}
+
+// --- GROUP MODE LOGIC ---
+let selectedItemsList = [];
+let categoryDataMapGlobal = {};
+
+function onCategoryChange() {
     const cat = document.getElementById("category").value;
-    const item = document.getElementById("item").value;
-    const param = document.getElementById("parameter").value;
-    const mode = document.getElementById("mode").value;
-    
+    const searchInput = document.getElementById("itemSearchInput");
+    searchInput.value = "";
+    if (cat) {
+        searchInput.disabled = false;
+        searchInput.placeholder = "आइटम खोजें (Type to search)...";
+    } else {
+        searchInput.disabled = true;
+        searchInput.placeholder = "पहले Category चुनें...";
+    }
+    hideDropdown();
+}
+
+function showDropdown() {
+    if (!document.getElementById("category").value) return;
+    renderAutocompleteList();
+    document.getElementById("autocompleteList").style.display = "block";
+}
+
+function hideDropdown() {
+    setTimeout(() => { document.getElementById("autocompleteList").style.display = "none"; }, 200);
+}
+
+function filterItems() {
+    renderAutocompleteList();
+    document.getElementById("autocompleteList").style.display = "block";
+}
+
+function renderAutocompleteList() {
+    const cat = document.getElementById("category").value;
+    const filter = document.getElementById("itemSearchInput").value.toUpperCase();
+    const listDiv = document.getElementById("autocompleteList");
+    listDiv.innerHTML = "";
+
     if (!cat || !masterData[cat]) return;
 
-    let refVal = 0, minVal = 0, maxVal = 0;
+    const alreadySelected = selectedItemsList.filter(s => s.cat === cat).map(s => s.item);
+    const available = masterData[cat].items.filter(it => !alreadySelected.includes(it));
+    const matched = available.filter(it => it.toUpperCase().includes(filter));
 
-    if (param.includes("Coating")) {
-        refVal = masterData[cat].refCoating;
-        minVal = refVal > 0 ? refVal * 0.85 : 15;
-        maxVal = refVal > 0 ? refVal * 1.40 : 35;
-    } else if (param.includes("Base Plate")) {
-        refVal = masterData[cat].refBasePlateMap ? masterData[cat].refBasePlateMap["default"] : 3.15;
-        minVal = refVal - 0.15;
-        maxVal = refVal + 0.15;
+    if (matched.length > 0) {
+        matched.forEach(it => {
+            const div = document.createElement("div");
+            div.className = "autocomplete-item";
+            div.innerText = it;
+            div.onclick = () => selectItem(cat, it);
+            listDiv.appendChild(div);
+        });
     } else {
-        if (cat === "COLUMNS") {
-            refVal = item.includes("-3") ? 3.0 : 2.0;
-        } else {
-            const map = masterData[cat].refThickMap;
-            let found = false;
-            if (map) {
-                for (let k in map) {
-                    if (item.includes(k)) { refVal = map[k]; found = true; break; }
-                }
-                if (!found) refVal = map["default"] || 2.0;
-            } else { refVal = 2.0; }
-        }
-        minVal = refVal - 0.08;
-        maxVal = refVal + 0.12;
-    }
-
-    document.getElementById("refBadge").style.display = "inline-block";
-    document.getElementById("refValText").innerText = `${refVal} (${param})`;
-
-    if (mode === "auto") {
-        document.getElementById("minVal").value = minVal.toFixed(2);
-        document.getElementById("maxVal").value = maxVal.toFixed(2);
-        document.getElementById("minVal").disabled = true;
-        document.getElementById("maxVal").disabled = true;
-    } else {
-        document.getElementById("minVal").disabled = false;
-        document.getElementById("maxVal").disabled = false;
+        const div = document.createElement("div");
+        div.className = "autocomplete-item";
+        div.style.color = "#94a3b8";
+        div.innerText = "कोई परिणाम नहीं मिला";
+        listDiv.appendChild(div);
     }
 }
 
-function toggleMode() {
-    const mode = document.getElementById("mode").value;
-    if (mode === "auto") updateReferenceAndDefaults();
-    else {
-        document.getElementById("minVal").disabled = false;
-        document.getElementById("maxVal").disabled = false;
-    }
+function selectItem(cat, item) {
+    selectedItemsList.push({ cat, item });
+    document.getElementById("itemSearchInput").value = "";
+    hideDropdown();
+    renderTags();
 }
 
-function addToBatch() {
-    const cat = document.getElementById("category").value;
-    const item = document.getElementById("item").value;
-    const param = document.getElementById("parameter").value;
-    const mode = document.getElementById("mode").value;
-    const min = parseFloat(document.getElementById("minVal").value);
-    const max = parseFloat(document.getElementById("maxVal").value);
-    const count = parseInt(document.getElementById("sampleCount").value);
+function removeSelectedItem(idx) {
+    selectedItemsList.splice(idx, 1);
+    renderTags();
+}
 
-    if (!cat || !item) {
-        alert("कृपया Category और Sub-Item का चयन करें!");
+function renderTags() {
+    const container = document.getElementById("selectedTags");
+    container.innerHTML = "";
+    if (selectedItemsList.length === 0) {
+        container.innerHTML = '<span style="color: #94a3b8; font-size: 13px;">अभी कोई आइटम सेलेक्ट नहीं हुआ है। ऊपर से खोजकर चुनें।</span>';
         return;
     }
-    if (isNaN(min) || isNaN(max) || min >= max) {
-        alert("कृपया सही Min और Max वैल्यू दें!");
-        return;
-    }
-
-    queueList.push({ cat, item, param, mode, min, max, count });
-    renderQueue();
-}
-
-function removeFromQueue(index) {
-    queueList.splice(index, 1);
-    renderQueue();
-}
-
-function renderQueue() {
-    const tbody = document.getElementById("queueBody");
-    tbody.innerHTML = "";
-    if (queueList.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="color: #64748b;">अभी कोई आइटम लिस्ट में नहीं जोड़ा गया है। ऊपर से सेलेक्ट करके "+ Add Item to Queue List" पर क्लिक करें।</td></tr>';
-        return;
-    }
-    queueList.forEach((q, idx) => {
-        tbody.innerHTML += `
-            <tr>
-                <td>${idx + 1}</td>
-                <td><strong>${q.cat}</strong></td>
-                <td>${q.item}</td>
-                <td>${q.param}</td>
-                <td>${q.mode === 'auto' ? 'Auto Reference' : 'Manual'}</td>
-                <td>${q.min} - ${q.max}</td>
-                <td><strong>${q.count}</strong></td>
-                <td><button class="btn-danger" onclick="removeFromQueue(${idx})">Delete</button></td>
-            </tr>
+    selectedItemsList.forEach((s, idx) => {
+        container.innerHTML += `
+            <div class="item-tag">
+                [${s.cat}] ${s.item}
+                <span class="remove-btn" onclick="removeSelectedItem(${idx})">✕</span>
+            </div>
         `;
     });
 }
 
-function generateAllSamples() {
-    if (queueList.length === 0) {
-        alert("पहले कम से कम एक आइटम Queue में ऐड करें!");
+function toggleMode() {
+    const mode = document.getElementById("mode").value;
+    document.getElementById("manualPanel").style.display = (mode === "manual") ? "grid" : "none";
+}
+
+function generateGroupReport() {
+    if (selectedItemsList.length === 0) {
+        alert("कृपया पहले कम से कम एक Sub-Item सेलेक्ट करें!");
         return;
     }
 
-    categoryResults = {};
+    const doCoating = document.getElementById("chkCoating").checked;
+    const doThickness = document.getElementById("chkThickness").checked;
+    const doBasePlate = document.getElementById("chkBasePlate").checked;
 
-    queueList.forEach(q => {
-        if (!categoryResults[q.cat]) categoryResults[q.cat] = [];
+    if (!doCoating && !doThickness && !doBasePlate) {
+        alert("कृपया कम से कम एक Parameter Checkbox को टिक करें!");
+        return;
+    }
 
-        const isCoating = q.param.includes("Coating");
+    const mode = document.getElementById("mode").value;
+    const count = parseInt(document.getElementById("sampleCount").value);
 
-        for (let i = 1; i <= q.count; i++) {
-            if (isCoating) {
-                let c1 = +(Math.random() * (q.max - q.min) + q.min).toFixed(1);
-                let c2 = +(Math.random() * (q.max - q.min) + q.min).toFixed(1);
-                let c3 = +(Math.random() * (q.max - q.min) + q.min).toFixed(1);
-                let c4 = +(Math.random() * (q.max - q.min) + q.min).toFixed(1);
-                let c5 = +(Math.random() * (q.max - q.min) + q.min).toFixed(1);
-                let avg = +((c1 + c2 + c3 + c4 + c5) / 5).toFixed(1);
+    let coatMin = doCoating ? (mode === "manual" ? parseFloat(document.getElementById("coatMin").value) : 60.0) : 0;
+    let coatMax = doCoating ? (mode === "manual" ? parseFloat(document.getElementById("coatMax").value) : 100.0) : 0;
+    let thickMin = doThickness ? (mode === "manual" ? parseFloat(document.getElementById("thickMin").value) : 1.95) : 0;
+    let thickMax = doThickness ? (mode === "manual" ? parseFloat(document.getElementById("thickMax").value) : 2.10) : 0;
+    let baseMin = doBasePlate ? (mode === "manual" ? parseFloat(document.getElementById("baseMin").value) : 3.0) : 0;
+    let baseMax = doBasePlate ? (mode === "manual" ? parseFloat(document.getElementById("baseMax").value) : 3.3) : 0;
 
-                categoryResults[q.cat].push({
-                    "Sub-Item Name": q.item,
-                    "Parameter": q.param,
-                    "Sample #": `Sample ${i}`,
-                    "Coating 1 (μm)": c1,
-                    "Coating 2 (μm)": c2,
-                    "Coating 3 (μm)": c3,
-                    "Coating 4 (μm)": c4,
-                    "Coating 5 (μm)": c5,
-                    "Average (μm)": avg,
-                    "Reading / Value": "-",
-                    "Status": "PASSED"
-                });
-            } else {
-                let val = +(Math.random() * (q.max - q.min) + q.min).toFixed(3);
-                categoryResults[q.cat].push({
-                    "Sub-Item Name": q.item,
-                    "Parameter": q.param,
-                    "Sample #": `Sample ${i}`,
-                    "Coating 1 (μm)": "-",
-                    "Coating 2 (μm)": "-",
-                    "Coating 3 (μm)": "-",
-                    "Coating 4 (μm)": "-",
-                    "Coating 5 (μm)": "-",
-                    "Average (μm)": "-",
-                    "Reading / Value": val,
-                    "Status": "PASSED"
-                });
+    categoryDataMapGlobal = {};
+
+    selectedItemsList.forEach(s => {
+        if (!categoryDataMapGlobal[s.cat]) categoryDataMapGlobal[s.cat] = [];
+
+        for (let i = 1; i <= count; i++) {
+            let rowObj = { "Sub-Item Name": s.item, "Sample #": `Sample ${i}` };
+
+            if (doCoating) {
+                let c1 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
+                let c2 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
+                let c3 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
+                let c4 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
+                let c5 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
+                rowObj["Coating 1 (μm)"] = c1; rowObj["Coating 2 (μm)"] = c2; rowObj["Coating 3 (μm)"] = c3; rowObj["Coating 4 (μm)"] = c4; rowObj["Coating 5 (μm)"] = c5;
+                rowObj["Coating Avg (μm)"] = +((c1 + c2 + c3 + c4 + c5) / 5).toFixed(1);
             }
+            if (doThickness) {
+                rowObj["Thickness (mm)"] = +(Math.random() * (thickMax - thickMin) + thickMin).toFixed(3);
+            }
+            if (doBasePlate) {
+                rowObj["Base Plate Thickness (mm)"] = +(Math.random() * (baseMax - baseMin) + baseMin).toFixed(3);
+            }
+            rowObj["Status"] = "PASSED";
+
+            categoryDataMapGlobal[s.cat].push(rowObj);
         }
     });
 
-    renderTabResults();
-    document.getElementById("resultCard").style.display = "block";
+    renderGroupTabs();
+    document.getElementById("groupPreviewCard").style.display = "block";
 }
 
-function renderTabResults() {
-    const tabContainer = document.getElementById("tabButtons");
+function renderGroupTabs() {
+    const tabContainer = document.getElementById("groupTabButtons");
     tabContainer.innerHTML = "";
-
-    const cats = Object.keys(categoryResults);
+    const cats = Object.keys(categoryDataMapGlobal);
     if (cats.length === 0) return;
 
     cats.forEach((cat, idx) => {
         const btn = document.createElement("button");
         btn.className = `tab-btn ${idx === 0 ? 'active' : ''}`;
-        btn.innerText = `${cat} (${categoryResults[cat].length} Samples)`;
-        btn.onclick = () => showCategoryTable(cat, btn);
+        btn.innerText = `${cat} (${categoryDataMapGlobal[cat].length} Rows)`;
+        btn.onclick = () => showGroupPreviewTable(cat, btn);
         tabContainer.appendChild(btn);
     });
 
-    showCategoryTable(cats[0]);
+    showGroupPreviewTable(cats[0]);
 }
 
-function showCategoryTable(cat, activeBtn) {
+function showGroupPreviewTable(cat, activeBtn) {
     if (activeBtn) {
-        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll("#groupTabButtons .tab-btn").forEach(b => b.classList.remove("active"));
         activeBtn.classList.add("active");
     }
 
-    const rows = categoryResults[cat];
-    const tableHead = document.getElementById("tableHead");
-    const tableBody = document.getElementById("tableBody");
+    const rows = categoryDataMapGlobal[cat];
+    const head = document.getElementById("groupPreviewHead");
+    const body = document.getElementById("groupPreviewBody");
 
-    tableHead.innerHTML = `
-        <tr>
-            <th>Sub-Item Name</th>
-            <th>Parameter</th>
-            <th>Sample #</th>
-            <th>Coating 1 (μm)</th>
-            <th>Coating 2 (μm)</th>
-            <th>Coating 3 (μm)</th>
-            <th>Coating 4 (μm)</th>
-            <th>Coating 5 (μm)</th>
-            <th>Average (μm)</th>
-            <th>Reading / Value</th>
-            <th>Status</th>
-        </tr>
-    `;
+    if (!rows || rows.length === 0) return;
 
-    tableBody.innerHTML = "";
+    const cols = Object.keys(rows[0]);
+    head.innerHTML = `<tr>${cols.map(c => `<th>${c}</th>`).join("")}</tr>`;
+    body.innerHTML = "";
     rows.forEach(r => {
-        tableBody.innerHTML += `
-            <tr>
-                <td><strong>${r["Sub-Item Name"]}</strong></td>
-                <td>${r["Parameter"]}</td>
-                <td>${r["Sample #"]}</td>
-                <td>${r["Coating 1 (μm)"]}</td>
-                <td>${r["Coating 2 (μm)"]}</td>
-                <td>${r["Coating 3 (μm)"]}</td>
-                <td>${r["Coating 4 (μm)"]}</td>
-                <td>${r["Coating 5 (μm)"]}</td>
-                <td><strong>${r["Average (μm)"]}</strong></td>
-                <td><strong>${r["Reading / Value"]}</strong></td>
-                <td style="color: green; font-weight: bold;">${r["Status"]}</td>
-            </tr>
-        `;
+        body.innerHTML += `<tr>${cols.map(c => `<td>${r[c]}</td>`).join("")}</tr>`;
     });
 }
 
-function exportCombinedExcel() {
-    if (Object.keys(categoryResults).length === 0) {
-        generateAllSamples();
-    }
-
+function downloadGroupExcel() {
+    if (Object.keys(categoryDataMapGlobal).length === 0) return;
     const wb = XLSX.utils.book_new();
 
-    // Loop through each category and create a separate tab in Excel
-    for (let cat in categoryResults) {
-        const data = categoryResults[cat];
-        if (data && data.length > 0) {
-            const ws = XLSX.utils.json_to_sheet(data);
-            XLSX.utils.book_append_sheet(wb, ws, cat); // Named Sheet for Columns, PURLINE, LA, etc.
+    for (let cat in categoryDataMapGlobal) {
+        if (categoryDataMapGlobal[cat].length > 0) {
+            const ws = XLSX.utils.json_to_sheet(categoryDataMapGlobal[cat]);
+            XLSX.utils.book_append_sheet(wb, ws, cat);
         }
     }
 
-    XLSX.writeFile(wb, "Batch_Quality_Inspection_Report.xlsx");
+    XLSX.writeFile(wb, "Consolidated_Quality_Inspection_Report.xlsx");
 }
-
-// Initialize Category Dropdown
-onCategoryChange();
 </script>
 
 </body>
