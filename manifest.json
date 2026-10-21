@@ -1,6 +1,7 @@
 {
-  "name": "Quality Inspection Portal",
-  "short_name": "InspectionApp",
+  "id": "/quality-inspection-portal-v2/",
+  "name": "Quality Inspection Portal App",
+  "short_name": "QualityApp",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f8fafc",
