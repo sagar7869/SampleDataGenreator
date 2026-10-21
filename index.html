@@ -3,13 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quality Inspection & Master Portal</title>
-    <!-- PWA Manifest Link -->
+    <title>Master Sheet Dynamic Tab Extractor</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1e3a8a">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3135/3135715.png">
-    <!-- SheetJS CDN for Excel Export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
             --primary: #1e3a8a;
@@ -18,728 +14,156 @@
             --card-bg: #ffffff;
             --border: #cbd5e1;
             --text: #0f172a;
-            --danger: #ef4444;
             --success: #15803d;
         }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text); margin: 0; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; }
+        .container { max-width: 900px; margin: 0 auto; }
         .header { background: var(--primary); color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; }
-        
-        .mode-switcher { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; flex-wrap: wrap; }
-        .mode-btn { padding: 12px 20px; font-size: 14px; font-weight: bold; border: 2px solid var(--primary); background: white; color: var(--primary); border-radius: 8px; cursor: pointer; transition: 0.2s; }
-        .mode-btn.active { background: var(--primary); color: white; }
-
         .card { background: var(--card-bg); padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 20px; border: 1px solid var(--border); }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; }
         label { font-weight: 600; margin-bottom: 5px; display: block; font-size: 13px; }
-        select, input[type="text"], input[type="number"], input[type="url"] { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        input[type="text"], input[type="url"], select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; font-size: 14px; margin-bottom: 10px; }
         
-        .autocomplete-container { position: relative; }
-        .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid var(--border); border-radius: 0 0 6px 6px; max-height: 180px; overflow-y: auto; z-index: 99; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: none; }
-        .autocomplete-item { padding: 10px; cursor: pointer; font-size: 14px; border-bottom: 1px solid #f1f5f9; }
-        .autocomplete-item:hover { background-color: #eff6ff; color: var(--primary); font-weight: 600; }
-
-        .checkbox-group { display: flex; flex-wrap: wrap; gap: 15px; padding: 10px; background: #f1f5f9; border-radius: 6px; border: 1px solid var(--border); }
-        .checkbox-item { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; cursor: pointer; }
-        .checkbox-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
-
         .btn { padding: 12px 20px; font-weight: 600; border: none; border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 14px; }
-        .btn-primary { background-color: var(--primary); color: white; width: 100%; margin-top: 15px; font-size: 16px; }
-        .btn-success { background-color: var(--success); color: white; font-size: 15px; padding: 10px 20px; border-radius: 6px; }
-        .btn-success:hover { background-color: #166534; }
-        
-        .selected-box { border: 2px dashed #94a3b8; padding: 15px; border-radius: 8px; background-color: #f1f5f9; margin-top: 10px; min-height: 60px; }
+        .btn-primary { background-color: var(--primary); color: white; width: 100%; }
+        .btn-success { background-color: var(--success); color: white; width: 100%; font-size: 16px; margin-top: 15px; }
+
+        .selected-box { border: 2px dashed #94a3b8; padding: 15px; border-radius: 8px; background-color: #f1f5f9; margin-top: 10px; min-height: 50px; }
         .tag-container { display: flex; flex-wrap: wrap; gap: 8px; }
         .item-tag { background: #3b82f6; color: white; border-radius: 20px; padding: 6px 14px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-        .item-tag span.remove-btn { color: #fca5a5; cursor: pointer; font-weight: bold; font-size: 15px; }
-        .item-tag span.remove-btn:hover { color: white; }
-
-        .preview-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid var(--border); }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
-        th, td { border: 1px solid var(--border); padding: 8px; text-align: center; }
-        th { background-color: var(--primary); color: white; }
-        tr:nth-child(even) { background-color: #f8fafc; }
-        .tab-btn { background: #e2e8f0; color: #334155; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px 6px 0 0; margin-right: 5px; cursor: pointer; font-weight: bold; }
-        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .item-tag span.remove-btn { color: #fca5a5; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <h2>Quality Inspection & Master Portal</h2>
-        <p style="margin: 5px 0 0 0; opacity: 0.9;">Single & Group Inspection Mode | Master Sheet Extractor</p>
+        <h2>Master Sheet Dynamic Tab Extractor</h2>
+        <p style="margin: 5px 0 0 0; opacity: 0.9;">Live Tabs Fetch & Direct Excel Download</p>
     </div>
 
-    <!-- Mode Switcher Buttons -->
-    <div class="mode-switcher">
-        <button class="mode-btn active" id="btnSingleMode" onclick="switchMode('single')">📌 Mode 1: Single Item Quick Generator</button>
-        <button class="mode-btn" id="btnGroupMode" onclick="switchMode('group')">📁 Mode 2: Group Multi-Tab Batch Portal</button>
-        <button class="mode-btn" id="btnDriveMode" onclick="switchMode('drive')">🌐 Mode 3: Era Master Sheet Tab Extractor</button>
+    <div class="card">
+        <h3>1. Web App API Config</h3>
+        <label>Apps Script Web App URL</label>
+        <input type="url" id="scriptUrl" value="https://script.google.com/macros/s/AKfycbzyYED8CdF50QPg2A0YgYSQXbBvsSeTcHAcOQqBWqYRUa9K6HPy4-yzOo3eZYmDrpI5/exec">
+        
+        <button class="btn btn-primary" onclick="fetchLiveTabs()">🔄 Fetch Available Sheet Tabs Live</button>
     </div>
 
-    <!-- ================= MODE 1: SINGLE ITEM GENERATOR ================= -->
-    <div id="singleModeSection">
-        <div class="card">
-            <h3>Single Item Inspection Setup</h3>
-            <div class="form-grid">
-                <div>
-                    <label>Category</label>
-                    <select id="singleCategory" onchange="onSingleCategoryChange()">
-                        <option value="">-- Choose Category --</option>
-                        <option value="COLUMNS">COLUMNS</option>
-                        <option value="PURLINE">PURLINE</option>
-                        <option value="LA">LA (Angle / Cleat)</option>
-                        <option value="Rafter">Rafter</option>
-                        <option value="Jointer">Jointer</option>
-                    </select>
-                </div>
-                <div>
-                    <label>Sub-Item Name</label>
-                    <select id="singleItemSelect">
-                        <option value="">पहले Category चुनें</option>
-                    </select>
-                </div>
-                <div>
-                    <label>Generation Mode</label>
-                    <select id="singleMode" onchange="toggleSingleMode()">
-                        <option value="auto">Auto Reference Mode (Hardcoded Standard)</option>
-                        <option value="manual">Manual Custom Range Mode</option>
-                    </select>
-                </div>
-                <div>
-                    <label>Sample Quantity</label>
-                    <input type="number" id="singleCount" value="3" min="1" max="100">
-                </div>
-            </div>
+    <div class="card" id="tabSelectionCard" style="display: none;">
+        <h3>2. Select Tabs from Master Sheet</h3>
+        <label>Sheet ke andar maujood Tabs:</label>
+        <select id="tabDropdown" onchange="addSelectedTab()">
+            <option value="">-- Select Tab Name --</option>
+        </select>
 
-            <div style="margin-top: 15px;">
-                <label>Select Parameters Required (Checkboxes):</label>
-                <div class="checkbox-group">
-                    <label class="checkbox-item"><input type="checkbox" id="sChkCoating" checked> Coating (μm) [5 Spot Readings + Avg]</label>
-                    <label class="checkbox-item"><input type="checkbox" id="sChkThickness" checked> Thickness (mm)</label>
-                    <label class="checkbox-item"><input type="checkbox" id="sChkBasePlate"> Base Plate Thickness (mm)</label>
-                </div>
-            </div>
-
-            <div id="singleRangePanel" class="form-grid" style="margin-top: 15px; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid var(--border);">
-                <div>
-                    <label>Coating Min - Max (μm)</label>
-                    <div style="display: flex; gap: 5px;">
-                        <input type="number" id="sCoatMin" value="60" disabled>
-                        <input type="number" id="sCoatMax" value="100" disabled>
-                    </div>
-                </div>
-                <div>
-                    <label>Thickness Min - Max (mm)</label>
-                    <div style="display: flex; gap: 5px;">
-                        <input type="number" id="sThickMin" step="0.001" value="1.95" disabled>
-                        <input type="number" id="sThickMax" step="0.001" value="2.10" disabled>
-                    </div>
-                </div>
-                <div>
-                    <label>Base Plate Min - Max (mm)</label>
-                    <div style="display: flex; gap: 5px;">
-                        <input type="number" id="sBaseMin" step="0.001" value="3.0" disabled>
-                        <input type="number" id="sBaseMax" step="0.001" value="3.3" disabled>
-                    </div>
-                </div>
-            </div>
-
-            <button class="btn btn-primary" onclick="generateSingleReport()">⚡ Generate Report</button>
-        </div>
-
-        <div class="card" id="singlePreviewCard" style="display:none;">
-            <div class="preview-header">
-                <h3 style="margin: 0;">Generated Inspection Report Display</h3>
-                <button class="btn btn-success" onclick="downloadSingleExcel()">📥 Download Excel Report</button>
-            </div>
-            <div style="overflow-x: auto; max-height: 400px;">
-                <table>
-                    <thead id="singleHead"></thead>
-                    <tbody id="singleBody"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- ================= MODE 2: GROUP MULTI-TAB BATCH PORTAL ================= -->
-    <div id="groupModeSection" style="display: none;">
-        <div class="card">
-            <h3>Step 1: Select Category & Search/Add Sub-Items</h3>
-            <div class="form-grid">
-                <div>
-                    <label>1. Category चुनें</label>
-                    <select id="category" onchange="onCategoryChange()">
-                        <option value="">-- Choose Category --</option>
-                        <option value="COLUMNS">COLUMNS</option>
-                        <option value="PURLINE">PURLINE</option>
-                        <option value="LA">LA (Angle / Cleat)</option>
-                        <option value="Rafter">Rafter</option>
-                        <option value="Jointer">Jointer</option>
-                    </select>
-                </div>
-                
-                <div class="autocomplete-container">
-                    <label>2. Sub-Item Search & Add (टाइप करें या क्लिक करके चुनें)</label>
-                    <input type="text" id="itemSearchInput" placeholder="पहले Category चुनें..." autocomplete="off" onfocus="showDropdown()" oninput="filterItems()" disabled>
-                    <div id="autocompleteList" class="autocomplete-list"></div>
-                </div>
-            </div>
-
-            <label style="margin-top: 15px;">चुने हुए सब-आइटम्स (Selected Items List):</label>
-            <div class="selected-box">
-                <div id="selectedTags" class="tag-container">
-                    <span style="color: #94a3b8; font-size: 13px;">अभी कोई आइटम सेलेक्ट नहीं हुआ है। ऊपर से खोजकर चुनें।</span>
-                </div>
+        <label style="margin-top: 15px;">Selected Tabs (Download hone waale):</label>
+        <div class="selected-box">
+            <div id="selectedTags" class="tag-container">
+                <span style="color: #94a3b8; font-size: 13px;">Koyi tab select nahi hua hai.</span>
             </div>
         </div>
 
-        <div class="card">
-            <h3>Step 2: Select Parameters (Checkboxes) & Quantities</h3>
-            
-            <label>1. Select Parameter(s) Required:</label>
-            <div class="checkbox-group">
-                <label class="checkbox-item"><input type="checkbox" id="chkCoating" checked> Coating (μm) [5 Spot Readings + Avg]</label>
-                <label class="checkbox-item"><input type="checkbox" id="chkThickness" checked> Thickness (mm)</label>
-                <label class="checkbox-item"><input type="checkbox" id="chkBasePlate"> Base Plate Thickness (mm)</label>
-            </div>
-
-            <div class="form-grid" style="margin-top: 15px;">
-                <div>
-                    <label>Generation Mode</label>
-                    <select id="mode" onchange="toggleMode()">
-                        <option value="auto">Auto Reference Mode (Hardcoded Standard)</option>
-                        <option value="manual">Manual Custom Range Mode</option>
-                    </select>
-                </div>
-                <div>
-                    <label>Quantity of Samples (प्रति आइटम कितने सैम्पल?)</label>
-                    <input type="number" id="sampleCount" value="3" min="1" max="100">
-                </div>
-            </div>
-
-            <div id="manualPanel" class="form-grid" style="margin-top: 15px; display: none; background: #fff7ed; padding: 15px; border-radius: 6px; border: 1px solid #ffedd5;">
-                <div>
-                    <label>Coating Min-Max (μm)</label>
-                    <div style="display: flex; gap: 5px;">
-                        <input type="number" id="coatMin" value="60">
-                        <input type="number" id="coatMax" value="100">
-                    </div>
-                </div>
-                <div>
-                    <label>Thickness Min-Max (mm)</label>
-                    <div style="display: flex; gap: 5px;">
-                        <input type="number" id="thickMin" step="0.001" value="1.95">
-                        <input type="number" id="thickMax" step="0.001" value="2.10">
-                    </div>
-                </div>
-                <div>
-                    <label>Base Plate Min-Max (mm)</label>
-                    <div style="display: flex; gap: 5px;">
-                        <input type="number" id="baseMin" step="0.001" value="3.0">
-                        <input type="number" id="baseMax" step="0.001" value="3.3">
-                    </div>
-                </div>
-            </div>
-
-            <button class="btn btn-primary" onclick="generateGroupReport()">⚡ Generate Report</button>
-        </div>
-
-        <div class="card" id="groupPreviewCard" style="display:none;">
-            <div class="preview-header">
-                <h3 style="margin: 0;">Generated Multi-Tab Inspection Report Display</h3>
-                <button class="btn btn-success" onclick="downloadGroupExcel()">📥 Download Complete Multi-Tab Excel Report</button>
-            </div>
-            <div id="groupTabButtons" style="margin-bottom: 15px;"></div>
-            <div style="overflow-x: auto; max-height: 400px;">
-                <table>
-                    <thead id="groupPreviewHead"></thead>
-                    <tbody id="groupPreviewBody"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- ================= MODE 3: ERA MASTER SHEET TAB EXTRACTOR ================= -->
-    <div id="driveModeSection" style="display: none;">
-        <div class="card">
-            <h3>Era Master Sheet Tab Extractor</h3>
-            <p style="font-size: 13px; color: #64748b; margin-top: -5px;">Master Sheet में से चुने हुए Items के Tabs निकालकर एक Nayi Filtered Google Sheet तैयार करने के लिए।</p>
-            
-            <div class="form-grid">
-                <div style="grid-column: 1 / -1;">
-                    <label>Apps Script Web App URL (Configured)</label>
-                    <input type="url" id="scriptUrl" value="https://script.google.com/macros/s/AKfycbzyYED8CdF50QPg2A0YgYSQXbBvsSeTcHAcOQqBWqYRUa9K6HPy4-yzOo3eZYmDrpI5/exec" readonly style="background:#f1f5f9; color:#475569;">
-                </div>
-                <div>
-                    <label>1. Category चुनें</label>
-                    <select id="driveCategory" onchange="onDriveCategoryChange()">
-                        <option value="">-- Choose Category --</option>
-                        <option value="PURLINE">PURLINE</option>
-                        <option value="Rafter">Rafter</option>
-                        <option value="COLUMNS">COLUMNS</option>
-                        <option value="LA">LA (Angle / Cleat)</option>
-                        <option value="Jointer">Jointer</option>
-                    </select>
-                </div>
-                <div class="autocomplete-container">
-                    <label>2. Sub-Item / Tab Name Search</label>
-                    <input type="text" id="driveSearchInput" placeholder="पहले Category चुनें..." autocomplete="off" onfocus="showDriveDropdown()" oninput="filterDriveItems()" disabled>
-                    <div id="driveAutocompleteList" class="autocomplete-list"></div>
-                </div>
-            </div>
-
-            <label style="margin-top: 15px;">चुने हुए सब-आइटम्स (Selected Tabs to Extract):</label>
-            <div class="selected-box">
-                <div id="driveSelectedTags" class="tag-container">
-                    <span style="color: #94a3b8; font-size: 13px;">अभी कोई आइटम सेलेक्ट नहीं हुआ है।</span>
-                </div>
-            </div>
-
-            <button class="btn btn-primary" style="background-color: #0284c7;" onclick="syncWithGoogleSheetScript()">🚀 Extract Selected Tabs to New Google Sheet</button>
-        </div>
+        <button class="btn btn-success" onclick="downloadSelectedTabsExcel()">📥 Download Selected Tabs as Excel (.xlsx)</button>
     </div>
 </div>
 
 <script>
-// Hardcoded Master Mapping matching Era Sample Master Sheet Tabs
-const masterData = {
-    "PURLINE": { items: ["P2L", "P3L", "P2M", "P3M", "P2H", "P3H", "PURL-0012", "PURL-0024", "PURL-0011", "PURL-0023", "PURL-0042", "PURL-0048"] },
-    "Rafter": { items: ["0101", "0102", "0103", "0201", "0202", "0203", "0311", "0312", "0313", "0321", "0322", "0323", "1202", "1203", "1204", "1312", "1313", "1322", "1323"] },
-    "COLUMNS": { items: ["COLU-1620", "COLU-1820", "COLU-2611", "COLU-2612", "COLU-2613", "COLU-2621", "COLU-2622", "COLU-2623", "COLU-2811", "COLU-2812", "COLU-2813", "COLU-2821", "COLU-2822", "COLU-2823", "COLU-3611", "COLU-3612", "COLU-3613", "COLU-3621", "COLU-3622", "COLU-3623", "COLU-3811", "COLU-3812", "COLU-3813", "COLU-3821", "COLU-3822", "COLU-3823"] },
-    "LA": { items: ["EALA-0032", "EALA-0046", "LA-0046"] },
-    "Jointer": { items: ["RAFT-0331", "RAFT-0332", "RAFT-0333", "331", "332", "333"] }
-};
+let availableTabsList = [];
+let selectedTabsList = [];
 
-// Register Service Worker for PWA
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js')
-        .then(reg => console.log('SW Registered'))
-        .catch(err => console.log('SW Registration Failed', err));
+function fetchLiveTabs() {
+    const url = document.getElementById("scriptUrl").value.trim();
+    if (!url) { alert("Please enter Apps Script URL"); return; }
+
+    alert("Master Sheet se Tabs fetch kiye ja rahe hain...");
+
+    fetch(url)
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success" && data.tabs) {
+            availableTabsList = data.tabs;
+            populateDropdown();
+            document.getElementById("tabSelectionCard").style.display = "block";
+            alert("Success! Total " + data.tabs.length + " Tabs mile.");
+        } else {
+            alert("Tabs fetch nahi ho paye. Error: " + JSON.stringify(data));
+        }
+    })
+    .catch(err => {
+        alert("Error fetching tabs: " + err);
     });
 }
 
-function switchMode(mode) {
-    document.getElementById('singleModeSection').style.display = (mode === 'single') ? 'block' : 'none';
-    document.getElementById('groupModeSection').style.display = (mode === 'group') ? 'block' : 'none';
-    document.getElementById('driveModeSection').style.display = (mode === 'drive') ? 'block' : 'none';
-    
-    document.getElementById('btnSingleMode').classList.toggle('active', mode === 'single');
-    document.getElementById('btnGroupMode').classList.toggle('active', mode === 'group');
-    document.getElementById('btnDriveMode').classList.toggle('active', mode === 'drive');
-}
-
-// --- SINGLE MODE SCRIPTS ---
-let singleGeneratedRows = [];
-let currentSingleItemName = "";
-let currentSingleCat = "";
-
-function onSingleCategoryChange() {
-    const cat = document.getElementById("singleCategory").value;
-    const itemSelect = document.getElementById("singleItemSelect");
-    itemSelect.innerHTML = "";
-    if (cat && masterData[cat]) {
-        masterData[cat].items.forEach(it => {
+function populateDropdown() {
+    const dropdown = document.getElementById("tabDropdown");
+    dropdown.innerHTML = '<option value="">-- Select Tab Name --</option>';
+    availableTabsList.forEach(tab => {
+        if (!selectedTabsList.includes(tab)) {
             let opt = document.createElement("option");
-            opt.value = it; opt.innerText = it;
-            itemSelect.appendChild(opt);
-        });
-    } else {
-        itemSelect.innerHTML = '<option value="">पहले Category चुनें</option>';
-    }
-}
-
-function toggleSingleMode() {
-    const mode = document.getElementById("singleMode").value;
-    const isManual = (mode === "manual");
-    document.getElementById("sCoatMin").disabled = !isManual;
-    document.getElementById("sCoatMax").disabled = !isManual;
-    document.getElementById("sThickMin").disabled = !isManual;
-    document.getElementById("sThickMax").disabled = !isManual;
-    document.getElementById("sBaseMin").disabled = !isManual;
-    document.getElementById("sBaseMax").disabled = !isManual;
-
-    if (!isManual) {
-        document.getElementById("sCoatMin").value = 60;
-        document.getElementById("sCoatMax").value = 100;
-        document.getElementById("sThickMin").value = 1.95;
-        document.getElementById("sThickMax").value = 2.10;
-        document.getElementById("sBaseMin").value = 3.0;
-        document.getElementById("sBaseMax").value = 3.3;
-    }
-}
-
-function generateSingleReport() {
-    currentSingleCat = document.getElementById("singleCategory").value;
-    currentSingleItemName = document.getElementById("singleItemSelect").value;
-    const count = parseInt(document.getElementById("singleCount").value);
-
-    if (!currentSingleCat || !currentSingleItemName) {
-        alert("कृपया Category और Sub-Item चुनें!");
-        return;
-    }
-
-    const doCoating = document.getElementById("sChkCoating").checked;
-    const doThickness = document.getElementById("sChkThickness").checked;
-    const doBasePlate = document.getElementById("sChkBasePlate").checked;
-
-    if (!doCoating && !doThickness && !doBasePlate) {
-        alert("कृपया कम से कम एक Parameter Checkbox चुनें!");
-        return;
-    }
-
-    const coatMin = parseFloat(document.getElementById("sCoatMin").value);
-    const coatMax = parseFloat(document.getElementById("sCoatMax").value);
-    const thickMin = parseFloat(document.getElementById("sThickMin").value);
-    const thickMax = parseFloat(document.getElementById("sThickMax").value);
-    const baseMin = parseFloat(document.getElementById("sBaseMin").value);
-    const baseMax = parseFloat(document.getElementById("sBaseMax").value);
-
-    singleGeneratedRows = [];
-
-    for (let i = 1; i <= count; i++) {
-        let row = { "Sub-Item Name": currentSingleItemName, "Sample #": `Sample ${i}` };
-
-        if (doCoating) {
-            let c1 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
-            let c2 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
-            let c3 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
-            let c4 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
-            let c5 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
-            row["Coating 1 (μm)"] = c1; row["Coating 2 (μm)"] = c2; row["Coating 3 (μm)"] = c3; row["Coating 4 (μm)"] = c4; row["Coating 5 (μm)"] = c5;
-            row["Coating Avg (μm)"] = +((c1+c2+c3+c4+c5)/5).toFixed(1);
+            opt.value = tab;
+            opt.innerText = tab;
+            dropdown.appendChild(opt);
         }
-        if (doThickness) {
-            row["Thickness (mm)"] = +(Math.random() * (thickMax - thickMin) + thickMin).toFixed(3);
-        }
-        if (doBasePlate) {
-            row["Base Plate (mm)"] = +(Math.random() * (baseMax - baseMin) + baseMin).toFixed(3);
-        }
-        row["Status"] = "PASSED";
-        singleGeneratedRows.push(row);
-    }
-
-    const head = document.getElementById("singleHead");
-    const body = document.getElementById("singleBody");
-    const cols = Object.keys(singleGeneratedRows[0]);
-
-    head.innerHTML = `<tr>${cols.map(c => `<th>${c}</th>`).join("")}</tr>`;
-    body.innerHTML = "";
-    singleGeneratedRows.forEach(r => {
-        body.innerHTML += `<tr>${cols.map(c => `<td>${r[c]}</td>`).join("")}</tr>`;
     });
-
-    document.getElementById("singlePreviewCard").style.display = "block";
 }
 
-function downloadSingleExcel() {
-    if (singleGeneratedRows.length === 0) return;
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(singleGeneratedRows);
-    XLSX.utils.book_append_sheet(wb, ws, currentSingleCat);
-    XLSX.writeFile(wb, `Single_Inspection_${currentSingleItemName}.xlsx`);
-}
-
-// --- GROUP MODE SCRIPTS ---
-let selectedItemsList = [];
-let categoryDataMapGlobal = {};
-
-function onCategoryChange() {
-    const cat = document.getElementById("category").value;
-    const searchInput = document.getElementById("itemSearchInput");
-    searchInput.value = "";
-    if (cat) {
-        searchInput.disabled = false;
-        searchInput.placeholder = "आइटम खोजें (Type to search)...";
-    } else {
-        searchInput.disabled = true;
-        searchInput.placeholder = "पहले Category चुनें...";
-    }
-    hideDropdown();
-}
-
-function showDropdown() {
-    if (!document.getElementById("category").value) return;
-    renderAutocompleteList();
-    document.getElementById("autocompleteList").style.display = "block";
-}
-
-function hideDropdown() {
-    setTimeout(() => { document.getElementById("autocompleteList").style.display = "none"; }, 200);
-}
-
-function filterItems() {
-    renderAutocompleteList();
-    document.getElementById("autocompleteList").style.display = "block";
-}
-
-function renderAutocompleteList() {
-    const cat = document.getElementById("category").value;
-    const filter = document.getElementById("itemSearchInput").value.toUpperCase();
-    const listDiv = document.getElementById("autocompleteList");
-    listDiv.innerHTML = "";
-
-    if (!cat || !masterData[cat]) return;
-
-    const alreadySelected = selectedItemsList.filter(s => s.cat === cat).map(s => s.item);
-    const available = masterData[cat].items.filter(it => !alreadySelected.includes(it));
-    const matched = available.filter(it => it.toUpperCase().includes(filter));
-
-    if (matched.length > 0) {
-        matched.forEach(it => {
-            const div = document.createElement("div");
-            div.className = "autocomplete-item";
-            div.innerText = it;
-            div.onclick = () => selectItem(cat, it);
-            listDiv.appendChild(div);
-        });
-    } else {
-        listDiv.innerHTML = '<div class="autocomplete-item" style="color: #94a3b8;">कोई परिणाम नहीं मिला</div>';
+function addSelectedTab() {
+    const dropdown = document.getElementById("tabDropdown");
+    const val = dropdown.value;
+    if (val && !selectedTabsList.includes(val)) {
+        selectedTabsList.push(val);
+        renderTags();
+        populateDropdown();
     }
 }
 
-function selectItem(cat, item) {
-    selectedItemsList.push({ cat, item });
-    document.getElementById("itemSearchInput").value = "";
-    hideDropdown();
+function removeTab(idx) {
+    selectedTabsList.splice(idx, 1);
     renderTags();
-}
-
-function removeSelectedItem(idx) {
-    selectedItemsList.splice(idx, 1);
-    renderTags();
+    populateDropdown();
 }
 
 function renderTags() {
     const container = document.getElementById("selectedTags");
     container.innerHTML = "";
-    if (selectedItemsList.length === 0) {
-        container.innerHTML = '<span style="color: #94a3b8; font-size: 13px;">अभी कोई आइटम सेलेक्ट नहीं हुआ है। ऊपर से खोजकर चुनें।</span>';
+    if (selectedTabsList.length === 0) {
+        container.innerHTML = '<span style="color: #94a3b8; font-size: 13px;">Koyi tab select nahi hua hai.</span>';
         return;
     }
-    selectedItemsList.forEach((s, idx) => {
+    selectedTabsList.forEach((tab, idx) => {
         container.innerHTML += `
             <div class="item-tag">
-                [${s.cat}] ${s.item}
-                <span class="remove-btn" onclick="removeSelectedItem(${idx})">✕</span>
+                ${tab}
+                <span class="remove-btn" onclick="removeTab(${idx})">✕</span>
             </div>
         `;
     });
 }
 
-function toggleMode() {
-    const mode = document.getElementById("mode").value;
-    document.getElementById("manualPanel").style.display = (mode === "manual") ? "grid" : "none";
-}
-
-function generateGroupReport() {
-    if (selectedItemsList.length === 0) {
-        alert("कृपया पहले कम से कम एक Sub-Item सेलेक्ट करें!");
-        return;
-    }
-
-    const doCoating = document.getElementById("chkCoating").checked;
-    const doThickness = document.getElementById("chkThickness").checked;
-    const doBasePlate = document.getElementById("chkBasePlate").checked;
-
-    if (!doCoating && !doThickness && !doBasePlate) {
-        alert("कृपया कम से कम एक Parameter Checkbox को टिक करें!");
-        return;
-    }
-
-    const mode = document.getElementById("mode").value;
-    const count = parseInt(document.getElementById("sampleCount").value);
-
-    let coatMin = doCoating ? (mode === "manual" ? parseFloat(document.getElementById("coatMin").value) : 60.0) : 0;
-    let coatMax = doCoating ? (mode === "manual" ? parseFloat(document.getElementById("coatMax").value) : 100.0) : 0;
-    let thickMin = doThickness ? (mode === "manual" ? parseFloat(document.getElementById("thickMin").value) : 1.95) : 0;
-    let thickMax = doThickness ? (mode === "manual" ? parseFloat(document.getElementById("thickMax").value) : 2.10) : 0;
-    let baseMin = doBasePlate ? (mode === "manual" ? parseFloat(document.getElementById("baseMin").value) : 3.0) : 0;
-    let baseMax = doBasePlate ? (mode === "manual" ? parseFloat(document.getElementById("baseMax").value) : 3.3) : 0;
-
-    categoryDataMapGlobal = {};
-
-    selectedItemsList.forEach(s => {
-        if (!categoryDataMapGlobal[s.cat]) categoryDataMapGlobal[s.cat] = [];
-
-        for (let i = 1; i <= count; i++) {
-            let rowObj = { "Sub-Item Name": s.item, "Sample #": `Sample ${i}` };
-
-            if (doCoating) {
-                let c1 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
-                let c2 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
-                let c3 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
-                let c4 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
-                let c5 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
-                rowObj["Coating 1 (μm)"] = c1; rowObj["Coating 2 (μm)"] = c2; rowObj["Coating 3 (μm)"] = c3; rowObj["Coating 4 (μm)"] = c4; rowObj["Coating 5 (μm)"] = c5;
-                rowObj["Coating Avg (μm)"] = +((c1 + c2 + c3 + c4 + c5) / 5).toFixed(1);
-            }
-            if (doThickness) {
-                rowObj["Thickness (mm)"] = +(Math.random() * (thickMax - thickMin) + thickMin).toFixed(3);
-            }
-            if (doBasePlate) {
-                rowObj["Base Plate Thickness (mm)"] = +(Math.random() * (baseMax - baseMin) + baseMin).toFixed(3);
-            }
-            rowObj["Status"] = "PASSED";
-
-            categoryDataMapGlobal[s.cat].push(rowObj);
-        }
-    });
-
-    renderGroupTabs();
-    document.getElementById("groupPreviewCard").style.display = "block";
-}
-
-function renderGroupTabs() {
-    const tabContainer = document.getElementById("groupTabButtons");
-    tabContainer.innerHTML = "";
-    const cats = Object.keys(categoryDataMapGlobal);
-    if (cats.length === 0) return;
-
-    cats.forEach((cat, idx) => {
-        const btn = document.createElement("button");
-        btn.className = `tab-btn ${idx === 0 ? 'active' : ''}`;
-        btn.innerText = `${cat} (${categoryDataMapGlobal[cat].length} Rows)`;
-        btn.onclick = () => showGroupPreviewTable(cat, btn);
-        tabContainer.appendChild(btn);
-    });
-
-    showGroupPreviewTable(cats[0]);
-}
-
-function showGroupPreviewTable(cat, activeBtn) {
-    if (activeBtn) {
-        document.querySelectorAll("#groupTabButtons .tab-btn").forEach(b => b.classList.remove("active"));
-        activeBtn.classList.add("active");
-    }
-
-    const rows = categoryDataMapGlobal[cat];
-    const head = document.getElementById("groupPreviewHead");
-    const body = document.getElementById("groupPreviewBody");
-
-    if (!rows || rows.length === 0) return;
-
-    const cols = Object.keys(rows[0]);
-    head.innerHTML = `<tr>${cols.map(c => `<th>${c}</th>`).join("")}</tr>`;
-    body.innerHTML = "";
-    rows.forEach(r => {
-        body.innerHTML += `<tr>${cols.map(c => `<td>${r[c]}</td>`).join("")}</tr>`;
-    });
-}
-
-function downloadGroupExcel() {
-    if (Object.keys(categoryDataMapGlobal).length === 0) return;
-    const wb = XLSX.utils.book_new();
-
-    for (let cat in categoryDataMapGlobal) {
-        if (categoryDataMapGlobal[cat].length > 0) {
-            const ws = XLSX.utils.json_to_sheet(categoryDataMapGlobal[cat]);
-            XLSX.utils.book_append_sheet(wb, ws, cat);
-        }
-    }
-
-    XLSX.writeFile(wb, "Consolidated_Quality_Inspection_Report.xlsx");
-}
-
-// --- GOOGLE SHEET SCRIPT SYNC LOGIC ---
-let driveSelectedItems = [];
-
-function onDriveCategoryChange() {
-    const cat = document.getElementById("driveCategory").value;
-    const searchInput = document.getElementById("driveSearchInput");
-    searchInput.value = "";
-    if (cat) {
-        searchInput.disabled = false;
-        searchInput.placeholder = "सब-आइटम ढूँढें...";
-    } else {
-        searchInput.disabled = true;
-        searchInput.placeholder = "पहले Category चुनें...";
-    }
-}
-
-function showDriveDropdown() {
-    if (!document.getElementById("driveCategory").value) return;
-    renderDriveAutocompleteList();
-    document.getElementById("driveAutocompleteList").style.display = "block";
-}
-
-function filterDriveItems() {
-    renderDriveAutocompleteList();
-    document.getElementById("driveAutocompleteList").style.display = "block";
-}
-
-function renderDriveAutocompleteList() {
-    const cat = document.getElementById("driveCategory").value;
-    const filter = document.getElementById("driveSearchInput").value.toUpperCase();
-    const listDiv = document.getElementById("driveAutocompleteList");
-    listDiv.innerHTML = "";
-
-    if (!cat || !masterData[cat]) return;
-
-    const available = masterData[cat].items.filter(it => !driveSelectedItems.includes(it));
-    const matched = available.filter(it => it.toUpperCase().includes(filter));
-
-    if (matched.length > 0) {
-        matched.forEach(it => {
-            const div = document.createElement("div");
-            div.className = "autocomplete-item";
-            div.innerText = it;
-            div.onclick = () => {
-                driveSelectedItems.push(it);
-                document.getElementById("driveSearchInput").value = "";
-                document.getElementById("driveAutocompleteList").style.display = "none";
-                renderDriveTags();
-            };
-            listDiv.appendChild(div);
-        });
-    } else {
-        listDiv.innerHTML = '<div class="autocomplete-item" style="color: #94a3b8;">कोई परिणाम नहीं मिला</div>';
-    }
-}
-
-function renderDriveTags() {
-    const container = document.getElementById("driveSelectedTags");
-    container.innerHTML = "";
-    if (driveSelectedItems.length === 0) {
-        container.innerHTML = '<span style="color: #94a3b8; font-size: 13px;">अभी कोई आइटम सेलेक्ट नहीं हुआ है।</span>';
-        return;
-    }
-    driveSelectedItems.forEach((item, idx) => {
-        container.innerHTML += `
-            <div class="item-tag">
-                ${item}
-                <span class="remove-btn" onclick="driveSelectedItems.splice(${idx},1); renderDriveTags();">✕</span>
-            </div>
-        `;
-    });
-}
-
-function syncWithGoogleSheetScript() {
+function downloadSelectedTabsExcel() {
     const url = document.getElementById("scriptUrl").value.trim();
-    if (!url) {
-        alert("कृपया Apps Script URL चेक करें!");
-        return;
-    }
-    if (driveSelectedItems.length === 0) {
-        alert("कृपया कम से कम एक Sub-Item/Tab सेलेक्ट करें!");
+    if (selectedTabsList.length === 0) {
+        alert("Kripya kam se kam ek tab select karein!");
         return;
     }
 
-    alert("Era Master Sheet से चुने हुए Tabs निकाले जा रहे हैं...");
+    alert("Excel file prepare ho rahi hai, download turant shuru hoga...");
 
     fetch(url, {
         method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items: driveSelectedItems })
+        body: JSON.stringify({ items: selectedTabsList })
     })
-    .then(() => {
-        alert("सफलतापूर्वक प्रक्रिया पूर्ण हुई! आपकी नई Sheet आपके Google Drive में निर्मित हो गई है।");
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success" && data.downloadUrl) {
+            // Direct browser download window open
+            window.location.href = data.downloadUrl;
+        } else {
+            alert("Download failed: " + JSON.stringify(data));
+        }
     })
     .catch(err => {
-        alert("Error: " + err);
+        alert("Error generating download: " + err);
     });
 }
 </script>
