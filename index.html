@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quality Inspection Portal PWA</title>
+    <title>Quality Inspection & Master Portal</title>
     <!-- PWA Manifest Link -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1e3a8a">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3135/3135715.png">
     <!-- SheetJS CDN for Excel Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -24,17 +25,15 @@
         .container { max-width: 1200px; margin: 0 auto; }
         .header { background: var(--primary); color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; }
         
-        /* Mode Switcher Buttons */
-        .mode-switcher { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; }
-        .mode-btn { padding: 12px 25px; font-size: 15px; font-weight: bold; border: 2px solid var(--primary); background: white; color: var(--primary); border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .mode-switcher { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; flex-wrap: wrap; }
+        .mode-btn { padding: 12px 20px; font-size: 14px; font-weight: bold; border: 2px solid var(--primary); background: white; color: var(--primary); border-radius: 8px; cursor: pointer; transition: 0.2s; }
         .mode-btn.active { background: var(--primary); color: white; }
 
         .card { background: var(--card-bg); padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 20px; border: 1px solid var(--border); }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; }
         label { font-weight: 600; margin-bottom: 5px; display: block; font-size: 13px; }
-        select, input[type="text"], input[type="number"] { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        select, input[type="text"], input[type="number"], input[type="url"] { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; font-size: 14px; }
         
-        /* Searchable Autocomplete Styles */
         .autocomplete-container { position: relative; }
         .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid var(--border); border-radius: 0 0 6px 6px; max-height: 180px; overflow-y: auto; z-index: 99; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: none; }
         .autocomplete-item { padding: 10px; cursor: pointer; font-size: 14px; border-bottom: 1px solid #f1f5f9; }
@@ -49,14 +48,12 @@
         .btn-success { background-color: var(--success); color: white; font-size: 15px; padding: 10px 20px; border-radius: 6px; }
         .btn-success:hover { background-color: #166534; }
         
-        /* Selected Items Box Styling */
         .selected-box { border: 2px dashed #94a3b8; padding: 15px; border-radius: 8px; background-color: #f1f5f9; margin-top: 10px; min-height: 60px; }
         .tag-container { display: flex; flex-wrap: wrap; gap: 8px; }
         .item-tag { background: #3b82f6; color: white; border-radius: 20px; padding: 6px 14px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
         .item-tag span.remove-btn { color: #fca5a5; cursor: pointer; font-weight: bold; font-size: 15px; }
         .item-tag span.remove-btn:hover { color: white; }
 
-        /* Preview Header & Table Styles */
         .preview-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid var(--border); }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
         th, td { border: 1px solid var(--border); padding: 8px; text-align: center; }
@@ -70,14 +67,15 @@
 
 <div class="container">
     <div class="header">
-        <h2>Quality Inspection Management Portal</h2>
-        <p style="margin: 5px 0 0 0; opacity: 0.9;">Hardcoded Master Database & PWA Mobile App</p>
+        <h2>Quality Inspection & Master Portal</h2>
+        <p style="margin: 5px 0 0 0; opacity: 0.9;">Single & Group Inspection Mode | Master Sheet Extractor</p>
     </div>
 
     <!-- Mode Switcher Buttons -->
     <div class="mode-switcher">
-        <button class="mode-btn active" id="btnSingleMode" onclick="switchMode('single')">📌 Single Item Generator</button>
-        <button class="mode-btn" id="btnGroupMode" onclick="switchMode('group')">📁 Group / Multiple Batch Portal</button>
+        <button class="mode-btn active" id="btnSingleMode" onclick="switchMode('single')">📌 Mode 1: Single Item Quick Generator</button>
+        <button class="mode-btn" id="btnGroupMode" onclick="switchMode('group')">📁 Mode 2: Group Multi-Tab Batch Portal</button>
+        <button class="mode-btn" id="btnDriveMode" onclick="switchMode('drive')">🌐 Mode 3: Era Master Sheet Tab Extractor</button>
     </div>
 
     <!-- ================= MODE 1: SINGLE ITEM GENERATOR ================= -->
@@ -151,7 +149,6 @@
             <button class="btn btn-primary" onclick="generateSingleReport()">⚡ Generate Report</button>
         </div>
 
-        <!-- Single Preview Display -->
         <div class="card" id="singlePreviewCard" style="display:none;">
             <div class="preview-header">
                 <h3 style="margin: 0;">Generated Inspection Report Display</h3>
@@ -166,7 +163,7 @@
         </div>
     </div>
 
-    <!-- ================= MODE 2: GROUP BATCH PORTAL ================= -->
+    <!-- ================= MODE 2: GROUP MULTI-TAB BATCH PORTAL ================= -->
     <div id="groupModeSection" style="display: none;">
         <div class="card">
             <h3>Step 1: Select Category & Search/Add Sub-Items</h3>
@@ -190,7 +187,6 @@
                 </div>
             </div>
 
-            <!-- Selected Items Box -->
             <label style="margin-top: 15px;">चुने हुए सब-आइटम्स (Selected Items List):</label>
             <div class="selected-box">
                 <div id="selectedTags" class="tag-container">
@@ -264,40 +260,78 @@
             </div>
         </div>
     </div>
+
+    <!-- ================= MODE 3: ERA MASTER SHEET TAB EXTRACTOR ================= -->
+    <div id="driveModeSection" style="display: none;">
+        <div class="card">
+            <h3>Era Master Sheet Tab Extractor</h3>
+            <p style="font-size: 13px; color: #64748b; margin-top: -5px;">Master Sheet में से चुने हुए Items के Tabs निकालकर एक Nayi Filtered Google Sheet तैयार करने के लिए।</p>
+            
+            <div class="form-grid">
+                <div style="grid-column: 1 / -1;">
+                    <label>Apps Script Web App URL (Configured)</label>
+                    <input type="url" id="scriptUrl" value="https://script.google.com/macros/s/AKfycbzyYED8CdF50QPg2A0YgYSQXbBvsSeTcHAcOQqBWqYRUa9K6HPy4-yzOo3eZYmDrpI5/exec" readonly style="background:#f1f5f9; color:#475569;">
+                </div>
+                <div>
+                    <label>1. Category चुनें</label>
+                    <select id="driveCategory" onchange="onDriveCategoryChange()">
+                        <option value="">-- Choose Category --</option>
+                        <option value="PURLINE">PURLINE</option>
+                        <option value="Rafter">Rafter</option>
+                        <option value="COLUMNS">COLUMNS</option>
+                        <option value="LA">LA (Angle / Cleat)</option>
+                        <option value="Jointer">Jointer</option>
+                    </select>
+                </div>
+                <div class="autocomplete-container">
+                    <label>2. Sub-Item / Tab Name Search</label>
+                    <input type="text" id="driveSearchInput" placeholder="पहले Category चुनें..." autocomplete="off" onfocus="showDriveDropdown()" oninput="filterDriveItems()" disabled>
+                    <div id="driveAutocompleteList" class="autocomplete-list"></div>
+                </div>
+            </div>
+
+            <label style="margin-top: 15px;">चुने हुए सब-आइटम्स (Selected Tabs to Extract):</label>
+            <div class="selected-box">
+                <div id="driveSelectedTags" class="tag-container">
+                    <span style="color: #94a3b8; font-size: 13px;">अभी कोई आइटम सेलेक्ट नहीं हुआ है।</span>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" style="background-color: #0284c7;" onclick="syncWithGoogleSheetScript()">🚀 Extract Selected Tabs to New Google Sheet</button>
+        </div>
+    </div>
 </div>
 
 <script>
-// Hardcoded Master Database (Never needs external sheets again)
+// Hardcoded Master Mapping matching Era Sample Master Sheet Tabs
 const masterData = {
+    "PURLINE": { items: ["P2L", "P3L", "P2M", "P3M", "P2H", "P3H", "PURL-0012", "PURL-0024", "PURL-0011", "PURL-0023", "PURL-0042", "PURL-0048"] },
+    "Rafter": { items: ["0101", "0102", "0103", "0201", "0202", "0203", "0311", "0312", "0313", "0321", "0322", "0323", "1202", "1203", "1204", "1312", "1313", "1322", "1323"] },
     "COLUMNS": { items: ["COLU-1620", "COLU-1820", "COLU-2611", "COLU-2612", "COLU-2613", "COLU-2621", "COLU-2622", "COLU-2623", "COLU-2811", "COLU-2812", "COLU-2813", "COLU-2821", "COLU-2822", "COLU-2823", "COLU-3611", "COLU-3612", "COLU-3613", "COLU-3621", "COLU-3622", "COLU-3623", "COLU-3811", "COLU-3812", "COLU-3813", "COLU-3821", "COLU-3822", "COLU-3823"] },
-    "PURLINE": { items: ["PURL-0012 (P2L)", "PURL-0011 (P2M)", "PURL-0042 (P2M)", "PURL-0024 (P3L)", "PURL-0023 (P3M)", "PURL-0022 (P3H)", "P2L", "P2M", "P2H", "P3L", "P3M", "P3H"] },
     "LA": { items: ["EALA-0032", "EALA-0046", "LA-0046"] },
-    "Rafter": { items: ["RAFT-0101", "RAFT-0102", "RAFT-0103", "RAFT-0201", "RAFT-0202", "RAFT-0203", "RAFT-0311", "RAFT-0312", "RAFT-0313", "RAFT-0321", "RAFT-0322", "RAFT-0323", "RAFT-1202", "RAFT-1203", "RAFT-1204", "RAFT-1312", "RAFT-1313", "RAFT-1322", "RAFT-1323"] },
     "Jointer": { items: ["RAFT-0331", "RAFT-0332", "RAFT-0333", "331", "332", "333"] }
 };
 
-// Register Service Worker for PWA & Auto-Update without data loss
+// Register Service Worker for PWA
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js')
-    .then(reg => console.log('Service Worker Registered'))
-    .catch(err => console.log('SW Registration Failed', err));
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log('SW Registered'))
+        .catch(err => console.log('SW Registration Failed', err));
+    });
 }
 
 function switchMode(mode) {
-    if (mode === 'single') {
-        document.getElementById('singleModeSection').style.display = 'block';
-        document.getElementById('groupModeSection').style.display = 'none';
-        document.getElementById('btnSingleMode').classList.add('active');
-        document.getElementById('btnGroupMode').classList.remove('active');
-    } else {
-        document.getElementById('singleModeSection').style.display = 'none';
-        document.getElementById('groupModeSection').style.display = 'block';
-        document.getElementById('btnSingleMode').classList.remove('active');
-        document.getElementById('btnGroupMode').classList.add('active');
-    }
+    document.getElementById('singleModeSection').style.display = (mode === 'single') ? 'block' : 'none';
+    document.getElementById('groupModeSection').style.display = (mode === 'group') ? 'block' : 'none';
+    document.getElementById('driveModeSection').style.display = (mode === 'drive') ? 'block' : 'none';
+    
+    document.getElementById('btnSingleMode').classList.toggle('active', mode === 'single');
+    document.getElementById('btnGroupMode').classList.toggle('active', mode === 'group');
+    document.getElementById('btnDriveMode').classList.toggle('active', mode === 'drive');
 }
 
-// --- SINGLE MODE LOGIC ---
+// --- SINGLE MODE SCRIPTS ---
 let singleGeneratedRows = [];
 let currentSingleItemName = "";
 let currentSingleCat = "";
@@ -408,7 +442,7 @@ function downloadSingleExcel() {
     XLSX.writeFile(wb, `Single_Inspection_${currentSingleItemName}.xlsx`);
 }
 
-// --- GROUP MODE LOGIC ---
+// --- GROUP MODE SCRIPTS ---
 let selectedItemsList = [];
 let categoryDataMapGlobal = {};
 
@@ -462,11 +496,7 @@ function renderAutocompleteList() {
             listDiv.appendChild(div);
         });
     } else {
-        const div = document.createElement("div");
-        div.className = "autocomplete-item";
-        div.style.color = "#94a3b8";
-        div.innerText = "कोई परिणाम नहीं मिला";
-        listDiv.appendChild(div);
+        listDiv.innerHTML = '<div class="autocomplete-item" style="color: #94a3b8;">कोई परिणाम नहीं मिला</div>';
     }
 }
 
@@ -611,6 +641,106 @@ function downloadGroupExcel() {
     }
 
     XLSX.writeFile(wb, "Consolidated_Quality_Inspection_Report.xlsx");
+}
+
+// --- GOOGLE SHEET SCRIPT SYNC LOGIC ---
+let driveSelectedItems = [];
+
+function onDriveCategoryChange() {
+    const cat = document.getElementById("driveCategory").value;
+    const searchInput = document.getElementById("driveSearchInput");
+    searchInput.value = "";
+    if (cat) {
+        searchInput.disabled = false;
+        searchInput.placeholder = "सब-आइटम ढूँढें...";
+    } else {
+        searchInput.disabled = true;
+        searchInput.placeholder = "पहले Category चुनें...";
+    }
+}
+
+function showDriveDropdown() {
+    if (!document.getElementById("driveCategory").value) return;
+    renderDriveAutocompleteList();
+    document.getElementById("driveAutocompleteList").style.display = "block";
+}
+
+function filterDriveItems() {
+    renderDriveAutocompleteList();
+    document.getElementById("driveAutocompleteList").style.display = "block";
+}
+
+function renderDriveAutocompleteList() {
+    const cat = document.getElementById("driveCategory").value;
+    const filter = document.getElementById("driveSearchInput").value.toUpperCase();
+    const listDiv = document.getElementById("driveAutocompleteList");
+    listDiv.innerHTML = "";
+
+    if (!cat || !masterData[cat]) return;
+
+    const available = masterData[cat].items.filter(it => !driveSelectedItems.includes(it));
+    const matched = available.filter(it => it.toUpperCase().includes(filter));
+
+    if (matched.length > 0) {
+        matched.forEach(it => {
+            const div = document.createElement("div");
+            div.className = "autocomplete-item";
+            div.innerText = it;
+            div.onclick = () => {
+                driveSelectedItems.push(it);
+                document.getElementById("driveSearchInput").value = "";
+                document.getElementById("driveAutocompleteList").style.display = "none";
+                renderDriveTags();
+            };
+            listDiv.appendChild(div);
+        });
+    } else {
+        listDiv.innerHTML = '<div class="autocomplete-item" style="color: #94a3b8;">कोई परिणाम नहीं मिला</div>';
+    }
+}
+
+function renderDriveTags() {
+    const container = document.getElementById("driveSelectedTags");
+    container.innerHTML = "";
+    if (driveSelectedItems.length === 0) {
+        container.innerHTML = '<span style="color: #94a3b8; font-size: 13px;">अभी कोई आइटम सेलेक्ट नहीं हुआ है।</span>';
+        return;
+    }
+    driveSelectedItems.forEach((item, idx) => {
+        container.innerHTML += `
+            <div class="item-tag">
+                ${item}
+                <span class="remove-btn" onclick="driveSelectedItems.splice(${idx},1); renderDriveTags();">✕</span>
+            </div>
+        `;
+    });
+}
+
+function syncWithGoogleSheetScript() {
+    const url = document.getElementById("scriptUrl").value.trim();
+    if (!url) {
+        alert("कृपया Apps Script URL चेक करें!");
+        return;
+    }
+    if (driveSelectedItems.length === 0) {
+        alert("कृपया कम से कम एक Sub-Item/Tab सेलेक्ट करें!");
+        return;
+    }
+
+    alert("Era Master Sheet से चुने हुए Tabs निकाले जा रहे हैं...");
+
+    fetch(url, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: driveSelectedItems })
+    })
+    .then(() => {
+        alert("सफलतापूर्वक प्रक्रिया पूर्ण हुई! आपकी नई Sheet आपके Google Drive में निर्मित हो गई है।");
+    })
+    .catch(err => {
+        alert("Error: " + err);
+    });
 }
 </script>
 
