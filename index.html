@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quality Inspection Portal</title>
+    <title>Quality Inspection Portal PWA</title>
+    <!-- PWA Manifest Link -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e3a8a">
     <!-- SheetJS CDN for Excel Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -68,7 +71,7 @@
 <div class="container">
     <div class="header">
         <h2>Quality Inspection Management Portal</h2>
-        <p style="margin: 5px 0 0 0; opacity: 0.9;">Single Item Mode &nbsp;|&nbsp; Group Batch Multi-Tab Mode</p>
+        <p style="margin: 5px 0 0 0; opacity: 0.9;">Hardcoded Master Database & PWA Mobile App</p>
     </div>
 
     <!-- Mode Switcher Buttons -->
@@ -102,7 +105,7 @@
                 <div>
                     <label>Generation Mode</label>
                     <select id="singleMode" onchange="toggleSingleMode()">
-                        <option value="auto">Auto Reference Mode (From Sheet)</option>
+                        <option value="auto">Auto Reference Mode (Hardcoded Standard)</option>
                         <option value="manual">Manual Custom Range Mode</option>
                     </select>
                 </div>
@@ -165,7 +168,6 @@
 
     <!-- ================= MODE 2: GROUP BATCH PORTAL ================= -->
     <div id="groupModeSection" style="display: none;">
-        <!-- Step 1: Select Category & Items with Search -->
         <div class="card">
             <h3>Step 1: Select Category & Search/Add Sub-Items</h3>
             <div class="form-grid">
@@ -197,7 +199,6 @@
             </div>
         </div>
 
-        <!-- Step 2: Parameters & Quantity Configuration -->
         <div class="card">
             <h3>Step 2: Select Parameters (Checkboxes) & Quantities</h3>
             
@@ -212,7 +213,7 @@
                 <div>
                     <label>Generation Mode</label>
                     <select id="mode" onchange="toggleMode()">
-                        <option value="auto">Auto Reference Mode (From Sheet)</option>
+                        <option value="auto">Auto Reference Mode (Hardcoded Standard)</option>
                         <option value="manual">Manual Custom Range Mode</option>
                     </select>
                 </div>
@@ -222,7 +223,6 @@
                 </div>
             </div>
 
-            <!-- Manual Custom Overrides -->
             <div id="manualPanel" class="form-grid" style="margin-top: 15px; display: none; background: #fff7ed; padding: 15px; border-radius: 6px; border: 1px solid #ffedd5;">
                 <div>
                     <label>Coating Min-Max (μm)</label>
@@ -250,7 +250,6 @@
             <button class="btn btn-primary" onclick="generateGroupReport()">⚡ Generate Report</button>
         </div>
 
-        <!-- Step 3: Display & Download Card -->
         <div class="card" id="groupPreviewCard" style="display:none;">
             <div class="preview-header">
                 <h3 style="margin: 0;">Generated Multi-Tab Inspection Report Display</h3>
@@ -268,6 +267,7 @@
 </div>
 
 <script>
+// Hardcoded Master Database (Never needs external sheets again)
 const masterData = {
     "COLUMNS": { items: ["COLU-1620", "COLU-1820", "COLU-2611", "COLU-2612", "COLU-2613", "COLU-2621", "COLU-2622", "COLU-2623", "COLU-2811", "COLU-2812", "COLU-2813", "COLU-2821", "COLU-2822", "COLU-2823", "COLU-3611", "COLU-3612", "COLU-3613", "COLU-3621", "COLU-3622", "COLU-3623", "COLU-3811", "COLU-3812", "COLU-3813", "COLU-3821", "COLU-3822", "COLU-3823"] },
     "PURLINE": { items: ["PURL-0012 (P2L)", "PURL-0011 (P2M)", "PURL-0042 (P2M)", "PURL-0024 (P3L)", "PURL-0023 (P3M)", "PURL-0022 (P3H)", "P2L", "P2M", "P2H", "P3L", "P3M", "P3H"] },
@@ -275,6 +275,13 @@ const masterData = {
     "Rafter": { items: ["RAFT-0101", "RAFT-0102", "RAFT-0103", "RAFT-0201", "RAFT-0202", "RAFT-0203", "RAFT-0311", "RAFT-0312", "RAFT-0313", "RAFT-0321", "RAFT-0322", "RAFT-0323", "RAFT-1202", "RAFT-1203", "RAFT-1204", "RAFT-1312", "RAFT-1313", "RAFT-1322", "RAFT-1323"] },
     "Jointer": { items: ["RAFT-0331", "RAFT-0332", "RAFT-0333", "331", "332", "333"] }
 };
+
+// Register Service Worker for PWA & Auto-Update without data loss
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js')
+    .then(reg => console.log('Service Worker Registered'))
+    .catch(err => console.log('SW Registration Failed', err));
+}
 
 function switchMode(mode) {
     if (mode === 'single') {
@@ -380,7 +387,6 @@ function generateSingleReport() {
         singleGeneratedRows.push(row);
     }
 
-    // Display Table
     const head = document.getElementById("singleHead");
     const body = document.getElementById("singleBody");
     const cols = Object.keys(singleGeneratedRows[0]);
