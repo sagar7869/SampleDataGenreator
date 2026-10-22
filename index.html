@@ -688,7 +688,7 @@ function downloadSelectedTabsExcel() {
         return;
     }
 
-    alert("Data fetch ho raha hai, turant Excel file download hogi...");
+    alert("Original format ke sath Excel file tayar ho rahi hai...");
 
     fetch(url, {
         method: "POST",
@@ -696,18 +696,9 @@ function downloadSelectedTabsExcel() {
     })
     .then(res => res.json())
     .then(response => {
-        if (response.status === "success" && response.data) {
-            // Browser me hi multi-tab Excel workbook create karein
-            const wb = XLSX.utils.book_new();
-            
-            for (let tabName in response.data) {
-                const ws = XLSX.utils.aoa_to_sheet(response.data[tabName]);
-                XLSX.utils.book_append_sheet(wb, ws, tabName);
-            }
-            
-            // Direct device me Excel file download karein
-            XLSX.writeFile(wb, "Era_Filtered_Inspection_Report.xlsx");
-            alert("Excel file successfully download ho gayi hai!");
+        if (response.status === "success" && response.downloadUrl) {
+            // Seedha original formatted Excel file download hogi
+            window.location.href = response.downloadUrl;
         } else {
             alert("Download failed: " + JSON.stringify(response));
         }
