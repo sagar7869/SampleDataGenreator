@@ -688,21 +688,33 @@ function downloadSelectedTabsExcel() {
         return;
     }
 
-    alert("Excel file prepare ho rahi hai, download turant shuru hoga...");
+    alert("Data fetch ho raha hai, turant Excel file download hogi...");
 
     fetch(url, {
         method: "POST",
         body: JSON.stringify({ items: selectedDriveTabs })
     })
     .then(res => res.json())
-    .then(data => {
-        if (data.status === "success" && data.downloadUrl) {
-            window.location.href = data.downloadUrl;
+    .then(response => {
+        if (response.status === "success" && response.data) {
+            // Browser me hi multi-tab Excel workbook create karein
+            const wb = XLSX.utils.book_new();
+            
+            for (let tabName in response.data) {
+                const ws = XLSX.utils.aoa_to_sheet(response.data[tabName]);
+                XLSX.utils.book_append_sheet(wb, ws, tabName);
+            }
+            
+            // Direct device me Excel file download karein
+            XLSX.writeFile(wb, "Era_Filtered_Inspection_Report.xlsx");
+            alert("Excel file successfully download ho gayi hai!");
         } else {
-            alert("Download failed: " + JSON.stringify(data));
+            alert("Download failed: " + JSON.stringify(response));
         }
     })
-    .catch(err => alert("Error: " + err));
+    .catch(err => {
+        alert("Error: " + err);
+    });
 }
 </script>
 
