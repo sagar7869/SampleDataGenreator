@@ -65,17 +65,17 @@
 <div class="container">
     <div class="header">
         <h2>Quality Inspection Management Portal</h2>
-        <p style="margin: 5px 0 0 0; opacity: 0.9;">Sample Generator Portal & Live Master Sheet Extractor</p>
+        <p style="margin: 5px 0 0 0; opacity: 0.9;">Sample Generator Portal & Python Backend Master Extractor</p>
     </div>
 
     <!-- Mode Switcher Buttons -->
     <div class="mode-switcher">
         <button class="mode-btn active" id="btnSingleMode" onclick="switchMode('single')">📌 Mode 1: Single Item Generator</button>
         <button class="mode-btn" id="btnGroupMode" onclick="switchMode('group')">📁 Mode 2: Group Multi-Tab Batch Portal</button>
-        <button class="mode-btn" id="btnDriveMode" onclick="switchMode('drive')">🌐 Mode 3: Master Sheet Live Extractor</button>
+        <button class="mode-btn" id="btnDriveMode" onclick="switchMode('drive')">🌐 Mode 3: Python Backend Master Extractor</button>
     </div>
 
-    <!-- ================= MODE 1: SINGLE ITEM GENERATOR (ORIGINAL INTACT) ================= -->
+    <!-- ================= MODE 1: SINGLE ITEM GENERATOR ================= -->
     <div id="singleModeSection">
         <div class="card">
             <h3>Single Item Inspection Setup</h3>
@@ -160,7 +160,7 @@
         </div>
     </div>
 
-    <!-- ================= MODE 2: GROUP BATCH PORTAL (ORIGINAL INTACT) ================= -->
+    <!-- ================= MODE 2: GROUP BATCH PORTAL ================= -->
     <div id="groupModeSection" style="display: none;">
         <div class="card">
             <h3>Step 1: Select Category & Search/Add Sub-Items</h3>
@@ -258,33 +258,34 @@
         </div>
     </div>
 
-    <!-- ================= MODE 3: LIVE MASTER TAB EXTRACTOR (NEW UPDATE) ================= -->
+    <!-- ================= MODE 3: PYTHON BACKEND MASTER EXTRACTOR ================= -->
     <div id="driveModeSection" style="display: none;">
         <div class="card">
-            <h3>Master Sheet Dynamic Tab Extractor</h3>
-            <p style="font-size: 13px; color: #64748b; margin-top: -5px;">Pehle "Fetch Live Tabs" dabaayein taaki Google Sheet ke exact Tabs list ho jayein.</p>
+            <h3>Python Backend Master Sheet Extractor</h3>
+            <p style="font-size: 13px; color: #64748b; margin-top: -5px;">Apne manpasand tabs select karein aur Hugging Face Python backend ke zariye direct download karein.</p>
 
-            <label>Apps Script Web App URL</label>
-            <input type="url" id="scriptUrl" value="https://script.google.com/macros/s/AKfycbzyYED8CdF50QPg2A0YgYSQXbBvsSeTcHAcOQqBWqYRUa9K6HPy4-yzOo3eZYmDrpI5/exec">
+            <label>Master Sheet ke Tabs (Comma separated ya list me likhein, jaise: Sheet1, COLUMNS, PURLINE)</label>
+            <input type="text" id="manualTabsInput" placeholder="Tabs ke naam likhein jaise: COLUMNS, Rafter">
             
-            <button class="btn btn-primary" onclick="fetchLiveTabs()">🔄 Fetch Live Sheet Tabs</button>
+            <button class="btn btn-primary" onclick="showTabSelectionBox()">➕ Tabs List Load Karein</button>
         </div>
 
-        <div class="card" id="tabSelectionCard" style="display: none;">
+        <div class="card" id="tabSelectionCard">
             <h3>Select Tabs to Extract</h3>
-            <label>Master Sheet ke maujood Live Tabs:</label>
-            <select id="tabDropdown" onchange="addSelectedTab()">
-                <option value="">-- Select Tab Name --</option>
-            </select>
+            <label>Jin tabs ko download karna hai unke naam daalkar add karein:</label>
+            <div style="display: flex; gap: 10px; margin-top: 5px;">
+                <input type="text" id="newTabInput" placeholder="Jaise: COLUMNS">
+                <button class="btn btn-success" style="padding: 10px 20px; white-space: nowrap;" onclick="addManualTab()">Add Tab</button>
+            </div>
 
             <label style="margin-top: 15px;">Selected Tabs (Download hone waale):</label>
             <div class="selected-box">
                 <div id="selectedTabsTags" class="tag-container">
-                    <span style="color: #94a3b8; font-size: 13px;">Koi tab select nahi hua hai.</span>
+                    <span style="color: #94a3b8; font-size: 13px;">Koi tab select nahi hua hai. Niche ya upar se add karein.</span>
                 </div>
             </div>
 
-            <button class="btn btn-success" style="width: 100%; margin-top: 15px; font-size: 16px;" onclick="downloadSelectedTabsExcel()">📥 Download Selected Tabs as Excel (.xlsx)</button>
+            <button class="btn btn-success" style="width: 100%; margin-top: 15px; font-size: 16px;" onclick="downloadSelectedTabsExcel()">📥 Download Selected Tabs via Python Backend (.xlsx)</button>
         </div>
     </div>
 </div>
@@ -611,116 +612,45 @@ function downloadGroupExcel() {
     XLSX.writeFile(wb, "Consolidated_Quality_Inspection_Report.xlsx");
 }
 
-// ================= MODE 3 LIVE EXTRACTION LOGIC (UPDATED) =================
-let availableDriveTabs = [];
+// ================= MODE 3 PYTHON BACKEND EXTRACTION LOGIC =================
 let selectedDriveTabs = [];
-let liveTabsRequestTimer = null;
 
-function buildAppsScriptUrl(params) {
-    const baseUrl = document.getElementById("scriptUrl").value.trim();
-    if (!baseUrl) throw new Error("Please enter Apps Script Web App URL.");
-    const separator = baseUrl.includes("?") ? "&" : "?";
-    return baseUrl + separator + new URLSearchParams(params).toString();
-}
-
-function fetchLiveTabs() {
-    const baseUrl = document.getElementById("scriptUrl").value.trim();
-    if (!baseUrl) {
-        alert("Please enter Apps Script URL");
+function showTabSelectionBox() {
+    const inputVal = document.getElementById("manualTabsInput").value.trim();
+    if (!inputVal) {
+        alert("Kripya kam se kam ek tab ka naam daalein!");
         return;
     }
-
-    // JSONP is used here because a normal fetch() request can be blocked by
-    // Google Apps Script cross-origin (CORS) restrictions.
-    const callbackName = "qcTabsCallback_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
-    const script = document.createElement("script");
-    let finished = false;
-
-    const cleanup = () => {
-        if (liveTabsRequestTimer) {
-            clearTimeout(liveTabsRequestTimer);
-            liveTabsRequestTimer = null;
-        }
-        try { delete window[callbackName]; } catch (e) { window[callbackName] = undefined; }
-        if (script.parentNode) script.parentNode.removeChild(script);
-    };
-
-    window[callbackName] = function(data) {
-        if (finished) return;
-        finished = true;
-        cleanup();
-
-        if (data && data.status === "success" && Array.isArray(data.tabs)) {
-            availableDriveTabs = data.tabs;
-            selectedDriveTabs = selectedDriveTabs.filter(tab => availableDriveTabs.includes(tab));
-            populateTabDropdown();
-            renderDriveTabTags();
-            document.getElementById("tabSelectionCard").style.display = "block";
-            alert("Success! " + data.tabs.length + " Tabs mil gaye hain.");
-        } else {
-            alert("Tabs fetch nahi hue. Apps Script mein action=tabs aur JSONP callback support wala updated code deploy karein.\n\n" + JSON.stringify(data || {}));
-        }
-    };
-
-    script.onerror = function() {
-        if (finished) return;
-        finished = true;
-        cleanup();
-        alert("Apps Script se response nahi mila. URL check karein aur updated script ko Deploy > Manage deployments > Edit > New version ke saath deploy karein.");
-    };
-
-    try {
-        script.src = buildAppsScriptUrl({ action: "tabs", callback: callbackName });
-    } catch (e) {
-        cleanup();
-        alert(e.message || "Invalid Apps Script URL.");
-        return;
-    }
-
-    liveTabsRequestTimer = setTimeout(() => {
-        if (finished) return;
-        finished = true;
-        cleanup();
-        alert("Request timeout. Apps Script URL aur deployment access check karein.");
-    }, 20000);
-
-    document.body.appendChild(script);
-}
-
-function populateTabDropdown() {
-    const dropdown = document.getElementById("tabDropdown");
-    dropdown.innerHTML = '<option value="">-- Select Tab Name --</option>';
-    availableDriveTabs.forEach(tab => {
+    const tabs = inputVal.split(',').map(t => t.trim()).filter(t => t.length > 0);
+    tabs.forEach(tab => {
         if (!selectedDriveTabs.includes(tab)) {
-            const opt = document.createElement("option");
-            opt.value = tab;
-            opt.innerText = tab;
-            dropdown.appendChild(opt);
+            selectedDriveTabs.push(tab);
         }
     });
+    document.getElementById("manualTabsInput").value = "";
+    renderDriveTabTags();
 }
 
-function addSelectedTab() {
-    const dropdown = document.getElementById("tabDropdown");
-    const val = dropdown.value;
+function addManualTab() {
+    const input = document.getElementById("newTabInput");
+    const val = input.value.trim();
     if (val && !selectedDriveTabs.includes(val)) {
         selectedDriveTabs.push(val);
+        input.value = "";
         renderDriveTabTags();
-        populateTabDropdown();
     }
 }
 
 function removeDriveTab(idx) {
     selectedDriveTabs.splice(idx, 1);
     renderDriveTabTags();
-    populateTabDropdown();
 }
 
 function renderDriveTabTags() {
     const container = document.getElementById("selectedTabsTags");
     container.innerHTML = "";
     if (selectedDriveTabs.length === 0) {
-        container.innerHTML = '<span style="color: #94a3b8; font-size: 13px;">Koi tab select nahi hua hai.</span>';
+        container.innerHTML = '<span style="color: #94a3b8; font-size: 13px;">Koi tab select nahi hua hai. Niche ya upar se add karein.</span>';
         return;
     }
     selectedDriveTabs.forEach((tab, idx) => {
@@ -748,24 +678,35 @@ function downloadSelectedTabsExcel() {
         return;
     }
 
-    const baseUrl = document.getElementById("scriptUrl").value.trim();
-    if (!baseUrl) {
-        alert("Please enter Apps Script URL");
-        return;
-    }
+    alert("Python backend par Excel file taiyar ho rahi hai, kripya intezaar karein...");
 
-    try {
-        // This matches the updated Apps Script GET endpoint.
-        // The server prepares a temporary spreadsheet and redirects to XLSX export.
-        const downloadUrl = buildAppsScriptUrl({
-            action: "download",
-            items: JSON.stringify(selectedDriveTabs)
-        });
-        alert("Selected tabs ki Excel file taiyar ho rahi hai. Download shuru hone mein kuch seconds lag sakte hain.");
-        window.location.assign(downloadUrl);
-    } catch (e) {
-        alert(e.message || "Download request start nahi ho saki.");
-    }
-}</script>
+    // Hugging Face Python Backend URL
+    fetch("https://sagarherole-era-excel-api.static.hf.space/download-excel", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ items: selectedDriveTabs })
+    })
+    .then(response => {
+        if (!response.ok) throw new Error("Server generation failed");
+        return response.blob();
+    })
+    .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = "Era_Inspection_Report.xlsx";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+    })
+    .catch(err => {
+        alert("Download failed: " + err.message);
+    });
+}
+</script>
 
 </body>
+</html>
