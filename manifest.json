@@ -1,12 +1,17 @@
 {
-  "id": "/quality-inspection-portal-v2/",
-  "name": "Quality Inspection Portal App",
-  "short_name": "QualityApp",
+  "id": "/",
+  "name": "Quality Inspection Portal",
+  "short_name": "QIP Portal",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f8fafc",
   "theme_color": "#1e3a8a",
   "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
     {
       "src": "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
       "sizes": "512x512",
