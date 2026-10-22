@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quality Inspection Management Portal - Reference Strict Mode</title>
+    <title>Quality Inspection Management Portal - Exact Sequence & Specs</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1e3a8a">
     
@@ -70,7 +70,7 @@
 <div class="container">
     <div class="header">
         <h2>Quality Inspection Management Portal</h2>
-        <p style="margin: 5px 0 0 0; opacity: 0.9;">Strict Reference-Bound Generator Portal</p>
+        <p style="margin: 5px 0 0 0; opacity: 0.9;">Exact Sub-Item Sequence & Reference-Bound Standards</p>
     </div>
 
     <div class="mode-switcher">
@@ -128,7 +128,7 @@
                     <label>Coating Min - Max (μm)</label>
                     <div style="display: flex; gap: 5px;">
                         <input type="number" id="sCoatMin" value="22.0" disabled>
-                        <input type="number" id="sCoatMax" value="26.0" disabled>
+                        <input type="number" id="sCoatMax" value="28.0" disabled>
                     </div>
                 </div>
                 <div>
@@ -231,7 +231,7 @@
                     <label>Coating Min-Max (μm)</label>
                     <div style="display: flex; gap: 5px;">
                         <input type="number" id="coatMin" value="22.0">
-                        <input type="number" id="coatMax" value="26.0">
+                        <input type="number" id="coatMax" value="28.0">
                     </div>
                 </div>
                 <div>
@@ -314,9 +314,9 @@
 </div>
 
 <script>
-// STRICT REFERENCE-BOUND SPECS (Values tightly locked around Reference Standards)
+// EXACT PRECISE SUB-ITEM SPECS & STRICT REFERENCE-BOUND RANGES
 const subItemSpecs = {
-    // PURLINE (Ref: 1.0mm for L, 1.2mm for M, 1.6mm for H)
+    // PURLINE
     "P2L": { coatMin: 22.0, coatMax: 28.0, thickMin: 0.980, thickMax: 1.020, hasBasePlate: false },
     "P2M": { coatMin: 22.0, coatMax: 28.0, thickMin: 1.180, thickMax: 1.220, hasBasePlate: false },
     "P2H": { coatMin: 22.0, coatMax: 26.0, thickMin: 1.580, thickMax: 1.620, hasBasePlate: false },
@@ -324,12 +324,13 @@ const subItemSpecs = {
     "P3M": { coatMin: 22.0, coatMax: 28.0, thickMin: 1.180, thickMax: 1.220, hasBasePlate: false },
     "P3H": { coatMin: 22.0, coatMax: 26.0, thickMin: 1.580, thickMax: 1.620, hasBasePlate: false },
 
-    // COLUMNS (Ref: 2.0mm for 2x, 3.0mm for 3x)
+    // COLUMNS (Exact Sequence as per master list)
     "COLU-1620": { coatMin: 65.0, coatMax: 85.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
     "COLU-1820": { coatMin: 65.0, coatMax: 85.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
     "COLU-2611": { coatMin: 65.0, coatMax: 85.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
     "COLU-2612": { coatMin: 65.0, coatMax: 85.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
     "COLU-2613": { coatMin: 65.0, coatMax: 85.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
+    "COLU-2621": { coatMin: 65.0, coatMax: 85.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
     "COLU-2622": { coatMin: 65.0, coatMax: 85.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
     "COLU-2623": { coatMin: 65.0, coatMax: 85.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
     "COLU-2811": { coatMin: 65.0, coatMax: 85.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
@@ -352,9 +353,19 @@ const subItemSpecs = {
     "COLU-3822": { coatMin: 65.0, coatMax: 85.0, thickMin: 2.950, thickMax: 3.050, hasBasePlate: false },
     "COLU-3823": { coatMin: 65.0, coatMax: 85.0, thickMin: 2.950, thickMax: 3.050, hasBasePlate: false },
 
-    // RAFTER (Ref: 1.5mm or 2.0mm)
+    // RAFTER (Exact Sequence)
+    "RAFT-0101": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.480, thickMax: 1.520, hasBasePlate: false },
+    "RAFT-0102": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.480, thickMax: 1.520, hasBasePlate: false },
     "RAFT-0103": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.480, thickMax: 1.520, hasBasePlate: false },
+    "RAFT-0201": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.180, thickMax: 1.220, hasBasePlate: false },
+    "RAFT-0202": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.180, thickMax: 1.220, hasBasePlate: false },
+    "RAFT-0203": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
+    "RAFT-0311": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.480, thickMax: 1.520, hasBasePlate: false },
+    "RAFT-0312": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
+    "RAFT-0313": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
+    "RAFT-0321": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.480, thickMax: 1.520, hasBasePlate: false },
     "RAFT-0322": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
+    "RAFT-0323": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
     "RAFT-1202": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.480, thickMax: 1.520, hasBasePlate: false },
     "RAFT-1203": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
     "RAFT-1204": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
@@ -362,19 +373,16 @@ const subItemSpecs = {
     "RAFT-1313": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
     "RAFT-1322": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
     "RAFT-1323": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "RAFT-201":  { coatMin: 18.0, coatMax: 22.0, thickMin: 1.180, thickMax: 1.220, hasBasePlate: false },
-    "RAFT-311":  { coatMin: 18.0, coatMax: 22.0, thickMin: 1.480, thickMax: 1.520, hasBasePlate: false },
-    "RAFT-312":  { coatMin: 18.0, coatMax: 22.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "RAFT-321":  { coatMin: 18.0, coatMax: 22.0, thickMin: 1.480, thickMax: 1.520, hasBasePlate: false },
-    "RAFT-322":  { coatMin: 18.0, coatMax: 22.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "RAFT-323":  { coatMin: 18.0, coatMax: 22.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
 
-    // JOINTER (Ref: 2.0mm)
+    // JOINTER (Exact Sequence)
     "331": { coatMin: 70.0, coatMax: 90.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
     "332": { coatMin: 70.0, coatMax: 90.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
     "333": { coatMin: 70.0, coatMax: 90.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
+    "RAFT-0331": { coatMin: 70.0, coatMax: 90.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
+    "RAFT-0332": { coatMin: 70.0, coatMax: 90.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
+    "RAFT-0333": { coatMin: 70.0, coatMax: 90.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
 
-    // LA (Ref: 2.0mm / 3.0mm with Base Plate)
+    // LA (Exact Sequence)
     "LA-0032": { coatMin: 70.0, coatMax: 90.0, thickMin: 2.950, thickMax: 3.050, baseMin: 2.950, baseMax: 3.050, hasBasePlate: true },
     "LA-0046": { coatMin: 70.0, coatMax: 90.0, thickMin: 2.050, thickMax: 2.150, baseMin: 3.100, baseMax: 3.200, hasBasePlate: true }
 };
@@ -382,9 +390,9 @@ const subItemSpecs = {
 const categoryRefSpecs = {
     "PURLINE": { items: ["P2L", "P2M", "P2H", "P3L", "P3M", "P3H"], hasBasePlate: false },
     "LA": { items: ["LA-0032", "LA-0046"], hasBasePlate: true },
-    "COLUMNS": { items: ["COLU-1620", "COLU-1820", "COLU-2611", "COLU-2612", "COLU-2613", "COLU-2622", "COLU-2623", "COLU-2811", "COLU-2812", "COLU-2813", "COLU-2821", "COLU-2822", "COLU-2823", "COLU-2824", "COLU-3611", "COLU-3612", "COLU-3613", "COLU-3621", "COLU-3622", "COLU-3623", "COLU-3811", "COLU-3812", "COLU-3813", "COLU-3821", "COLU-3822", "COLU-3823"], hasBasePlate: false },
-    "Rafter": { items: ["RAFT-0103", "RAFT-0322", "RAFT-1202", "RAFT-1203", "RAFT-1204", "RAFT-1312", "RAFT-1313", "RAFT-1322", "RAFT-1323", "RAFT-201", "RAFT-311", "RAFT-312", "RAFT-321", "RAFT-322", "RAFT-323"], hasBasePlate: false },
-    "Jointer": { items: ["331", "332", "333"], hasBasePlate: false }
+    "COLUMNS": { items: ["COLU-1620", "COLU-1820", "COLU-2611", "COLU-2612", "COLU-2613", "COLU-2621", "COLU-2622", "COLU-2623", "COLU-2811", "COLU-2812", "COLU-2813", "COLU-2821", "COLU-2822", "COLU-2823", "COLU-2824", "COLU-3611", "COLU-3612", "COLU-3613", "COLU-3621", "COLU-3622", "COLU-3623", "COLU-3811", "COLU-3812", "COLU-3813", "COLU-3821", "COLU-3822", "COLU-3823"], hasBasePlate: false },
+    "Rafter": { items: ["RAFT-0101", "RAFT-0102", "RAFT-0103", "RAFT-0201", "RAFT-0202", "RAFT-0203", "RAFT-0311", "RAFT-0312", "RAFT-0313", "RAFT-0321", "RAFT-0322", "RAFT-0323", "RAFT-1202", "RAFT-1203", "RAFT-1204", "RAFT-1312", "RAFT-1313", "RAFT-1322", "RAFT-1323"], hasBasePlate: false },
+    "Jointer": { items: ["331", "332", "333", "RAFT-0331", "RAFT-0332", "RAFT-0333"], hasBasePlate: false }
 };
 
 function switchMode(mode) {
@@ -694,7 +702,7 @@ function generateGroupReport() {
     selectedItemsList.forEach(s => {
         if (!categoryDataMapGlobal[s.cat]) categoryDataMapGlobal[s.cat] = [];
 
-        const spec = subItemSpecs[s.item] || { coatMin: 22.0, coatMax: 28.0, thickMin: 0.980, thickMax: 1.020, hasBasePlate: false };
+        const spec = subItemSpecs[s.item] || { coatMin: 22.0, coatMax: 28.0, thickMin: 1.0, thickMax: 1.5, hasBasePlate: false };
         const hasBP = spec.hasBasePlate;
         const doBasePlate = document.getElementById("chkBasePlate").checked && hasBP;
 
