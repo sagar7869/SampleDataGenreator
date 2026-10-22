@@ -682,47 +682,28 @@ function renderDriveTabTags() {
 }
 
 function downloadSelectedTabsExcel() {
-    const url = document.getElementById("scriptUrl").value.trim();
     if (selectedDriveTabs.length === 0) {
         alert("Kripya kam se kam ek tab select karein!");
         return;
     }
 
-    alert("Original formatting ke sath Excel file generate ho rahi hai, kripya prateeksha karein...");
+    // Aapki Google Sheet Ki Main ID
+    const sheetId = "1J9WXMfNwVLTQIp0avtglFzpzHmHNqcLvNz0mxscrh2U";
 
-    fetch(url, {
-        method: "POST",
-        body: JSON.stringify({ items: selectedDriveTabs })
-    })
-    .then(res => res.json())
-    .then(response => {
-        if (response.status === "success" && response.fileData) {
-            // Convert Base64 data directly into downloadable Blob (.xlsx)
-            const byteCharacters = atob(response.fileData);
-            const byteNumbers = new Array(byteCharacters.length);
-            for (let i = 0; i < byteCharacters.length; i++) {
-                byteNumbers[i] = byteCharacters.charCodeAt(i);
-            }
-            const byteArray = new Uint8Array(byteNumbers);
-            const blob = new Blob([byteArray], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    // Direct Google Excel Export URL
+    const downloadUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=xlsx`;
 
-            // Trigger direct download without drive login/permission issues
-            const link = document.createElement('a');
-            link.href = window.URL.createObjectURL(blob);
-            link.download = response.fileName || "Era_Inspection_Report.xlsx";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+    // Direct browser download trigger
+    const a = document.createElement('a');
+    a.href = downloadUrl;
+    a.download = 'Era_Inspection_Report.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
 
-            alert("Exact original formatted Excel file safaltapurvak download ho gayi hai!");
-        } else {
-            alert("Download failed: " + JSON.stringify(response));
-        }
-    })
-    .catch(err => {
-        alert("Error: " + err);
-    });
-}</script>
+    alert("Excel file exact original format ke saath download ho rahi hai!");
+}
+</script>
 
 </body>
 </html>
