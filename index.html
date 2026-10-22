@@ -61,6 +61,10 @@
         tr:nth-child(even) { background-color: #f8fafc; }
         .tab-btn { background: #e2e8f0; color: #334155; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px 6px 0 0; margin-right: 5px; cursor: pointer; font-weight: bold; }
         .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        
+        .status-badge { display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .status-loading { background: #fef08a; color: #854d0e; }
+        .status-ready { background: #dcfce7; color: #166534; }
     </style>
 </head>
 <body>
@@ -68,14 +72,14 @@
 <div class="container">
     <div class="header">
         <h2>Quality Inspection Management Portal</h2>
-        <p style="margin: 5px 0 0 0; opacity: 0.9;">Sample Generator Portal & Excel Local Extractor</p>
+        <p style="margin: 5px 0 0 0; opacity: 0.9;">Sample Generator Portal & Auto Sync Master Extractor</p>
     </div>
 
     <!-- Mode Switcher Buttons -->
     <div class="mode-switcher">
         <button class="mode-btn active" id="btnSingleMode" onclick="switchMode('single')">📌 Mode 1: Single Item Generator</button>
         <button class="mode-btn" id="btnGroupMode" onclick="switchMode('group')">📁 Mode 2: Group Multi-Tab Batch Portal</button>
-        <button class="mode-btn" id="btnDriveMode" onclick="switchMode('drive')">📂 Mode 3: Local Excel File Extractor</button>
+        <button class="mode-btn" id="btnDriveMode" onclick="switchMode('drive')">⚡ Mode 3: Automatic Master Sheet Extractor</button>
     </div>
 
     <!-- ================= MODE 1: SINGLE ITEM GENERATOR ================= -->
@@ -261,19 +265,24 @@
         </div>
     </div>
 
-    <!-- ================= MODE 3: EXCEL FILE UPLOAD & EXACT TAB EXTRACTOR ================= -->
+    <!-- ================= MODE 3: AUTOMATIC MASTER EXTRACTOR ================= -->
     <div id="driveModeSection" style="display: none;">
         <div class="card">
-            <h3>Excel File Upload & Exact Format Extractor</h3>
-            <p style="font-size: 13px; color: #64748b; margin-top: -5px;">Apni Master Excel File select karein, tab select karein aur exact design/formatting ke saath export karein.</p>
-
-            <label>Master Excel File Choose Karein (.xlsx / .xls)</label>
-            <input type="file" id="excelFileInput" accept=".xlsx, .xls" onchange="loadUploadedExcelFile()">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3>Automatic Master Data Sync</h3>
+                <span id="syncStatusBadge" class="status-badge status-loading">⏳ Loading Master Excel...</span>
+            </div>
+            <p style="font-size: 13px; color: #64748b; margin-top: 5px;">Server se Master Excel automatic sync ho chuki hai. Niche se Tabs select karke download karein.</p>
+            
+            <details style="margin-top: 10px; font-size: 12px; color: #475569;">
+                <summary style="cursor: pointer; font-weight: 600;">Optional: Custom local file upload karna chahte hain?</summary>
+                <input type="file" id="excelFileInput" accept=".xlsx, .xls" style="margin-top: 10px;" onchange="loadUploadedExcelFile()">
+            </details>
         </div>
 
-        <div class="card" id="uploadedTabSelectionCard" style="display: none;">
+        <div class="card" id="uploadedTabSelectionCard">
             <h3>Select Tabs to Extract</h3>
-            <label>File me se Tab Select karein:</label>
+            <label>Master Data ke maujood Tabs:</label>
             <select id="uploadedTabDropdown" onchange="addUploadedTab()">
                 <option value="">-- Choose Tab --</option>
             </select>
@@ -624,9 +633,44 @@ function downloadGroupExcel() {
     });
 }
 
-// ================= MODE 3 EXCELJS LOCAL EXTRACTOR LOGIC =================
+// ================= MODE 3 AUTO-SYNC EXCELJS EXTRACTOR LOGIC =================
 let loadedSourceWorkbook = null;
 let selectedUploadedTabs = [];
+
+// App load hote hi Automatic GitHub hosted Master_Data.xlsx fetch karega
+window.addEventListener('DOMContentLoaded', () => {
+    autoFetchMasterExcel();
+});
+
+function autoFetchMasterExcel() {
+    const badge = document.getElementById("syncStatusBadge");
+    badge.className = "status-badge status-loading";
+    badge.innerText = "⏳ Syncing Master Excel...";
+
+    // Relative path to GitHub repo hosted file
+    fetch('./Master_Data.xlsx')
+        .then(res => {
+            if (!res.ok) throw new Error("Master_Data.xlsx file repository me nahi mili.");
+            return res.arrayBuffer();
+        })
+        .then(buffer => {
+            loadedSourceWorkbook = new ExcelJS.Workbook();
+            return loadedSourceWorkbook.xlsx.load(buffer);
+        })
+        .then(() => {
+            selectedUploadedTabs = [];
+            populateUploadedTabDropdown();
+            renderUploadedTabTags();
+            badge.className = "status-badge status-ready";
+            badge.innerText = "✅ Master Excel Synced & Ready";
+        })
+        .catch(err => {
+            badge.className = "status-badge";
+            badge.style.background = "#fee2e2";
+            badge.style.color = "#991b1b";
+            badge.innerText = "⚠️ Manual File Upload Required";
+        });
+}
 
 function loadUploadedExcelFile() {
     const fileInput = document.getElementById('excelFileInput');
@@ -643,7 +687,9 @@ function loadUploadedExcelFile() {
             selectedUploadedTabs = [];
             populateUploadedTabDropdown();
             renderUploadedTabTags();
-            document.getElementById('uploadedTabSelectionCard').style.display = 'block';
+            const badge = document.getElementById("syncStatusBadge");
+            badge.className = "status-badge status-ready";
+            badge.innerText = "✅ Custom File Loaded";
             alert(`File Read Success! ${loadedSourceWorkbook.worksheets.length} Tabs mil gaye.`);
         }).catch(err => {
             alert("Excel file load karne me error aaya: " + err.message);
@@ -657,6 +703,8 @@ function populateUploadedTabDropdown() {
     const dropdown = document.getElementById("uploadedTabDropdown");
     dropdown.innerHTML = '<option value="">-- Choose Tab --</option>';
     
+    if (!loadedSourceWorkbook) return;
+
     loadedSourceWorkbook.worksheets.forEach(ws => {
         if (!selectedUploadedTabs.includes(ws.name)) {
             const opt = document.createElement("option");
@@ -711,7 +759,7 @@ function renderUploadedTabTags() {
 
 function exportSelectedUploadedTabs() {
     if (!loadedSourceWorkbook) {
-        alert("Pehle Excel file upload karein!");
+        alert("Master Excel Sync nahi hua hai. Kripya file check karein ya manual upload karein.");
         return;
     }
     if (selectedUploadedTabs.length === 0) {
@@ -739,11 +787,11 @@ function exportSelectedUploadedTabs() {
             const newRow = newSheet.getRow(rowIndex);
             if (row.height) newRow.height = row.height;
 
-            row.eachCell({ includeEmpty: true }, (cell, colIndex) => {
+            row.eachCell({ includeEmpty: true }, (colIndex) => {
+                const cell = row.getCell(colIndex);
                 const newCell = newRow.getCell(colIndex);
                 newCell.value = cell.value;
 
-                // Copy formatting details
                 if (cell.style) {
                     newCell.style = JSON.parse(JSON.stringify(cell.style));
                 }
