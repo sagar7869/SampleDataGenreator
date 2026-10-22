@@ -688,7 +688,7 @@ function downloadSelectedTabsExcel() {
         return;
     }
 
-    alert("Selected tabs original formatting ke sath taiyar ho rahe hain...");
+    alert("Original formatting ke sath Excel file taiyar ho rahi hai...");
 
     fetch(url, {
         method: "POST",
@@ -696,23 +696,10 @@ function downloadSelectedTabsExcel() {
     })
     .then(res => res.json())
     .then(response => {
-        if (response.status === "success" && response.fileData) {
-            const byteCharacters = atob(response.fileData);
-            const byteNumbers = new Array(byteCharacters.length);
-            for (let i = 0; i < byteCharacters.length; i++) {
-                byteNumbers[i] = byteCharacters.charCodeAt(i);
-            }
-            const byteArray = new Uint8Array(byteNumbers);
-            const blob = new Blob([byteArray], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-
-            const link = document.createElement('a');
-            link.href = window.URL.createObjectURL(blob);
-            link.download = response.fileName || "Era_Filtered_Inspection_Report.xlsx";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            alert("Aapke select kiye hue tabs ki Excel file download ho gayi hai!");
+        if (response.status === "success" && response.downloadUrl) {
+            // Seedha browser se formatted Excel file download karein
+            window.location.href = response.downloadUrl;
+            alert("Excel file safaltapurvak download ho gayi hai!");
         } else {
             alert("Download failed: " + JSON.stringify(response));
         }
