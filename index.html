@@ -261,18 +261,13 @@
     <!-- ================= MODE 3: PYTHON BACKEND MASTER EXTRACTOR ================= -->
     <div id="driveModeSection" style="display: none;">
         <div class="card">
-            <h3>Python Backend Master Sheet Extractor</h3>
-            <p style="font-size: 13px; color: #64748b; margin-top: -5px;">Apne manpasand tabs select karein aur Hugging Face Python backend ke zariye direct download karein.</p>
+            <h3>Google Sheet Link & Tab Extractor</h3>
+            <p style="font-size: 13px; color: #64748b; margin-top: -5px;">Yahan apni Google Sheet ka link paste karein aur download hone wale tabs ke naam daalein.</p>
 
-            <label>Master Sheet ke Tabs (Comma separated ya list me likhein, jaise: Sheet1, COLUMNS, PURLINE)</label>
-            <input type="text" id="manualTabsInput" placeholder="Tabs ke naam likhein jaise: COLUMNS, Rafter">
-            
-            <button class="btn btn-primary" onclick="showTabSelectionBox()">➕ Tabs List Load Karein</button>
-        </div>
+            <label>Google Sheet Link / URL</label>
+            <input type="url" id="googleSheetUrl" value="https://docs.google.com/spreadsheets/d/1J9WXMfNwVLTQIp0avtglFzpzHmHNqcLvNz0mxscrh2U/edit" placeholder="https://docs.google.com/spreadsheets/d/...">
 
-        <div class="card" id="tabSelectionCard">
-            <h3>Select Tabs to Extract</h3>
-            <label>Jin tabs ko download karna hai unke naam daalkar add karein:</label>
+            <label style="margin-top: 15px;">Tabs ke naam add karein (Jaise: COLUMNS, Rafter)</label>
             <div style="display: flex; gap: 10px; margin-top: 5px;">
                 <input type="text" id="newTabInput" placeholder="Jaise: COLUMNS">
                 <button class="btn btn-success" style="padding: 10px 20px; white-space: nowrap;" onclick="addManualTab()">Add Tab</button>
@@ -281,7 +276,7 @@
             <label style="margin-top: 15px;">Selected Tabs (Download hone waale):</label>
             <div class="selected-box">
                 <div id="selectedTabsTags" class="tag-container">
-                    <span style="color: #94a3b8; font-size: 13px;">Koi tab select nahi hua hai. Niche ya upar se add karein.</span>
+                    <span style="color: #94a3b8; font-size: 13px;">Koi tab select nahi hua hai. Upar से add karein.</span>
                 </div>
             </div>
 
@@ -291,7 +286,6 @@
 </div>
 
 <script>
-// Hardcoded Original Database for Mode 1 & Mode 2
 const masterData = {
     "COLUMNS": { items: ["COLU-1620", "COLU-1820", "COLU-2611", "COLU-2612", "COLU-2613", "COLU-2621", "COLU-2622", "COLU-2623", "COLU-2811", "COLU-2812", "COLU-2813", "COLU-2821", "COLU-2822", "COLU-2823", "COLU-3611", "COLU-3612", "COLU-3613", "COLU-3621", "COLU-3622", "COLU-3623", "COLU-3811", "COLU-3812", "COLU-3813", "COLU-3821", "COLU-3822", "COLU-3823"] },
     "PURLINE": { items: ["PURL-0012 (P2L)", "PURL-0011 (P2M)", "PURL-0042 (P2M)", "PURL-0024 (P3L)", "PURL-0023 (P3M)", "PURL-0022 (P3H)", "P2L", "P2M", "P2H", "P3L", "P3M", "P3H"] },
@@ -310,7 +304,6 @@ function switchMode(mode) {
     document.getElementById('btnDriveMode').classList.toggle('active', mode === 'drive');
 }
 
-// ================= MODE 1 & MODE 2 ORIGINAL LOGIC =================
 let singleGeneratedRows = [];
 let currentSingleItemName = "";
 let currentSingleCat = "";
@@ -612,24 +605,7 @@ function downloadGroupExcel() {
     XLSX.writeFile(wb, "Consolidated_Quality_Inspection_Report.xlsx");
 }
 
-// ================= MODE 3 PYTHON BACKEND EXTRACTION LOGIC =================
 let selectedDriveTabs = [];
-
-function showTabSelectionBox() {
-    const inputVal = document.getElementById("manualTabsInput").value.trim();
-    if (!inputVal) {
-        alert("Kripya kam se kam ek tab ka naam daalein!");
-        return;
-    }
-    const tabs = inputVal.split(',').map(t => t.trim()).filter(t => t.length > 0);
-    tabs.forEach(tab => {
-        if (!selectedDriveTabs.includes(tab)) {
-            selectedDriveTabs.push(tab);
-        }
-    });
-    document.getElementById("manualTabsInput").value = "";
-    renderDriveTabTags();
-}
 
 function addManualTab() {
     const input = document.getElementById("newTabInput");
@@ -650,7 +626,7 @@ function renderDriveTabTags() {
     const container = document.getElementById("selectedTabsTags");
     container.innerHTML = "";
     if (selectedDriveTabs.length === 0) {
-        container.innerHTML = '<span style="color: #94a3b8; font-size: 13px;">Koi tab select nahi hua hai. Niche ya upar se add karein.</span>';
+        container.innerHTML = '<span style="color: #94a3b8; font-size: 13px;">Koi tab select nahi hua hai. Upar se add karein.</span>';
         return;
     }
     selectedDriveTabs.forEach((tab, idx) => {
@@ -678,15 +654,23 @@ function downloadSelectedTabsExcel() {
         return;
     }
 
+    const sheetUrl = document.getElementById("googleSheetUrl").value.trim();
+    if (!sheetUrl) {
+        alert("Kripya Google Sheet ka link daalein!");
+        return;
+    }
+
     alert("Python backend par Excel file taiyar ho rahi hai, kripya intezaar karein...");
 
-    // Hugging Face Python Backend URL
     fetch("https://sagarherole-era-excel-api.static.hf.space/download-excel", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({ items: selectedDriveTabs })
+        body: JSON.stringify({ 
+            sheetUrl: sheetUrl,
+            items: selectedDriveTabs 
+        })
     })
     .then(response => {
         if (!response.ok) throw new Error("Server generation failed");
