@@ -669,7 +669,6 @@ function loadMasterFromCacheOrCloud() {
         }
     }
 
-    // Agar cache mein nahi hai toh Google Sheet export link se fetch karein
     badge.innerText = "⏳ Downloading from Google Cloud...";
     const exportUrl = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/export?format=xlsx`;
 
@@ -747,7 +746,7 @@ function loadUploadedExcelFile() {
 }
 
 function clearCacheAndReload() {
-    if (confirm("Kya aap cache clear karke cloud se fresh sync karna chahte hain?")) {
+    if (confirm("Kya aap cache clear karke cloud से fresh sync karna chahte hain?")) {
         localStorage.removeItem('cachedMasterExcel');
         alert("Cache cleared successfully! Page reload ho raha hai.");
         location.reload();
@@ -828,7 +827,7 @@ function exportSelectedUploadedTabs() {
         const sourceSheet = loadedSourceWorkbook.getWorksheet(tabName);
         if (!sourceSheet) return;
 
-        const newSheet = outputWorkbook.outputWorksheet ? null : outputWorkbook.addWorksheet(tabName);
+        const newSheet = outputWorkbook.addWorksheet(tabName);
 
         // Copy column dimensions/widths
         sourceSheet.columns.forEach((col, colIndex) => {
@@ -842,8 +841,7 @@ function exportSelectedUploadedTabs() {
             const newRow = newSheet.getRow(rowIndex);
             if (row.height) newRow.height = row.height;
 
-            row.eachCell({ includeEmpty: true }, (colIndex) => {
-                const cell = row.getCell(colIndex);
+            row.eachCell({ includeEmpty: true }, (cell, colIndex) => {
                 const newCell = newRow.getCell(colIndex);
                 newCell.value = cell.value;
 
