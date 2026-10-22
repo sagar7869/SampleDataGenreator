@@ -48,6 +48,7 @@
         .btn-primary { background-color: var(--primary); color: white; width: 100%; margin-top: 15px; font-size: 16px; }
         .btn-success { background-color: var(--success); color: white; font-size: 15px; padding: 10px 20px; border-radius: 6px; }
         .btn-success:hover { background-color: #166534; }
+        .btn-danger { background-color: var(--danger); color: white; font-size: 13px; padding: 6px 12px; margin-top: 10px; }
         
         .selected-box { border: 2px dashed #94a3b8; padding: 15px; border-radius: 8px; background-color: #f1f5f9; margin-top: 10px; min-height: 50px; }
         .tag-container { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -72,14 +73,14 @@
 <div class="container">
     <div class="header">
         <h2>Quality Inspection Management Portal</h2>
-        <p style="margin: 5px 0 0 0; opacity: 0.9;">Sample Generator Portal & Auto Sync Master Extractor</p>
+        <p style="margin: 5px 0 0 0; opacity: 0.9;">Sample Generator Portal & Cached Master Extractor</p>
     </div>
 
     <!-- Mode Switcher Buttons -->
     <div class="mode-switcher">
         <button class="mode-btn active" id="btnSingleMode" onclick="switchMode('single')">📌 Mode 1: Single Item Generator</button>
         <button class="mode-btn" id="btnGroupMode" onclick="switchMode('group')">📁 Mode 2: Group Multi-Tab Batch Portal</button>
-        <button class="mode-btn" id="btnDriveMode" onclick="switchMode('drive')">⚡ Mode 3: Automatic Master Sheet Extractor</button>
+        <button class="mode-btn" id="btnDriveMode" onclick="switchMode('drive')">⚡ Mode 3: Cached Master Extractor</button>
     </div>
 
     <!-- ================= MODE 1: SINGLE ITEM GENERATOR ================= -->
@@ -265,24 +266,26 @@
         </div>
     </div>
 
-    <!-- ================= MODE 3: AUTOMATIC MASTER EXTRACTOR ================= -->
+    <!-- ================= MODE 3: CACHED MASTER EXTRACTOR ================= -->
     <div id="driveModeSection" style="display: none;">
         <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h3>Automatic Master Data Sync</h3>
-                <span id="syncStatusBadge" class="status-badge status-loading">⏳ Loading Master Excel...</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <h3>Master Data & Local Cache Sync</h3>
+                <span id="syncStatusBadge" class="status-badge status-loading">⏳ Checking Cache...</span>
             </div>
-            <p style="font-size: 13px; color: #64748b; margin-top: 5px;">Server se Master Excel automatic sync ho chuki hai. Niche se Tabs select karke download karein.</p>
+            <p style="font-size: 13px; color: #64748b; margin-top: 5px;">File browser cache mein saved rahegi. Agar aap nayi file upload karenge toh purani wali replace ho jayegi.</p>
             
-            <details style="margin-top: 10px; font-size: 12px; color: #475569;">
-                <summary style="cursor: pointer; font-weight: 600;">Optional: Custom local file upload karna chahte hain?</summary>
-                <input type="file" id="excelFileInput" accept=".xlsx, .xls" style="margin-top: 10px;" onchange="loadUploadedExcelFile()">
-            </details>
+            <div style="margin-top: 15px;">
+                <label>Nayi Master Excel File Upload Karein (Cache Update karne ke liye):</label>
+                <input type="file" id="excelFileInput" accept=".xlsx, .xls" onchange="loadUploadedExcelFile()">
+            </div>
+            
+            <button class="btn btn-danger" onclick="clearCacheAndReload()">🗑️ Clear Cache / Reset</button>
         </div>
 
         <div class="card" id="uploadedTabSelectionCard">
             <h3>Select Tabs to Extract</h3>
-            <label>Master Data ke maujood Tabs:</label>
+            <label>Master Data ke available Tabs:</label>
             <select id="uploadedTabDropdown" onchange="addUploadedTab()">
                 <option value="">-- Choose Tab --</option>
             </select>
@@ -633,43 +636,90 @@ function downloadGroupExcel() {
     });
 }
 
-// ================= MODE 3 AUTO-SYNC EXCELJS EXTRACTOR LOGIC =================
+// ================= MODE 3 CACHED MASTER EXTRACTOR LOGIC =================
 let loadedSourceWorkbook = null;
 let selectedUploadedTabs = [];
 
-// App load hote hi Automatic GitHub hosted Master_Data.xlsx fetch karega
 window.addEventListener('DOMContentLoaded', () => {
-    autoFetchMasterExcel();
+    loadMasterFromCacheOrFetch();
 });
 
-function autoFetchMasterExcel() {
+function loadMasterFromCacheOrFetch() {
     const badge = document.getElementById("syncStatusBadge");
     badge.className = "status-badge status-loading";
-    badge.innerText = "⏳ Syncing Master Excel...";
+    badge.innerText = "⏳ Checking Browser Cache...";
 
-    // Relative path to GitHub repo hosted file
-    fetch('./Master_Data.xlsx')
+    const cachedBase64 = localStorage.getItem('cachedMasterExcel');
+
+    if (cachedBase64) {
+        // Cache se load karein
+        try {
+            const buffer = base64ToArrayBuffer(cachedBase64);
+            loadedSourceWorkbook = new ExcelJS.Workbook();
+            loadedSourceWorkbook.xlsx.load(buffer).then(() => {
+                selectedUploadedTabs = [];
+                populateUploadedTabDropdown();
+                renderUploadedTabTags();
+                badge.className = "status-badge status-ready";
+                badge.innerText = "✅ Loaded from Browser Cache";
+            });
+            return;
+        } catch (e) {
+            console.warn("Cache parse error, fetching fresh...", e);
+        }
+    }
+
+    // Agar cache mein nahi hai toh GitHub se fetch karein aur cache mein save karein
+    const rawFileUrl = 'https://raw.githubusercontent.com/sagar7869/SampleDataGenerreator/main/Master_Data.xlsx';
+
+    fetch(rawFileUrl)
         .then(res => {
-            if (!res.ok) throw new Error("Master_Data.xlsx file repository me nahi mili.");
+            if (!res.ok) throw new Error("GitHub Fetch Failed");
             return res.arrayBuffer();
+        })
+        .catch(() => {
+            // Fallback to local file
+            return fetch('Master_Data.xlsx').then(r => r.arrayBuffer());
         })
         .then(buffer => {
             loadedSourceWorkbook = new ExcelJS.Workbook();
-            return loadedSourceWorkbook.xlsx.load(buffer);
-        })
-        .then(() => {
-            selectedUploadedTabs = [];
-            populateUploadedTabDropdown();
-            renderUploadedTabTags();
-            badge.className = "status-badge status-ready";
-            badge.innerText = "✅ Master Excel Synced & Ready";
+            return loadedSourceWorkbook.xlsx.load(buffer).then(() => {
+                // Save to localStorage as base64 for future offline caching
+                saveArrayBufferToCache(buffer);
+                selectedUploadedTabs = [];
+                populateUploadedTabDropdown();
+                renderUploadedTabTags();
+                badge.className = "status-badge status-ready";
+                badge.innerText = "✅ Master Excel Synced & Cached";
+            });
         })
         .catch(err => {
             badge.className = "status-badge";
             badge.style.background = "#fee2e2";
             badge.style.color = "#991b1b";
-            badge.innerText = "⚠️ Manual File Upload Required";
+            badge.innerText = "⚠️ Please Upload File Manually";
         });
+}
+
+function saveArrayBufferToCache(buffer) {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    const base64 = window.btoa(binary);
+    localStorage.setItem('cachedMasterExcel', base64);
+}
+
+function base64ToArrayBuffer(base64) {
+    const binary_string = window.atob(base64);
+    const len = binary_string.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+        bytes[i] = binary_string.charCodeAt(i);
+    }
+    return bytes.buffer;
 }
 
 function loadUploadedExcelFile() {
@@ -684,13 +734,15 @@ function loadUploadedExcelFile() {
         loadedSourceWorkbook = new ExcelJS.Workbook();
 
         loadedSourceWorkbook.xlsx.load(arrayBuffer).then(() => {
+            // Cache mein save kar lein
+            saveArrayBufferToCache(arrayBuffer);
             selectedUploadedTabs = [];
             populateUploadedTabDropdown();
             renderUploadedTabTags();
             const badge = document.getElementById("syncStatusBadge");
             badge.className = "status-badge status-ready";
-            badge.innerText = "✅ Custom File Loaded";
-            alert(`File Read Success! ${loadedSourceWorkbook.worksheets.length} Tabs mil gaye.`);
+            badge.innerText = "✅ Custom File Saved to Cache";
+            alert(`File Read & Cached Successfully! ${loadedSourceWorkbook.worksheets.length} Tabs mil gaye.`);
         }).catch(err => {
             alert("Excel file load karne me error aaya: " + err.message);
         });
@@ -699,11 +751,19 @@ function loadUploadedExcelFile() {
     reader.readAsArrayBuffer(file);
 }
 
+function clearCacheAndReload() {
+    if (confirm("Kya aap cache clear karke reset karna chahte hain?")) {
+        localStorage.removeItem('cachedMasterExcel');
+        alert("Cache cleared successfully! Page reload ho raha hai.");
+        location.reload();
+    }
+}
+
 function populateUploadedTabDropdown() {
     const dropdown = document.getElementById("uploadedTabDropdown");
     dropdown.innerHTML = '<option value="">-- Choose Tab --</option>';
     
-    if (!loadedSourceWorkbook) return;
+    if (!loadedSourceWorkbook || !loadedSourceWorkbook.worksheets) return;
 
     loadedSourceWorkbook.worksheets.forEach(ws => {
         if (!selectedUploadedTabs.includes(ws.name)) {
@@ -759,7 +819,7 @@ function renderUploadedTabTags() {
 
 function exportSelectedUploadedTabs() {
     if (!loadedSourceWorkbook) {
-        alert("Master Excel Sync nahi hua hai. Kripya file check karein ya manual upload karein.");
+        alert("Master Excel load nahi hai. Kripya file upload karein.");
         return;
     }
     if (selectedUploadedTabs.length === 0) {
