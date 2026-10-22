@@ -611,29 +611,80 @@ function downloadGroupExcel() {
     XLSX.writeFile(wb, "Consolidated_Quality_Inspection_Report.xlsx");
 }
 
-// ================= MODE 3 LIVE EXTRACTION LOGIC =================
+// ================= MODE 3 LIVE EXTRACTION LOGIC (UPDATED) =================
 let availableDriveTabs = [];
 let selectedDriveTabs = [];
+let liveTabsRequestTimer = null;
+
+function buildAppsScriptUrl(params) {
+    const baseUrl = document.getElementById("scriptUrl").value.trim();
+    if (!baseUrl) throw new Error("Please enter Apps Script Web App URL.");
+    const separator = baseUrl.includes("?") ? "&" : "?";
+    return baseUrl + separator + new URLSearchParams(params).toString();
+}
 
 function fetchLiveTabs() {
-    const url = document.getElementById("scriptUrl").value.trim();
-    if (!url) { alert("Please enter Apps Script URL"); return; }
+    const baseUrl = document.getElementById("scriptUrl").value.trim();
+    if (!baseUrl) {
+        alert("Please enter Apps Script URL");
+        return;
+    }
 
-    alert("Master Sheet se Tabs fetch ho rahe hain...");
+    // JSONP is used here because a normal fetch() request can be blocked by
+    // Google Apps Script cross-origin (CORS) restrictions.
+    const callbackName = "qcTabsCallback_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
+    const script = document.createElement("script");
+    let finished = false;
 
-    fetch(url)
-    .then(res => res.json())
-    .then(data => {
-        if (data.status === "success" && data.tabs) {
+    const cleanup = () => {
+        if (liveTabsRequestTimer) {
+            clearTimeout(liveTabsRequestTimer);
+            liveTabsRequestTimer = null;
+        }
+        try { delete window[callbackName]; } catch (e) { window[callbackName] = undefined; }
+        if (script.parentNode) script.parentNode.removeChild(script);
+    };
+
+    window[callbackName] = function(data) {
+        if (finished) return;
+        finished = true;
+        cleanup();
+
+        if (data && data.status === "success" && Array.isArray(data.tabs)) {
             availableDriveTabs = data.tabs;
+            selectedDriveTabs = selectedDriveTabs.filter(tab => availableDriveTabs.includes(tab));
             populateTabDropdown();
+            renderDriveTabTags();
             document.getElementById("tabSelectionCard").style.display = "block";
             alert("Success! " + data.tabs.length + " Tabs mil gaye hain.");
         } else {
-            alert("Error: " + JSON.stringify(data));
+            alert("Tabs fetch nahi hue. Apps Script mein action=tabs aur JSONP callback support wala updated code deploy karein.\n\n" + JSON.stringify(data || {}));
         }
-    })
-    .catch(err => alert("Fetch error: " + err));
+    };
+
+    script.onerror = function() {
+        if (finished) return;
+        finished = true;
+        cleanup();
+        alert("Apps Script se response nahi mila. URL check karein aur updated script ko Deploy > Manage deployments > Edit > New version ke saath deploy karein.");
+    };
+
+    try {
+        script.src = buildAppsScriptUrl({ action: "tabs", callback: callbackName });
+    } catch (e) {
+        cleanup();
+        alert(e.message || "Invalid Apps Script URL.");
+        return;
+    }
+
+    liveTabsRequestTimer = setTimeout(() => {
+        if (finished) return;
+        finished = true;
+        cleanup();
+        alert("Request timeout. Apps Script URL aur deployment access check karein.");
+    }, 20000);
+
+    document.body.appendChild(script);
 }
 
 function populateTabDropdown() {
@@ -641,8 +692,9 @@ function populateTabDropdown() {
     dropdown.innerHTML = '<option value="">-- Select Tab Name --</option>';
     availableDriveTabs.forEach(tab => {
         if (!selectedDriveTabs.includes(tab)) {
-            let opt = document.createElement("option");
-            opt.value = tab; opt.innerText = tab;
+            const opt = document.createElement("option");
+            opt.value = tab;
+            opt.innerText = tab;
             dropdown.appendChild(opt);
         }
     });
@@ -672,42 +724,48 @@ function renderDriveTabTags() {
         return;
     }
     selectedDriveTabs.forEach((tab, idx) => {
-        container.innerHTML += `
-            <div class="item-tag">
-                ${tab}
-                <span class="remove-btn" onclick="removeDriveTab(${idx})">✕</span>
-            </div>
-        `;
+        const tag = document.createElement("div");
+        tag.className = "item-tag";
+
+        const name = document.createElement("span");
+        name.textContent = tab;
+
+        const remove = document.createElement("span");
+        remove.className = "remove-btn";
+        remove.textContent = "✕";
+        remove.title = "Remove tab";
+        remove.onclick = () => removeDriveTab(idx);
+
+        tag.appendChild(name);
+        tag.appendChild(remove);
+        container.appendChild(tag);
     });
 }
 
 function downloadSelectedTabsExcel() {
-    const url = document.getElementById("scriptUrl").value.trim();
     if (selectedDriveTabs.length === 0) {
         alert("Kripya kam se kam ek tab select karein!");
         return;
     }
 
-    alert("Original formatting ke sath Excel file taiyar ho rahi hai...");
+    const baseUrl = document.getElementById("scriptUrl").value.trim();
+    if (!baseUrl) {
+        alert("Please enter Apps Script URL");
+        return;
+    }
 
-    fetch(url, {
-        method: "POST",
-        body: JSON.stringify({ items: selectedDriveTabs })
-    })
-    .then(res => res.json())
-    .then(response => {
-        if (response.status === "success" && response.downloadUrl) {
-            // Seedha browser se formatted Excel file download karein
-            window.location.href = response.downloadUrl;
-            alert("Excel file safaltapurvak download ho gayi hai!");
-        } else {
-            alert("Download failed: " + JSON.stringify(response));
-        }
-    })
-    .catch(err => {
-        alert("Error: " + err);
-    });
+    try {
+        // This matches the updated Apps Script GET endpoint.
+        // The server prepares a temporary spreadsheet and redirects to XLSX export.
+        const downloadUrl = buildAppsScriptUrl({
+            action: "download",
+            items: JSON.stringify(selectedDriveTabs)
+        });
+        alert("Selected tabs ki Excel file taiyar ho rahi hai. Download shuru hone mein kuch seconds lag sakte hain.");
+        window.location.assign(downloadUrl);
+    } catch (e) {
+        alert(e.message || "Download request start nahi ho saki.");
+    }
 }</script>
 
 </body>
-</html>
