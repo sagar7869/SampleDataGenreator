@@ -6,8 +6,11 @@
     <title>Quality Inspection & Master Extraction Portal</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1e3a8a">
-    <!-- SheetJS CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- ExcelJS & FileSaver for exact format & styling retention -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
     <style>
         :root {
             --primary: #1e3a8a;
@@ -30,7 +33,7 @@
         .card { background: var(--card-bg); padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 20px; border: 1px solid var(--border); }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; }
         label { font-weight: 600; margin-bottom: 5px; display: block; font-size: 13px; }
-        select, input[type="text"], input[type="number"], input[type="url"] { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        select, input[type="text"], input[type="number"], input[type="file"] { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; font-size: 14px; }
         
         .autocomplete-container { position: relative; }
         .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid var(--border); border-radius: 0 0 6px 6px; max-height: 180px; overflow-y: auto; z-index: 99; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: none; }
@@ -65,14 +68,14 @@
 <div class="container">
     <div class="header">
         <h2>Quality Inspection Management Portal</h2>
-        <p style="margin: 5px 0 0 0; opacity: 0.9;">Sample Generator Portal & Python Backend Master Extractor</p>
+        <p style="margin: 5px 0 0 0; opacity: 0.9;">Sample Generator Portal & Excel Local Extractor</p>
     </div>
 
     <!-- Mode Switcher Buttons -->
     <div class="mode-switcher">
         <button class="mode-btn active" id="btnSingleMode" onclick="switchMode('single')">📌 Mode 1: Single Item Generator</button>
         <button class="mode-btn" id="btnGroupMode" onclick="switchMode('group')">📁 Mode 2: Group Multi-Tab Batch Portal</button>
-        <button class="mode-btn" id="btnDriveMode" onclick="switchMode('drive')">🌐 Mode 3: Python Backend Master Extractor</button>
+        <button class="mode-btn" id="btnDriveMode" onclick="switchMode('drive')">📂 Mode 3: Local Excel File Extractor</button>
     </div>
 
     <!-- ================= MODE 1: SINGLE ITEM GENERATOR ================= -->
@@ -258,29 +261,31 @@
         </div>
     </div>
 
-    <!-- ================= MODE 3: PYTHON BACKEND MASTER EXTRACTOR ================= -->
+    <!-- ================= MODE 3: EXCEL FILE UPLOAD & EXACT TAB EXTRACTOR ================= -->
     <div id="driveModeSection" style="display: none;">
         <div class="card">
-            <h3>Google Sheet Link & Tab Extractor</h3>
-            <p style="font-size: 13px; color: #64748b; margin-top: -5px;">Yahan apni Google Sheet ka link paste karein aur download hone wale tabs ke naam daalein.</p>
+            <h3>Excel File Upload & Exact Format Extractor</h3>
+            <p style="font-size: 13px; color: #64748b; margin-top: -5px;">Apni Master Excel File select karein, tab select karein aur exact design/formatting ke saath export karein.</p>
 
-            <label>Google Sheet Link / URL</label>
-            <input type="url" id="googleSheetUrl" value="https://docs.google.com/spreadsheets/d/1J9WXMfNwVLTQIp0avtglFzpzHmHNqcLvNz0mxscrh2U/edit" placeholder="https://docs.google.com/spreadsheets/d/...">
+            <label>Master Excel File Choose Karein (.xlsx / .xls)</label>
+            <input type="file" id="excelFileInput" accept=".xlsx, .xls" onchange="loadUploadedExcelFile()">
+        </div>
 
-            <label style="margin-top: 15px;">Tabs ke naam add karein (Jaise: COLUMNS, Rafter)</label>
-            <div style="display: flex; gap: 10px; margin-top: 5px;">
-                <input type="text" id="newTabInput" placeholder="Jaise: COLUMNS">
-                <button class="btn btn-success" style="padding: 10px 20px; white-space: nowrap;" onclick="addManualTab()">Add Tab</button>
-            </div>
+        <div class="card" id="uploadedTabSelectionCard" style="display: none;">
+            <h3>Select Tabs to Extract</h3>
+            <label>File me se Tab Select karein:</label>
+            <select id="uploadedTabDropdown" onchange="addUploadedTab()">
+                <option value="">-- Choose Tab --</option>
+            </select>
 
-            <label style="margin-top: 15px;">Selected Tabs (Download hone waale):</label>
+            <label style="margin-top: 15px;">Selected Tabs (Export hone waale):</label>
             <div class="selected-box">
-                <div id="selectedTabsTags" class="tag-container">
-                    <span style="color: #94a3b8; font-size: 13px;">Koi tab select nahi hua hai. Upar से add karein.</span>
+                <div id="uploadedSelectedTabsTags" class="tag-container">
+                    <span style="color: #94a3b8; font-size: 13px;">Koi tab select nahi hua hai.</span>
                 </div>
             </div>
 
-            <button class="btn btn-success" style="width: 100%; margin-top: 15px; font-size: 16px;" onclick="downloadSelectedTabsExcel()">📥 Download Selected Tabs via Python Backend (.xlsx)</button>
+            <button class="btn btn-success" style="width: 100%; margin-top: 15px; font-size: 16px;" onclick="exportSelectedUploadedTabs()">📥 Download Selected Tabs with Full Styling (.xlsx)</button>
         </div>
     </div>
 </div>
@@ -399,10 +404,18 @@ function generateSingleReport() {
 
 function downloadSingleExcel() {
     if (singleGeneratedRows.length === 0) return;
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(singleGeneratedRows);
-    XLSX.utils.book_append_sheet(wb, ws, currentSingleCat);
-    XLSX.writeFile(wb, `Single_Inspection_${currentSingleItemName}.xlsx`);
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet(currentSingleCat);
+    
+    const cols = Object.keys(singleGeneratedRows[0]);
+    sheet.addRow(cols);
+    singleGeneratedRows.forEach(r => {
+        sheet.addRow(cols.map(c => r[c]));
+    });
+
+    workbook.xlsx.writeBuffer().then(buffer => {
+        saveAs(new Blob([buffer]), `Single_Inspection_${currentSingleItemName}.xlsx`);
+    });
 }
 
 let selectedItemsList = [];
@@ -593,43 +606,91 @@ function showGroupPreviewTable(cat, activeBtn) {
 
 function downloadGroupExcel() {
     if (Object.keys(categoryDataMapGlobal).length === 0) return;
-    const wb = XLSX.utils.book_new();
+    const workbook = new ExcelJS.Workbook();
 
     for (let cat in categoryDataMapGlobal) {
         if (categoryDataMapGlobal[cat].length > 0) {
-            const ws = XLSX.utils.json_to_sheet(categoryDataMapGlobal[cat]);
-            XLSX.utils.book_append_sheet(wb, ws, cat);
+            const sheet = workbook.addWorksheet(cat);
+            const cols = Object.keys(categoryDataMapGlobal[cat][0]);
+            sheet.addRow(cols);
+            categoryDataMapGlobal[cat].forEach(r => {
+                sheet.addRow(cols.map(c => r[c]));
+            });
         }
     }
 
-    XLSX.writeFile(wb, "Consolidated_Quality_Inspection_Report.xlsx");
+    workbook.xlsx.writeBuffer().then(buffer => {
+        saveAs(new Blob([buffer]), "Consolidated_Quality_Inspection_Report.xlsx");
+    });
 }
 
-let selectedDriveTabs = [];
+// ================= MODE 3 EXCELJS LOCAL EXTRACTOR LOGIC =================
+let loadedSourceWorkbook = null;
+let selectedUploadedTabs = [];
 
-function addManualTab() {
-    const input = document.getElementById("newTabInput");
-    const val = input.value.trim();
-    if (val && !selectedDriveTabs.includes(val)) {
-        selectedDriveTabs.push(val);
-        input.value = "";
-        renderDriveTabTags();
+function loadUploadedExcelFile() {
+    const fileInput = document.getElementById('excelFileInput');
+    if (!fileInput.files || fileInput.files.length === 0) return;
+
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+        const arrayBuffer = e.target.result;
+        loadedSourceWorkbook = new ExcelJS.Workbook();
+
+        loadedSourceWorkbook.xlsx.load(arrayBuffer).then(() => {
+            selectedUploadedTabs = [];
+            populateUploadedTabDropdown();
+            renderUploadedTabTags();
+            document.getElementById('uploadedTabSelectionCard').style.display = 'block';
+            alert(`File Read Success! ${loadedSourceWorkbook.worksheets.length} Tabs mil gaye.`);
+        }).catch(err => {
+            alert("Excel file load karne me error aaya: " + err.message);
+        });
+    };
+
+    reader.readAsArrayBuffer(file);
+}
+
+function populateUploadedTabDropdown() {
+    const dropdown = document.getElementById("uploadedTabDropdown");
+    dropdown.innerHTML = '<option value="">-- Choose Tab --</option>';
+    
+    loadedSourceWorkbook.worksheets.forEach(ws => {
+        if (!selectedUploadedTabs.includes(ws.name)) {
+            const opt = document.createElement("option");
+            opt.value = ws.name;
+            opt.innerText = ws.name;
+            dropdown.appendChild(opt);
+        }
+    });
+}
+
+function addUploadedTab() {
+    const dropdown = document.getElementById("uploadedTabDropdown");
+    const val = dropdown.value;
+    if (val && !selectedUploadedTabs.includes(val)) {
+        selectedUploadedTabs.push(val);
+        renderUploadedTabTags();
+        populateUploadedTabDropdown();
     }
 }
 
-function removeDriveTab(idx) {
-    selectedDriveTabs.splice(idx, 1);
-    renderDriveTabTags();
+function removeUploadedTab(idx) {
+    selectedUploadedTabs.splice(idx, 1);
+    renderUploadedTabTags();
+    populateUploadedTabDropdown();
 }
 
-function renderDriveTabTags() {
-    const container = document.getElementById("selectedTabsTags");
+function renderUploadedTabTags() {
+    const container = document.getElementById("uploadedSelectedTabsTags");
     container.innerHTML = "";
-    if (selectedDriveTabs.length === 0) {
-        container.innerHTML = '<span style="color: #94a3b8; font-size: 13px;">Koi tab select nahi hua hai. Upar se add karein.</span>';
+    if (selectedUploadedTabs.length === 0) {
+        container.innerHTML = '<span style="color: #94a3b8; font-size: 13px;">Koi tab select nahi hua hai.</span>';
         return;
     }
-    selectedDriveTabs.forEach((tab, idx) => {
+    selectedUploadedTabs.forEach((tab, idx) => {
         const tag = document.createElement("div");
         tag.className = "item-tag";
 
@@ -640,7 +701,7 @@ function renderDriveTabTags() {
         remove.className = "remove-btn";
         remove.textContent = "✕";
         remove.title = "Remove tab";
-        remove.onclick = () => removeDriveTab(idx);
+        remove.onclick = () => removeUploadedTab(idx);
 
         tag.appendChild(name);
         tag.appendChild(remove);
@@ -648,46 +709,60 @@ function renderDriveTabTags() {
     });
 }
 
-function downloadSelectedTabsExcel() {
-    if (selectedDriveTabs.length === 0) {
-        alert("Kripya kam se kam ek tab select karein!");
+function exportSelectedUploadedTabs() {
+    if (!loadedSourceWorkbook) {
+        alert("Pehle Excel file upload karein!");
+        return;
+    }
+    if (selectedUploadedTabs.length === 0) {
+        alert("Kam se kam ek tab select karein!");
         return;
     }
 
-    const sheetUrl = document.getElementById("googleSheetUrl").value.trim();
-    if (!sheetUrl) {
-        alert("Kripya Google Sheet ka link daalein!");
-        return;
-    }
+    const outputWorkbook = new ExcelJS.Workbook();
 
-    alert("Python backend par Excel file taiyar ho rahi hai, kripya intezaar karein...");
+    selectedUploadedTabs.forEach(tabName => {
+        const sourceSheet = loadedSourceWorkbook.getWorksheet(tabName);
+        if (!sourceSheet) return;
 
-    fetch("https://sagarherole-era-excel-api.static.hf.space/download-excel", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ 
-            sheetUrl: sheetUrl,
-            items: selectedDriveTabs 
-        })
-    })
-    .then(response => {
-        if (!response.ok) throw new Error("Server generation failed");
-        return response.blob();
-    })
-    .then(blob => {
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = "Era_Inspection_Report.xlsx";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-    })
-    .catch(err => {
-        alert("Download failed: " + err.message);
+        const newSheet = outputWorkbook.addWorksheet(tabName);
+
+        // Copy column dimensions/widths
+        sourceSheet.columns.forEach((col, colIndex) => {
+            if (col && col.width) {
+                newSheet.getColumn(colIndex + 1).width = col.width;
+            }
+        });
+
+        // Copy cell values along with exact formatting & styles
+        sourceSheet.eachRow({ includeEmpty: true }, (row, rowIndex) => {
+            const newRow = newSheet.getRow(rowIndex);
+            if (row.height) newRow.height = row.height;
+
+            row.eachCell({ includeEmpty: true }, (cell, colIndex) => {
+                const newCell = newRow.getCell(colIndex);
+                newCell.value = cell.value;
+
+                // Copy formatting details
+                if (cell.style) {
+                    newCell.style = JSON.parse(JSON.stringify(cell.style));
+                }
+            });
+        });
+
+        // Copy merged cells
+        if (sourceSheet.model && sourceSheet.model.merges) {
+            sourceSheet.model.merges.forEach(mergeRange => {
+                newSheet.mergeCells(mergeRange);
+            });
+        }
+    });
+
+    outputWorkbook.xlsx.writeBuffer().then(buffer => {
+        saveAs(new Blob([buffer]), "Formatted_Extracted_Report.xlsx");
+        alert("Excel File exact styling ke saath download ho gayi hai!");
+    }).catch(err => {
+        alert("Export fail hua: " + err.message);
     });
 }
 </script>
