@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1e3a8a">
     
-    <!-- ExcelJS & FileSaver for exact format & styling retention -->
+    <!-- ExcelJS & FileSaver -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
@@ -35,10 +35,9 @@
         label { font-weight: 600; margin-bottom: 5px; display: block; font-size: 13px; }
         select, input[type="text"], input[type="number"], input[type="file"] { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; font-size: 14px; }
         
-        .autocomplete-container { position: relative; }
-        .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid var(--border); border-radius: 0 0 6px 6px; max-height: 180px; overflow-y: auto; z-index: 99; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: none; }
-        .autocomplete-item { padding: 10px; cursor: pointer; font-size: 14px; border-bottom: 1px solid #f1f5f9; }
-        .autocomplete-item:hover { background-color: #eff6ff; color: var(--primary); font-weight: 600; }
+        .multi-select-box { border: 1px solid var(--border); border-radius: 6px; padding: 10px; max-height: 180px; overflow-y: auto; background: #ffffff; }
+        .checkbox-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; font-size: 13px; cursor: pointer; }
+        .checkbox-row input { width: 16px; height: 16px; cursor: pointer; }
 
         .checkbox-group { display: flex; flex-wrap: wrap; gap: 15px; padding: 10px; background: #f1f5f9; border-radius: 6px; border: 1px solid var(--border); }
         .checkbox-item { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; cursor: pointer; }
@@ -47,7 +46,6 @@
         .btn { padding: 12px 20px; font-weight: 600; border: none; border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 14px; }
         .btn-primary { background-color: var(--primary); color: white; width: 100%; margin-top: 15px; font-size: 16px; }
         .btn-success { background-color: var(--success); color: white; font-size: 15px; padding: 10px 20px; border-radius: 6px; }
-        .btn-success:hover { background-color: #166534; }
         .btn-danger { background-color: var(--danger); color: white; font-size: 13px; padding: 6px 12px; margin-top: 10px; }
         
         .selected-box { border: 2px dashed #94a3b8; padding: 15px; border-radius: 8px; background-color: #f1f5f9; margin-top: 10px; min-height: 50px; }
@@ -108,7 +106,7 @@
                 <div>
                     <label>Generation Mode</label>
                     <select id="singleMode" onchange="toggleSingleMode()">
-                        <option value="auto">Auto Reference Mode (Hardcoded Standard)</option>
+                        <option value="auto">Auto Reference Mode (Standards)</option>
                         <option value="manual">Manual Custom Range Mode</option>
                     </select>
                 </div>
@@ -119,9 +117,9 @@
             </div>
 
             <div style="margin-top: 15px;">
-                <label>Select Parameters Required (Checkboxes):</label>
+                <label>Select Parameters Required:</label>
                 <div class="checkbox-group">
-                    <label class="checkbox-item"><input type="checkbox" id="sChkCoating" checked> Coating (μm) [5 Spot Readings + Avg]</label>
+                    <label class="checkbox-item"><input type="checkbox" id="sChkCoating" checked> Coating (μm/GSM) [5 Spot + Avg]</label>
                     <label class="checkbox-item"><input type="checkbox" id="sChkThickness" checked> Thickness (mm)</label>
                     <label class="checkbox-item"><input type="checkbox" id="sChkBasePlate"> Base Plate Thickness (mm)</label>
                 </div>
@@ -129,17 +127,17 @@
 
             <div id="singleRangePanel" class="form-grid" style="margin-top: 15px; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid var(--border);">
                 <div>
-                    <label>Coating Min - Max (μm)</label>
+                    <label>Coating Min - Max (GSM / μm)</label>
                     <div style="display: flex; gap: 5px;">
-                        <input type="number" id="sCoatMin" value="60" disabled>
-                        <input type="number" id="sCoatMax" value="100" disabled>
+                        <input type="number" id="sCoatMin" value="110" disabled>
+                        <input type="number" id="sCoatMax" value="135" disabled>
                     </div>
                 </div>
                 <div>
                     <label>Thickness Min - Max (mm)</label>
                     <div style="display: flex; gap: 5px;">
-                        <input type="number" id="sThickMin" step="0.001" value="1.95" disabled>
-                        <input type="number" id="sThickMax" step="0.001" value="2.10" disabled>
+                        <input type="number" id="sThickMin" step="0.001" value="1.14" disabled>
+                        <input type="number" id="sThickMax" step="0.001" value="1.26" disabled>
                     </div>
                 </div>
                 <div>
@@ -171,7 +169,7 @@
     <!-- ================= MODE 2: GROUP BATCH PORTAL ================= -->
     <div id="groupModeSection" style="display: none;">
         <div class="card">
-            <h3>Step 1: Select Category & Search/Add Sub-Items</h3>
+            <h3>Step 1: Select Category & Sub-Items (Type, Enter or Multiselect Checkbox)</h3>
             <div class="form-grid">
                 <div>
                     <label>1. Category चुनें</label>
@@ -184,28 +182,34 @@
                         <option value="Jointer">Jointer</option>
                     </select>
                 </div>
-                
-                <div class="autocomplete-container">
-                    <label>2. Sub-Item Search & Add (टाइप करें या क्लिक करके चुनें)</label>
-                    <input type="text" id="itemSearchInput" placeholder="पहले Category चुनें..." autocomplete="off" onfocus="showDropdown()" oninput="filterItems()" disabled>
-                    <div id="autocompleteList" class="autocomplete-list"></div>
+
+                <div>
+                    <label>2. Type & Hit Enter (Quick Add)</label>
+                    <input type="text" id="itemSearchInput" placeholder="पहले Category चुनें..." disabled onkeydown="handleSearchKeyPress(event)">
                 </div>
             </div>
 
-            <label style="margin-top: 15px;">चुने हुए सब-आइटम्स (Selected Items List):</label>
+            <div style="margin-top: 15px;">
+                <label>3. Multiselect Sub-Items (Checkboxes se ek sath chunein):</label>
+                <div id="groupMultiselectBox" class="multi-select-box">
+                    <span style="color: #94a3b8; font-size: 13px;">पहले Category चुनें...</span>
+                </div>
+            </div>
+
+            <label style="margin-top: 15px;">Selected Items List (Export hone wale):</label>
             <div class="selected-box">
                 <div id="selectedTags" class="tag-container">
-                    <span style="color: #94a3b8; font-size: 13px;">अभी कोई आइटम सेलेक्ट नहीं हुआ है। ऊपर से खोजकर चुनें।</span>
+                    <span style="color: #94a3b8; font-size: 13px;">Koi item select nahi hua hai.</span>
                 </div>
             </div>
         </div>
 
         <div class="card">
-            <h3>Step 2: Select Parameters (Checkboxes) & Quantities</h3>
+            <h3>Step 2: Select Parameters & Quantities</h3>
             
             <label>1. Select Parameter(s) Required:</label>
             <div class="checkbox-group">
-                <label class="checkbox-item"><input type="checkbox" id="chkCoating" checked> Coating (μm) [5 Spot Readings + Avg]</label>
+                <label class="checkbox-item"><input type="checkbox" id="chkCoating" checked> Coating (μm/GSM) [5 Spot Readings + Avg]</label>
                 <label class="checkbox-item"><input type="checkbox" id="chkThickness" checked> Thickness (mm)</label>
                 <label class="checkbox-item"><input type="checkbox" id="chkBasePlate"> Base Plate Thickness (mm)</label>
             </div>
@@ -214,29 +218,29 @@
                 <div>
                     <label>Generation Mode</label>
                     <select id="mode" onchange="toggleMode()">
-                        <option value="auto">Auto Reference Mode (Hardcoded Standard)</option>
+                        <option value="auto">Auto Reference Mode (Standards)</option>
                         <option value="manual">Manual Custom Range Mode</option>
                     </select>
                 </div>
                 <div>
-                    <label>Quantity of Samples (प्रति आइटम कितने सैम्पल?)</label>
+                    <label>Quantity of Samples (per item)</label>
                     <input type="number" id="sampleCount" value="3" min="1" max="100">
                 </div>
             </div>
 
             <div id="manualPanel" class="form-grid" style="margin-top: 15px; display: none; background: #fff7ed; padding: 15px; border-radius: 6px; border: 1px solid #ffedd5;">
                 <div>
-                    <label>Coating Min-Max (μm)</label>
+                    <label>Coating Min-Max (GSM/μm)</label>
                     <div style="display: flex; gap: 5px;">
-                        <input type="number" id="coatMin" value="60">
-                        <input type="number" id="coatMax" value="100">
+                        <input type="number" id="coatMin" value="110">
+                        <input type="number" id="coatMax" value="135">
                     </div>
                 </div>
                 <div>
                     <label>Thickness Min-Max (mm)</label>
                     <div style="display: flex; gap: 5px;">
-                        <input type="number" id="thickMin" step="0.001" value="1.95">
-                        <input type="number" id="thickMax" step="0.001" value="2.10">
+                        <input type="number" id="thickMin" step="0.001" value="1.14">
+                        <input type="number" id="thickMax" step="0.001" value="1.26">
                     </div>
                 </div>
                 <div>
@@ -273,10 +277,10 @@
                 <h3>Google Cloud Sheet Sync</h3>
                 <span id="syncStatusBadge" class="status-badge status-loading">⏳ Connecting Cloud Sheet...</span>
             </div>
-            <p style="font-size: 13px; color: #64748b; margin-top: 5px;">Aapka Google Sheet link automatic sync ho raha hai aur browser cache mein secure saved hai.</p>
+            <p style="font-size: 13px; color: #64748b; margin-top: 5px;">Google Sheet link automatically synced & cached in browser memory.</p>
             
             <div style="margin-top: 15px;">
-                <label>Optional: Backup ke liye Manual Excel File Upload:</label>
+                <label>Optional: Backup Manual Excel File Upload:</label>
                 <input type="file" id="excelFileInput" accept=".xlsx, .xls" onchange="loadUploadedExcelFile()">
             </div>
             
@@ -285,12 +289,21 @@
 
         <div class="card" id="uploadedTabSelectionCard">
             <h3>Select Tabs to Extract</h3>
-            <label>Cloud Sheet ke available Tabs:</label>
-            <select id="uploadedTabDropdown" onchange="addUploadedTab()">
-                <option value="">-- Choose Tab --</option>
-            </select>
+            
+            <div class="form-grid">
+                <div>
+                    <label>Search / Type Tab Name (Hit Enter to Add):</label>
+                    <input type="text" id="mode3SearchInput" placeholder="Type tab name & hit Enter..." oninput="filterMode3Tabs()" onkeydown="handleMode3SearchKeyPress(event)">
+                </div>
+                <div>
+                    <label>Choose Tab from Dropdown:</label>
+                    <select id="uploadedTabDropdown" onchange="addUploadedTab()">
+                        <option value="">-- Choose Tab --</option>
+                    </select>
+                </div>
+            </div>
 
-            <label style="margin-top: 15px;">Selected Tabs (Export hone waale):</label>
+            <label style="margin-top: 15px;">Selected Tabs (Export hone wale):</label>
             <div class="selected-box">
                 <div id="uploadedSelectedTabsTags" class="tag-container">
                     <span style="color: #94a3b8; font-size: 13px;">Koi tab select nahi hua hai.</span>
@@ -303,12 +316,28 @@
 </div>
 
 <script>
-const masterData = {
-    "COLUMNS": { items: ["COLU-1620", "COLU-1820", "COLU-2611", "COLU-2612", "COLU-2613", "COLU-2621", "COLU-2622", "COLU-2623", "COLU-2811", "COLU-2812", "COLU-2813", "COLU-2821", "COLU-2822", "COLU-2823", "COLU-3611", "COLU-3612", "COLU-3613", "COLU-3621", "COLU-3622", "COLU-3623", "COLU-3811", "COLU-3812", "COLU-3813", "COLU-3821", "COLU-3822", "COLU-3823"] },
-    "PURLINE": { items: ["PURL-0012 (P2L)", "PURL-0011 (P2M)", "PURL-0042 (P2M)", "PURL-0024 (P3L)", "PURL-0023 (P3M)", "PURL-0022 (P3H)", "P2L", "P2M", "P2H", "P3L", "P3M", "P3H"] },
-    "LA": { items: ["EALA-0032", "EALA-0046", "LA-0046"] },
-    "Rafter": { items: ["RAFT-0101", "RAFT-0102", "RAFT-0103", "RAFT-0201", "RAFT-0202", "RAFT-0203", "RAFT-0311", "RAFT-0312", "RAFT-0313", "RAFT-0321", "RAFT-0322", "RAFT-0323", "RAFT-1202", "RAFT-1203", "RAFT-1204", "RAFT-1312", "RAFT-1313", "RAFT-1322", "RAFT-1323"] },
-    "Jointer": { items: ["RAFT-0331", "RAFT-0332", "RAFT-0333", "331", "332", "333"] }
+// Category Specific References (Purlin, Rafter, LA, Columns, Jointer)
+const categoryRefSpecs = {
+    "PURLINE": {
+        items: ["PURL-0012 (P2L)", "PURL-0011 (P2M)", "PURL-0042 (P2H)", "PURL-0024 (P3L)", "PURL-0023 (P3M)", "PURL-0022 (P3H)"],
+        coatMin: 255.0, coatMax: 295.0, thickMin: 1.14, thickMax: 1.26
+    },
+    "Rafter": {
+        items: ["RAFT-0101", "RAFT-0102", "RAFT-0103", "RAFT-0201", "RAFT-0202", "RAFT-0203", "RAFT-0311", "RAFT-0312", "RAFT-0313", "RAFT-0321", "RAFT-0322", "RAFT-0323", "RAFT-1202", "RAFT-1203", "RAFT-1204", "RAFT-1312", "RAFT-1313", "RAFT-1322", "RAFT-1323"],
+        coatMin: 110.0, coatMax: 135.0, thickMin: 1.14, thickMax: 1.26
+    },
+    "LA": {
+        items: ["EALA-0032", "EALA-0046", "LA-0046"],
+        coatMin: 500.0, coatMax: 600.0, thickMin: 2.85, thickMax: 3.15
+    },
+    "COLUMNS": {
+        items: ["COLU-1620", "COLU-1820", "COLU-2611", "COLU-2612", "COLU-2613", "COLU-2621", "COLU-2622", "COLU-2623", "COLU-2811", "COLU-2812", "COLU-2813", "COLU-2821", "COLU-2822", "COLU-2823", "COLU-3611", "COLU-3612", "COLU-3613", "COLU-3621", "COLU-3622", "COLU-3623", "COLU-3811", "COLU-3812", "COLU-3813", "COLU-3821", "COLU-3822", "COLU-3823"],
+        coatMin: 110.0, coatMax: 135.0, thickMin: 1.95, thickMax: 2.10
+    },
+    "Jointer": {
+        items: ["RAFT-0331", "RAFT-0332", "RAFT-0333"],
+        coatMin: 110.0, coatMax: 135.0, thickMin: 1.95, thickMax: 2.10
+    }
 };
 
 function switchMode(mode) {
@@ -321,6 +350,7 @@ function switchMode(mode) {
     document.getElementById('btnDriveMode').classList.toggle('active', mode === 'drive');
 }
 
+// MODE 1 LOGIC
 let singleGeneratedRows = [];
 let currentSingleItemName = "";
 let currentSingleCat = "";
@@ -329,12 +359,17 @@ function onSingleCategoryChange() {
     const cat = document.getElementById("singleCategory").value;
     const itemSelect = document.getElementById("singleItemSelect");
     itemSelect.innerHTML = "";
-    if (cat && masterData[cat]) {
-        masterData[cat].items.forEach(it => {
+    if (cat && categoryRefSpecs[cat]) {
+        categoryRefSpecs[cat].items.forEach(it => {
             let opt = document.createElement("option");
             opt.value = it; opt.innerText = it;
             itemSelect.appendChild(opt);
         });
+        // Set specs
+        document.getElementById("sCoatMin").value = categoryRefSpecs[cat].coatMin;
+        document.getElementById("sCoatMax").value = categoryRefSpecs[cat].coatMax;
+        document.getElementById("sThickMin").value = categoryRefSpecs[cat].thickMin;
+        document.getElementById("sThickMax").value = categoryRefSpecs[cat].thickMax;
     } else {
         itemSelect.innerHTML = '<option value="">पहले Category चुनें</option>';
     }
@@ -357,7 +392,7 @@ function generateSingleReport() {
     const count = parseInt(document.getElementById("singleCount").value);
 
     if (!currentSingleCat || !currentSingleItemName) {
-        alert("कृपया Category और Sub-Item चुनें!");
+        alert("Kripya Category aur Sub-Item chunein!");
         return;
     }
 
@@ -366,7 +401,7 @@ function generateSingleReport() {
     const doBasePlate = document.getElementById("sChkBasePlate").checked;
 
     if (!doCoating && !doThickness && !doBasePlate) {
-        alert("कृपया कम से कम एक Parameter Checkbox चुनें!");
+        alert("Kripya kam se kam ek Parameter Checkbox chunein!");
         return;
     }
 
@@ -388,8 +423,8 @@ function generateSingleReport() {
             let c3 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
             let c4 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
             let c5 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
-            row["Coating 1 (μm)"] = c1; row["Coating 2 (μm)"] = c2; row["Coating 3 (μm)"] = c3; row["Coating 4 (μm)"] = c4; row["Coating 5 (μm)"] = c5;
-            row["Coating Avg (μm)"] = +((c1+c2+c3+c4+c5)/5).toFixed(1);
+            row["Coating 1"] = c1; row["Coating 2"] = c2; row["Coating 3"] = c3; row["Coating 4"] = c4; row["Coating 5"] = c5;
+            row["Coating Avg"] = +((c1+c2+c3+c4+c5)/5).toFixed(1);
         }
         if (doThickness) {
             row["Thickness (mm)"] = +(Math.random() * (thickMax - thickMin) + thickMin).toFixed(3);
@@ -430,80 +465,114 @@ function downloadSingleExcel() {
     });
 }
 
+// MODE 2 LOGIC
 let selectedItemsList = [];
 let categoryDataMapGlobal = {};
 
 function onCategoryChange() {
     const cat = document.getElementById("category").value;
     const searchInput = document.getElementById("itemSearchInput");
+    const multiBox = document.getElementById("groupMultiselectBox");
+
     searchInput.value = "";
-    if (cat) {
+    if (cat && categoryRefSpecs[cat]) {
         searchInput.disabled = false;
-        searchInput.placeholder = "आइटम खोजें (Type to search)...";
+        searchInput.placeholder = "Search item & hit Enter...";
+
+        // Specs update
+        document.getElementById("coatMin").value = categoryRefSpecs[cat].coatMin;
+        document.getElementById("coatMax").value = categoryRefSpecs[cat].coatMax;
+        document.getElementById("thickMin").value = categoryRefSpecs[cat].thickMin;
+        document.getElementById("thickMax").value = categoryRefSpecs[cat].thickMax;
+
+        // Populate Checkbox Box
+        renderMultiselectBox(cat);
     } else {
         searchInput.disabled = true;
         searchInput.placeholder = "पहले Category चुनें...";
+        multiBox.innerHTML = '<span style="color: #94a3b8; font-size: 13px;">पहले Category चुनें...</span>';
     }
-    hideDropdown();
 }
 
-function showDropdown() {
-    if (!document.getElementById("category").value) return;
-    renderAutocompleteList();
-    document.getElementById("autocompleteList").style.display = "block";
+function renderMultiselectBox(cat) {
+    const multiBox = document.getElementById("groupMultiselectBox");
+    multiBox.innerHTML = "";
+
+    const items = categoryRefSpecs[cat].items;
+
+    // Select All Option
+    const selectAllDiv = document.createElement("div");
+    selectAllDiv.className = "checkbox-row";
+    selectAllDiv.style.borderBottom = "1px solid #e2e8f0";
+    selectAllDiv.style.paddingBottom = "5px";
+    selectAllDiv.style.fontWeight = "bold";
+    selectAllDiv.innerHTML = `<input type="checkbox" id="chkSelectAll" onchange="toggleSelectAllItems('${cat}', this.checked)"> <label for="chkSelectAll">Select All Items</label>`;
+    multiBox.appendChild(selectAllDiv);
+
+    items.forEach(it => {
+        const isChecked = selectedItemsList.some(s => s.cat === cat && s.item === it);
+        const row = document.createElement("div");
+        row.className = "checkbox-row";
+        row.innerHTML = `<input type="checkbox" id="chk_${it}" ${isChecked ? 'checked' : ''} onchange="toggleItemSelection('${cat}', '${it}', this.checked)"> <label for="chk_${it}">${it}</label>`;
+        multiBox.appendChild(row);
+    });
 }
 
-function hideDropdown() {
-    setTimeout(() => { document.getElementById("autocompleteList").style.display = "none"; }, 200);
-}
-
-function filterItems() {
-    renderAutocompleteList();
-    document.getElementById("autocompleteList").style.display = "block";
-}
-
-function renderAutocompleteList() {
-    const cat = document.getElementById("category").value;
-    const filter = document.getElementById("itemSearchInput").value.toUpperCase();
-    const listDiv = document.getElementById("autocompleteList");
-    listDiv.innerHTML = "";
-
-    if (!cat || !masterData[cat]) return;
-
-    const alreadySelected = selectedItemsList.filter(s => s.cat === cat).map(s => s.item);
-    const available = masterData[cat].items.filter(it => !alreadySelected.includes(it));
-    const matched = available.filter(it => it.toUpperCase().includes(filter));
-
-    if (matched.length > 0) {
-        matched.forEach(it => {
-            const div = document.createElement("div");
-            div.className = "autocomplete-item";
-            div.innerText = it;
-            div.onclick = () => selectItem(cat, it);
-            listDiv.appendChild(div);
-        });
+function toggleItemSelection(cat, item, isChecked) {
+    if (isChecked) {
+        if (!selectedItemsList.some(s => s.cat === cat && s.item === item)) {
+            selectedItemsList.push({ cat, item });
+        }
     } else {
-        listDiv.innerHTML = '<div class="autocomplete-item" style="color: #94a3b8;">कोई परिणाम नहीं मिला</div>';
+        selectedItemsList = selectedItemsList.filter(s => !(s.cat === cat && s.item === item));
     }
+    renderTags();
 }
 
-function selectItem(cat, item) {
-    selectedItemsList.push({ cat, item });
-    document.getElementById("itemSearchInput").value = "";
-    hideDropdown();
-    renderTags();
+function toggleSelectAllItems(cat, isChecked) {
+    const items = categoryRefSpecs[cat].items;
+    items.forEach(it => {
+        toggleItemSelection(cat, it, isChecked);
+        const chk = document.getElementById(`chk_${it}`);
+        if (chk) chk.checked = isChecked;
+    });
+}
+
+function handleSearchKeyPress(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        const cat = document.getElementById("category").value;
+        const query = document.getElementById("itemSearchInput").value.trim().toUpperCase();
+
+        if (!cat || !query) return;
+
+        const matched = categoryRefSpecs[cat].items.find(it => it.toUpperCase().includes(query));
+        if (matched) {
+            toggleItemSelection(cat, matched, true);
+            renderMultiselectBox(cat);
+            document.getElementById("itemSearchInput").value = "";
+        } else {
+            alert("Koi matching item nahi mila!");
+        }
+    }
 }
 
 function removeSelectedItem(idx) {
+    const itemToRemove = selectedItemsList[idx];
     selectedItemsList.splice(idx, 1);
     renderTags();
+
+    const currentCat = document.getElementById("category").value;
+    if (currentCat && itemToRemove && itemToRemove.cat === currentCat) {
+        renderMultiselectBox(currentCat);
+    }
 }
 
 function renderTags() {
     const container = document.getElementById("selectedTags");
     container.innerHTML = "";
     if (selectedItemsList.length === 0) {
-        container.innerHTML = '<span style="color: #94a3b8; font-size: 13px;">अभी कोई आइटम सेलेक्ट नहीं हुआ है। ऊपर से खोजकर चुनें।</span>';
+        container.innerHTML = '<span style="color: #94a3b8; font-size: 13px;">Koi item select nahi hua hai.</span>';
         return;
     }
     selectedItemsList.forEach((s, idx) => {
@@ -523,7 +592,7 @@ function toggleMode() {
 
 function generateGroupReport() {
     if (selectedItemsList.length === 0) {
-        alert("कृपया पहले कम से कम एक Sub-Item सेलेक्ट करें!");
+        alert("Kripya pehle kam se kam ek Sub-Item select karein!");
         return;
     }
 
@@ -532,24 +601,24 @@ function generateGroupReport() {
     const doBasePlate = document.getElementById("chkBasePlate").checked;
 
     if (!doCoating && !doThickness && !doBasePlate) {
-        alert("कृपया कम से कम एक Parameter Checkbox को टिक करें!");
+        alert("Kripya kam se kam ek Parameter Checkbox tick karein!");
         return;
     }
 
     const mode = document.getElementById("mode").value;
     const count = parseInt(document.getElementById("sampleCount").value);
 
-    let coatMin = doCoating ? (mode === "manual" ? parseFloat(document.getElementById("coatMin").value) : 60.0) : 0;
-    let coatMax = doCoating ? (mode === "manual" ? parseFloat(document.getElementById("coatMax").value) : 100.0) : 0;
-    let thickMin = doThickness ? (mode === "manual" ? parseFloat(document.getElementById("thickMin").value) : 1.95) : 0;
-    let thickMax = doThickness ? (mode === "manual" ? parseFloat(document.getElementById("thickMax").value) : 2.10) : 0;
-    let baseMin = doBasePlate ? (mode === "manual" ? parseFloat(document.getElementById("baseMin").value) : 3.0) : 0;
-    let baseMax = doBasePlate ? (mode === "manual" ? parseFloat(document.getElementById("baseMax").value) : 3.3) : 0;
-
     categoryDataMapGlobal = {};
 
     selectedItemsList.forEach(s => {
         if (!categoryDataMapGlobal[s.cat]) categoryDataMapGlobal[s.cat] = [];
+
+        let coatMin = doCoating ? (mode === "manual" ? parseFloat(document.getElementById("coatMin").value) : categoryRefSpecs[s.cat].coatMin) : 0;
+        let coatMax = doCoating ? (mode === "manual" ? parseFloat(document.getElementById("coatMax").value) : categoryRefSpecs[s.cat].coatMax) : 0;
+        let thickMin = doThickness ? (mode === "manual" ? parseFloat(document.getElementById("thickMin").value) : categoryRefSpecs[s.cat].thickMin) : 0;
+        let thickMax = doThickness ? (mode === "manual" ? parseFloat(document.getElementById("thickMax").value) : categoryRefSpecs[s.cat].thickMax) : 0;
+        let baseMin = doBasePlate ? (mode === "manual" ? parseFloat(document.getElementById("baseMin").value) : 3.0) : 0;
+        let baseMax = doBasePlate ? (mode === "manual" ? parseFloat(document.getElementById("baseMax").value) : 3.3) : 0;
 
         for (let i = 1; i <= count; i++) {
             let rowObj = { "Sub-Item Name": s.item, "Sample #": `Sample ${i}` };
@@ -560,8 +629,8 @@ function generateGroupReport() {
                 let c3 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
                 let c4 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
                 let c5 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
-                rowObj["Coating 1 (μm)"] = c1; rowObj["Coating 2 (μm)"] = c2; rowObj["Coating 3 (μm)"] = c3; rowObj["Coating 4 (μm)"] = c4; rowObj["Coating 5 (μm)"] = c5;
-                rowObj["Coating Avg (μm)"] = +((c1 + c2 + c3 + c4 + c5) / 5).toFixed(1);
+                rowObj["Coating 1"] = c1; rowObj["Coating 2"] = c2; rowObj["Coating 3"] = c3; rowObj["Coating 4"] = c4; rowObj["Coating 5"] = c5;
+                rowObj["Coating Avg"] = +((c1 + c2 + c3 + c4 + c5) / 5).toFixed(1);
             }
             if (doThickness) {
                 rowObj["Thickness (mm)"] = +(Math.random() * (thickMax - thickMin) + thickMin).toFixed(3);
@@ -636,7 +705,7 @@ function downloadGroupExcel() {
     });
 }
 
-// ================= MODE 3 GOOGLE CLOUD SHEET EXTRACTOR LOGIC =================
+// MODE 3 LOGIC
 let loadedSourceWorkbook = null;
 let selectedUploadedTabs = [];
 const GOOGLE_SHEET_ID = "1yIl9mDCsW6b4Sx3XsE0aPild8Es1K4-x";
@@ -746,14 +815,14 @@ function loadUploadedExcelFile() {
 }
 
 function clearCacheAndReload() {
-    if (confirm("Kya aap cache clear karke cloud से fresh sync karna chahte hain?")) {
+    if (confirm("Kya aap cache clear karke fresh sync karna chahte hain?")) {
         localStorage.removeItem('cachedMasterExcel');
         alert("Cache cleared successfully! Page reload ho raha hai.");
         location.reload();
     }
 }
 
-function populateUploadedTabDropdown() {
+function populateUploadedTabDropdown(filterText = "") {
     const dropdown = document.getElementById("uploadedTabDropdown");
     dropdown.innerHTML = '<option value="">-- Choose Tab --</option>';
     
@@ -761,12 +830,40 @@ function populateUploadedTabDropdown() {
 
     loadedSourceWorkbook.worksheets.forEach(ws => {
         if (!selectedUploadedTabs.includes(ws.name)) {
-            const opt = document.createElement("option");
-            opt.value = ws.name;
-            opt.innerText = ws.name;
-            dropdown.appendChild(opt);
+            if (!filterText || ws.name.toUpperCase().includes(filterText.toUpperCase())) {
+                const opt = document.createElement("option");
+                opt.value = ws.name;
+                opt.innerText = ws.name;
+                dropdown.appendChild(opt);
+            }
         }
     });
+}
+
+function filterMode3Tabs() {
+    const text = document.getElementById("mode3SearchInput").value.trim();
+    populateUploadedTabDropdown(text);
+}
+
+function handleMode3SearchKeyPress(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        const text = document.getElementById("mode3SearchInput").value.trim().toUpperCase();
+        if (!text || !loadedSourceWorkbook) return;
+
+        const matchedWs = loadedSourceWorkbook.worksheets.find(ws => 
+            !selectedUploadedTabs.includes(ws.name) && ws.name.toUpperCase().includes(text)
+        );
+
+        if (matchedWs) {
+            selectedUploadedTabs.push(matchedWs.name);
+            renderUploadedTabTags();
+            document.getElementById("mode3SearchInput").value = "";
+            populateUploadedTabDropdown();
+        } else {
+            alert("Matching tab nahi mila ya pehle se selected hai!");
+        }
+    }
 }
 
 function addUploadedTab() {
@@ -775,14 +872,14 @@ function addUploadedTab() {
     if (val && !selectedUploadedTabs.includes(val)) {
         selectedUploadedTabs.push(val);
         renderUploadedTabTags();
-        populateUploadedTabDropdown();
+        populateUploadedTabDropdown(document.getElementById("mode3SearchInput").value);
     }
 }
 
 function removeUploadedTab(idx) {
     selectedUploadedTabs.splice(idx, 1);
     renderUploadedTabTags();
-    populateUploadedTabDropdown();
+    populateUploadedTabDropdown(document.getElementById("mode3SearchInput").value);
 }
 
 function renderUploadedTabTags() {
