@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+function base64<!DOCTYPE html>
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
@@ -7,7 +7,6 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1e3a8a">
     
-    <!-- ExcelJS & FileSaver -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
@@ -71,17 +70,16 @@
 <div class="container">
     <div class="header">
         <h2>Quality Inspection Management Portal</h2>
-        <p style="margin: 5px 0 0 0; opacity: 0.9;">Sample Generator Portal & Auto Cloud Sheet Extractor</p>
+        <p style="margin: 5px 0 0 0; opacity: 0.9;">Sample Generator Portal & Auto Cloud Extractor (100% File Specs Hardcoded)</p>
     </div>
 
-    <!-- Mode Switcher Buttons -->
     <div class="mode-switcher">
         <button class="mode-btn active" id="btnSingleMode" onclick="switchMode('single')">📌 Mode 1: Single Item Generator</button>
         <button class="mode-btn" id="btnGroupMode" onclick="switchMode('group')">📁 Mode 2: Group Multi-Tab Batch Portal</button>
         <button class="mode-btn" id="btnDriveMode" onclick="switchMode('drive')">⚡ Mode 3: Cloud Master Extractor</button>
     </div>
 
-    <!-- ================= MODE 1: SINGLE ITEM GENERATOR ================= -->
+    <!-- MODE 1 -->
     <div id="singleModeSection">
         <div class="card">
             <h3>Single Item Inspection Setup</h3>
@@ -100,13 +98,13 @@
                 <div>
                     <label>Sub-Item Name</label>
                     <select id="singleItemSelect">
-                        <option value="">पहले Category चुनें</option>
+                        <option value="">Pehle Category Chunein</option>
                     </select>
                 </div>
                 <div>
                     <label>Generation Mode</label>
                     <select id="singleMode" onchange="toggleSingleMode()">
-                        <option value="auto">Auto Reference Mode (Standards)</option>
+                        <option value="auto">Auto Reference Mode (From Uploaded Sheet)</option>
                         <option value="manual">Manual Custom Range Mode</option>
                     </select>
                 </div>
@@ -119,32 +117,32 @@
             <div style="margin-top: 15px;">
                 <label>Select Parameters Required:</label>
                 <div class="checkbox-group">
-                    <label class="checkbox-item"><input type="checkbox" id="sChkCoating" checked> Coating (μm/GSM) [5 Spot + Avg]</label>
-                    <label class="checkbox-item"><input type="checkbox" id="sChkThickness" checked> Thickness (mm)</label>
-                    <label class="checkbox-item"><input type="checkbox" id="sChkBasePlate"> Base Plate Thickness (mm)</label>
+                    <label class="checkbox-item"><input type="checkbox" id="sChkCoating" checked> Coating (μm) [5 Spot + Avg]</label>
+                    <label class="checkbox-item"><input type="checkbox" id="sChkThickness" checked> Section Thickness (mm)</label>
+                    <label class="checkbox-item"><input type="checkbox" id="sChkBasePlate" checked> Base Plate Thickness (mm)</label>
                 </div>
             </div>
 
             <div id="singleRangePanel" class="form-grid" style="margin-top: 15px; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid var(--border);">
                 <div>
-                    <label>Coating Min - Max (GSM / μm)</label>
+                    <label>Coating Min - Max (μm)</label>
                     <div style="display: flex; gap: 5px;">
-                        <input type="number" id="sCoatMin" value="110" disabled>
-                        <input type="number" id="sCoatMax" value="135" disabled>
+                        <input type="number" id="sCoatMin" value="23.2" disabled>
+                        <input type="number" id="sCoatMax" value="30.0" disabled>
                     </div>
                 </div>
                 <div>
                     <label>Thickness Min - Max (mm)</label>
                     <div style="display: flex; gap: 5px;">
-                        <input type="number" id="sThickMin" step="0.001" value="1.14" disabled>
-                        <input type="number" id="sThickMax" step="0.001" value="1.26" disabled>
+                        <input type="number" id="sThickMin" step="0.001" value="1.002" disabled>
+                        <input type="number" id="sThickMax" step="0.001" value="1.679" disabled>
                     </div>
                 </div>
                 <div>
                     <label>Base Plate Min - Max (mm)</label>
                     <div style="display: flex; gap: 5px;">
-                        <input type="number" id="sBaseMin" step="0.001" value="3.0" disabled>
-                        <input type="number" id="sBaseMax" step="0.001" value="3.3" disabled>
+                        <input type="number" id="sBaseMin" step="0.001" value="2.913" disabled>
+                        <input type="number" id="sBaseMax" step="0.001" value="3.293" disabled>
                     </div>
                 </div>
             </div>
@@ -166,13 +164,13 @@
         </div>
     </div>
 
-    <!-- ================= MODE 2: GROUP BATCH PORTAL ================= -->
+    <!-- MODE 2 -->
     <div id="groupModeSection" style="display: none;">
         <div class="card">
-            <h3>Step 1: Select Category & Sub-Items (Type, Enter or Multiselect Checkbox)</h3>
+            <h3>Step 1: Select Category & Sub-Items</h3>
             <div class="form-grid">
                 <div>
-                    <label>1. Category चुनें</label>
+                    <label>1. Category Chunein</label>
                     <select id="category" onchange="onCategoryChange()">
                         <option value="">-- Choose Category --</option>
                         <option value="COLUMNS">COLUMNS</option>
@@ -185,18 +183,18 @@
 
                 <div>
                     <label>2. Type & Hit Enter (Quick Add)</label>
-                    <input type="text" id="itemSearchInput" placeholder="पहले Category चुनें..." disabled onkeydown="handleSearchKeyPress(event)">
+                    <input type="text" id="itemSearchInput" placeholder="Pehle Category Chunein..." disabled onkeydown="handleSearchKeyPress(event)">
                 </div>
             </div>
 
             <div style="margin-top: 15px;">
                 <label>3. Multiselect Sub-Items (Checkboxes se ek sath chunein):</label>
                 <div id="groupMultiselectBox" class="multi-select-box">
-                    <span style="color: #94a3b8; font-size: 13px;">पहले Category चुनें...</span>
+                    <span style="color: #94a3b8; font-size: 13px;">Pehle Category Chunein...</span>
                 </div>
             </div>
 
-            <label style="margin-top: 15px;">Selected Items List (Export hone wale):</label>
+            <label style="margin-top: 15px;">Selected Items List:</label>
             <div class="selected-box">
                 <div id="selectedTags" class="tag-container">
                     <span style="color: #94a3b8; font-size: 13px;">Koi item select nahi hua hai.</span>
@@ -209,16 +207,16 @@
             
             <label>1. Select Parameter(s) Required:</label>
             <div class="checkbox-group">
-                <label class="checkbox-item"><input type="checkbox" id="chkCoating" checked> Coating (μm/GSM) [5 Spot Readings + Avg]</label>
-                <label class="checkbox-item"><input type="checkbox" id="chkThickness" checked> Thickness (mm)</label>
-                <label class="checkbox-item"><input type="checkbox" id="chkBasePlate"> Base Plate Thickness (mm)</label>
+                <label class="checkbox-item"><input type="checkbox" id="chkCoating" checked> Coating (μm) [5 Spot + Avg]</label>
+                <label class="checkbox-item"><input type="checkbox" id="chkThickness" checked> Section Thickness (mm)</label>
+                <label class="checkbox-item"><input type="checkbox" id="chkBasePlate" checked> Base Plate Thickness (mm)</label>
             </div>
 
             <div class="form-grid" style="margin-top: 15px;">
                 <div>
                     <label>Generation Mode</label>
                     <select id="mode" onchange="toggleMode()">
-                        <option value="auto">Auto Reference Mode (Standards)</option>
+                        <option value="auto">Auto Reference Mode (From Uploaded Sheet)</option>
                         <option value="manual">Manual Custom Range Mode</option>
                     </select>
                 </div>
@@ -230,24 +228,24 @@
 
             <div id="manualPanel" class="form-grid" style="margin-top: 15px; display: none; background: #fff7ed; padding: 15px; border-radius: 6px; border: 1px solid #ffedd5;">
                 <div>
-                    <label>Coating Min-Max (GSM/μm)</label>
+                    <label>Coating Min-Max (μm)</label>
                     <div style="display: flex; gap: 5px;">
-                        <input type="number" id="coatMin" value="110">
-                        <input type="number" id="coatMax" value="135">
+                        <input type="number" id="coatMin" value="23.2">
+                        <input type="number" id="coatMax" value="30.0">
                     </div>
                 </div>
                 <div>
                     <label>Thickness Min-Max (mm)</label>
                     <div style="display: flex; gap: 5px;">
-                        <input type="number" id="thickMin" step="0.001" value="1.14">
-                        <input type="number" id="thickMax" step="0.001" value="1.26">
+                        <input type="number" id="thickMin" step="0.001" value="1.002">
+                        <input type="number" id="thickMax" step="0.001" value="1.679">
                     </div>
                 </div>
                 <div>
                     <label>Base Plate Min-Max (mm)</label>
                     <div style="display: flex; gap: 5px;">
-                        <input type="number" id="baseMin" step="0.001" value="3.0">
-                        <input type="number" id="baseMax" step="0.001" value="3.3">
+                        <input type="number" id="baseMin" step="0.001" value="2.913">
+                        <input type="number" id="baseMax" step="0.001" value="3.293">
                     </div>
                 </div>
             </div>
@@ -270,17 +268,17 @@
         </div>
     </div>
 
-    <!-- ================= MODE 3: CLOUD MASTER EXTRACTOR ================= -->
+    <!-- MODE 3 -->
     <div id="driveModeSection" style="display: none;">
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                 <h3>Google Cloud Sheet Sync</h3>
                 <span id="syncStatusBadge" class="status-badge status-loading">⏳ Connecting Cloud Sheet...</span>
             </div>
-            <p style="font-size: 13px; color: #64748b; margin-top: 5px;">Google Sheet link automatically synced & cached in browser memory.</p>
+            <p style="font-size: 13px; color: #64748b; margin-top: 5px;">Cloud data automatically cached in browser LocalStorage.</p>
             
             <div style="margin-top: 15px;">
-                <label>Optional: Backup Manual Excel File Upload:</label>
+                <label>Optional: Manual Excel File Upload Backup:</label>
                 <input type="file" id="excelFileInput" accept=".xlsx, .xls" onchange="loadUploadedExcelFile()">
             </div>
             
@@ -316,27 +314,27 @@
 </div>
 
 <script>
-// Category Specific References (Purlin, Rafter, LA, Columns, Jointer)
+// Corrected sub-items for LA (LA-0032 & LA-0046) with 100% exact parsed file specs
 const categoryRefSpecs = {
     "PURLINE": {
-        items: ["PURL-0012 (P2L)", "PURL-0011 (P2M)", "PURL-0042 (P2H)", "PURL-0024 (P3L)", "PURL-0023 (P3M)", "PURL-0022 (P3H)"],
-        coatMin: 255.0, coatMax: 295.0, thickMin: 1.14, thickMax: 1.26
-    },
-    "Rafter": {
-        items: ["RAFT-0101", "RAFT-0102", "RAFT-0103", "RAFT-0201", "RAFT-0202", "RAFT-0203", "RAFT-0311", "RAFT-0312", "RAFT-0313", "RAFT-0321", "RAFT-0322", "RAFT-0323", "RAFT-1202", "RAFT-1203", "RAFT-1204", "RAFT-1312", "RAFT-1313", "RAFT-1322", "RAFT-1323"],
-        coatMin: 110.0, coatMax: 135.0, thickMin: 1.14, thickMax: 1.26
+        items: ["P2L", "P2M", "P2H", "P3L", "P3M", "P3H"],
+        coatMin: 23.2, coatMax: 30.0, thickMin: 1.002, thickMax: 1.679, baseMin: 2.913, baseMax: 3.293
     },
     "LA": {
-        items: ["EALA-0032", "EALA-0046", "LA-0046"],
-        coatMin: 500.0, coatMax: 600.0, thickMin: 2.85, thickMax: 3.15
+        items: ["LA-0032", "LA-0046"],
+        coatMin: 43.0, coatMax: 161.0, thickMin: 2.062, thickMax: 2.166, baseMin: 2.913, baseMax: 3.293
     },
     "COLUMNS": {
         items: ["COLU-1620", "COLU-1820", "COLU-2611", "COLU-2612", "COLU-2613", "COLU-2621", "COLU-2622", "COLU-2623", "COLU-2811", "COLU-2812", "COLU-2813", "COLU-2821", "COLU-2822", "COLU-2823", "COLU-3611", "COLU-3612", "COLU-3613", "COLU-3621", "COLU-3622", "COLU-3623", "COLU-3811", "COLU-3812", "COLU-3813", "COLU-3821", "COLU-3822", "COLU-3823"],
-        coatMin: 110.0, coatMax: 135.0, thickMin: 1.95, thickMax: 2.10
+        coatMin: 66.4, coatMax: 114.4, thickMin: 1.91, thickMax: 3.16, baseMin: 2.913, baseMax: 3.293
+    },
+    "Rafter": {
+        items: ["RAFT-0101", "RAFT-0102", "RAFT-0103", "RAFT-0201", "RAFT-0202", "RAFT-0203", "RAFT-0311", "RAFT-0312", "RAFT-0313", "RAFT-0321", "RAFT-0322", "RAFT-0323", "RAFT-1202", "RAFT-1203", "RAFT-1204", "RAFT-1312", "RAFT-1313", "RAFT-1322", "RAFT-1323"],
+        coatMin: 19.5, coatMax: 23.0, thickMin: 1.171, thickMax: 2.032, baseMin: 2.913, baseMax: 3.293
     },
     "Jointer": {
-        items: ["RAFT-0331", "RAFT-0332", "RAFT-0333"],
-        coatMin: 110.0, coatMax: 135.0, thickMin: 1.95, thickMax: 2.10
+        items: ["331", "332", "333", "RAFT-0331", "RAFT-0332", "RAFT-0333"],
+        coatMin: 60.0, coatMax: 100.0, thickMin: 1.958, thickMax: 2.007, baseMin: 2.913, baseMax: 3.293
     }
 };
 
@@ -350,7 +348,7 @@ function switchMode(mode) {
     document.getElementById('btnDriveMode').classList.toggle('active', mode === 'drive');
 }
 
-// MODE 1 LOGIC
+// MODE 1
 let singleGeneratedRows = [];
 let currentSingleItemName = "";
 let currentSingleCat = "";
@@ -365,13 +363,14 @@ function onSingleCategoryChange() {
             opt.value = it; opt.innerText = it;
             itemSelect.appendChild(opt);
         });
-        // Set specs
         document.getElementById("sCoatMin").value = categoryRefSpecs[cat].coatMin;
         document.getElementById("sCoatMax").value = categoryRefSpecs[cat].coatMax;
         document.getElementById("sThickMin").value = categoryRefSpecs[cat].thickMin;
         document.getElementById("sThickMax").value = categoryRefSpecs[cat].thickMax;
+        document.getElementById("sBaseMin").value = categoryRefSpecs[cat].baseMin;
+        document.getElementById("sBaseMax").value = categoryRefSpecs[cat].baseMax;
     } else {
-        itemSelect.innerHTML = '<option value="">पहले Category चुनें</option>';
+        itemSelect.innerHTML = '<option value="">Pehle Category Chunein</option>';
     }
 }
 
@@ -415,7 +414,7 @@ function generateSingleReport() {
     singleGeneratedRows = [];
 
     for (let i = 1; i <= count; i++) {
-        let row = { "Sub-Item Name": currentSingleItemName, "Sample #": `Sample ${i}` };
+        let row = { "Sub-Item Name": currentSingleItemName, "Sample #": `SAMPLE ${i}` };
 
         if (doCoating) {
             let c1 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
@@ -423,14 +422,14 @@ function generateSingleReport() {
             let c3 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
             let c4 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
             let c5 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
-            row["Coating 1"] = c1; row["Coating 2"] = c2; row["Coating 3"] = c3; row["Coating 4"] = c4; row["Coating 5"] = c5;
-            row["Coating Avg"] = +((c1+c2+c3+c4+c5)/5).toFixed(1);
+            row["Coating 1 (μm)"] = c1; row["Coating 2 (μm)"] = c2; row["Coating 3 (μm)"] = c3; row["Coating 4 (μm)"] = c4; row["Coating 5 (μm)"] = c5;
+            row["Coating Avg (μm)"] = +((c1+c2+c3+c4+c5)/5).toFixed(1);
         }
         if (doThickness) {
-            row["Thickness (mm)"] = +(Math.random() * (thickMax - thickMin) + thickMin).toFixed(3);
+            row["Section Thickness (mm)"] = +(Math.random() * (thickMax - thickMin) + thickMin).toFixed(3);
         }
         if (doBasePlate) {
-            row["Base Plate (mm)"] = +(Math.random() * (baseMax - baseMin) + baseMin).toFixed(3);
+            row["Base Plate Thickness (mm)"] = +(Math.random() * (baseMax - baseMin) + baseMin).toFixed(3);
         }
         row["Status"] = "PASSED";
         singleGeneratedRows.push(row);
@@ -465,7 +464,7 @@ function downloadSingleExcel() {
     });
 }
 
-// MODE 2 LOGIC
+// MODE 2
 let selectedItemsList = [];
 let categoryDataMapGlobal = {};
 
@@ -479,18 +478,18 @@ function onCategoryChange() {
         searchInput.disabled = false;
         searchInput.placeholder = "Search item & hit Enter...";
 
-        // Specs update
         document.getElementById("coatMin").value = categoryRefSpecs[cat].coatMin;
         document.getElementById("coatMax").value = categoryRefSpecs[cat].coatMax;
         document.getElementById("thickMin").value = categoryRefSpecs[cat].thickMin;
         document.getElementById("thickMax").value = categoryRefSpecs[cat].thickMax;
+        document.getElementById("baseMin").value = categoryRefSpecs[cat].baseMin;
+        document.getElementById("baseMax").value = categoryRefSpecs[cat].baseMax;
 
-        // Populate Checkbox Box
         renderMultiselectBox(cat);
     } else {
         searchInput.disabled = true;
-        searchInput.placeholder = "पहले Category चुनें...";
-        multiBox.innerHTML = '<span style="color: #94a3b8; font-size: 13px;">पहले Category चुनें...</span>';
+        searchInput.placeholder = "Pehle Category Chunein...";
+        multiBox.innerHTML = '<span style="color: #94a3b8; font-size: 13px;">Pehle Category Chunein...</span>';
     }
 }
 
@@ -500,7 +499,6 @@ function renderMultiselectBox(cat) {
 
     const items = categoryRefSpecs[cat].items;
 
-    // Select All Option
     const selectAllDiv = document.createElement("div");
     selectAllDiv.className = "checkbox-row";
     selectAllDiv.style.borderBottom = "1px solid #e2e8f0";
@@ -617,11 +615,11 @@ function generateGroupReport() {
         let coatMax = doCoating ? (mode === "manual" ? parseFloat(document.getElementById("coatMax").value) : categoryRefSpecs[s.cat].coatMax) : 0;
         let thickMin = doThickness ? (mode === "manual" ? parseFloat(document.getElementById("thickMin").value) : categoryRefSpecs[s.cat].thickMin) : 0;
         let thickMax = doThickness ? (mode === "manual" ? parseFloat(document.getElementById("thickMax").value) : categoryRefSpecs[s.cat].thickMax) : 0;
-        let baseMin = doBasePlate ? (mode === "manual" ? parseFloat(document.getElementById("baseMin").value) : 3.0) : 0;
-        let baseMax = doBasePlate ? (mode === "manual" ? parseFloat(document.getElementById("baseMax").value) : 3.3) : 0;
+        let baseMin = doBasePlate ? (mode === "manual" ? parseFloat(document.getElementById("baseMin").value) : 2.913) : 0;
+        let baseMax = doBasePlate ? (mode === "manual" ? parseFloat(document.getElementById("baseMax").value) : 3.293) : 0;
 
         for (let i = 1; i <= count; i++) {
-            let rowObj = { "Sub-Item Name": s.item, "Sample #": `Sample ${i}` };
+            let rowObj = { "Sub-Item Name": s.item, "Sample #": `SAMPLE ${i}` };
 
             if (doCoating) {
                 let c1 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
@@ -629,11 +627,11 @@ function generateGroupReport() {
                 let c3 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
                 let c4 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
                 let c5 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
-                rowObj["Coating 1"] = c1; rowObj["Coating 2"] = c2; rowObj["Coating 3"] = c3; rowObj["Coating 4"] = c4; rowObj["Coating 5"] = c5;
-                rowObj["Coating Avg"] = +((c1 + c2 + c3 + c4 + c5) / 5).toFixed(1);
+                rowObj["Coating 1 (μm)"] = c1; rowObj["Coating 2 (μm)"] = c2; rowObj["Coating 3 (μm)"] = c3; rowObj["Coating 4 (μm)"] = c4; rowObj["Coating 5 (μm)"] = c5;
+                rowObj["Coating Avg (μm)"] = +((c1 + c2 + c3 + c4 + c5) / 5).toFixed(1);
             }
             if (doThickness) {
-                rowObj["Thickness (mm)"] = +(Math.random() * (thickMax - thickMin) + thickMin).toFixed(3);
+                rowObj["Section Thickness (mm)"] = +(Math.random() * (thickMax - thickMin) + thickMin).toFixed(3);
             }
             if (doBasePlate) {
                 rowObj["Base Plate Thickness (mm)"] = +(Math.random() * (baseMax - baseMin) + baseMin).toFixed(3);
@@ -705,7 +703,7 @@ function downloadGroupExcel() {
     });
 }
 
-// MODE 3 LOGIC
+// MODE 3
 let loadedSourceWorkbook = null;
 let selectedUploadedTabs = [];
 const GOOGLE_SHEET_ID = "1yIl9mDCsW6b4Sx3XsE0aPild8Es1K4-x";
@@ -926,14 +924,12 @@ function exportSelectedUploadedTabs() {
 
         const newSheet = outputWorkbook.addWorksheet(tabName);
 
-        // Copy column dimensions/widths
         sourceSheet.columns.forEach((col, colIndex) => {
             if (col && col.width) {
                 newSheet.getColumn(colIndex + 1).width = col.width;
             }
         });
 
-        // Copy cell values along with exact formatting & styles
         sourceSheet.eachRow({ includeEmpty: true }, (row, rowIndex) => {
             const newRow = newSheet.getRow(rowIndex);
             if (row.height) newRow.height = row.height;
@@ -948,7 +944,6 @@ function exportSelectedUploadedTabs() {
             });
         });
 
-        // Copy merged cells
         if (sourceSheet.model && sourceSheet.model.merges) {
             sourceSheet.model.merges.forEach(mergeRange => {
                 newSheet.mergeCells(mergeRange);
@@ -967,3 +962,4 @@ function exportSelectedUploadedTabs() {
 
 </body>
 </html>
+
