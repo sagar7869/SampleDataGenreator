@@ -684,11 +684,11 @@ function renderDriveTabTags() {
 function downloadSelectedTabsExcel() {
     const url = document.getElementById("scriptUrl").value.trim();
     if (selectedDriveTabs.length === 0) {
-        alert("कृपया कम से कम एक Tab सेलेक्ट करें!");
+        alert("Kripya kam se kam ek tab select karein!");
         return;
     }
 
-    alert("Excel फ़ाइल तैयार हो रही है... कृपया प्रतीक्षा करें।");
+    alert("Original formatting ke sath Excel file generate ho rahi hai, kripya prateeksha karein...");
 
     fetch(url, {
         method: "POST",
@@ -696,18 +696,25 @@ function downloadSelectedTabsExcel() {
     })
     .then(res => res.json())
     .then(response => {
-        if (response.status === "success" && response.data) {
-            // SheetJS का उपयोग करके ब्राउज़र में ही मल्टी-टाब Excel बुक बनाएँ
-            const wb = XLSX.utils.book_new();
-            
-            for (let tabName in response.data) {
-                const ws = XLSX.utils.aoa_to_sheet(response.data[tabName]);
-                XLSX.utils.book_append_sheet(wb, ws, tabName);
+        if (response.status === "success" && response.fileData) {
+            // Convert Base64 data directly into downloadable Blob (.xlsx)
+            const byteCharacters = atob(response.fileData);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
             }
-            
-            // सीधे डिवाइस में Excel फ़ाइल डाउनलोड करें
-            XLSX.writeFile(wb, "Era_Inspection_Report.xlsx");
-            alert("Excel फ़ाइल सफलतापूर्वक डाउनलोड हो गई है!");
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+            // Trigger direct download without drive login/permission issues
+            const link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.download = response.fileName || "Era_Inspection_Report.xlsx";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            alert("Exact original formatted Excel file safaltapurvak download ho gayi hai!");
         } else {
             alert("Download failed: " + JSON.stringify(response));
         }
@@ -715,8 +722,7 @@ function downloadSelectedTabsExcel() {
     .catch(err => {
         alert("Error: " + err);
     });
-}
-</script>
+}</script>
 
 </body>
 </html>
