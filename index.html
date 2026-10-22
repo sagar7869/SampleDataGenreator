@@ -73,14 +73,14 @@
 <div class="container">
     <div class="header">
         <h2>Quality Inspection Management Portal</h2>
-        <p style="margin: 5px 0 0 0; opacity: 0.9;">Sample Generator Portal & Cached Master Extractor</p>
+        <p style="margin: 5px 0 0 0; opacity: 0.9;">Sample Generator Portal & Auto Cloud Sheet Extractor</p>
     </div>
 
     <!-- Mode Switcher Buttons -->
     <div class="mode-switcher">
         <button class="mode-btn active" id="btnSingleMode" onclick="switchMode('single')">📌 Mode 1: Single Item Generator</button>
         <button class="mode-btn" id="btnGroupMode" onclick="switchMode('group')">📁 Mode 2: Group Multi-Tab Batch Portal</button>
-        <button class="mode-btn" id="btnDriveMode" onclick="switchMode('drive')">⚡ Mode 3: Cached Master Extractor</button>
+        <button class="mode-btn" id="btnDriveMode" onclick="switchMode('drive')">⚡ Mode 3: Cloud Master Extractor</button>
     </div>
 
     <!-- ================= MODE 1: SINGLE ITEM GENERATOR ================= -->
@@ -266,17 +266,17 @@
         </div>
     </div>
 
-    <!-- ================= MODE 3: CACHED MASTER EXTRACTOR ================= -->
+    <!-- ================= MODE 3: CLOUD MASTER EXTRACTOR ================= -->
     <div id="driveModeSection" style="display: none;">
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                <h3>Master Data & Local Cache Sync</h3>
-                <span id="syncStatusBadge" class="status-badge status-loading">⏳ Checking Cache...</span>
+                <h3>Google Cloud Sheet Sync</h3>
+                <span id="syncStatusBadge" class="status-badge status-loading">⏳ Connecting Cloud Sheet...</span>
             </div>
-            <p style="font-size: 13px; color: #64748b; margin-top: 5px;">File browser cache mein saved rahegi. Agar aap nayi file upload karenge toh purani wali replace ho jayegi.</p>
+            <p style="font-size: 13px; color: #64748b; margin-top: 5px;">Aapka Google Sheet link automatic sync ho raha hai aur browser cache mein secure saved hai.</p>
             
             <div style="margin-top: 15px;">
-                <label>Nayi Master Excel File Upload Karein (Cache Update karne ke liye):</label>
+                <label>Optional: Backup ke liye Manual Excel File Upload:</label>
                 <input type="file" id="excelFileInput" accept=".xlsx, .xls" onchange="loadUploadedExcelFile()">
             </div>
             
@@ -285,7 +285,7 @@
 
         <div class="card" id="uploadedTabSelectionCard">
             <h3>Select Tabs to Extract</h3>
-            <label>Master Data ke available Tabs:</label>
+            <label>Cloud Sheet ke available Tabs:</label>
             <select id="uploadedTabDropdown" onchange="addUploadedTab()">
                 <option value="">-- Choose Tab --</option>
             </select>
@@ -636,23 +636,23 @@ function downloadGroupExcel() {
     });
 }
 
-// ================= MODE 3 CACHED MASTER EXTRACTOR LOGIC =================
+// ================= MODE 3 GOOGLE CLOUD SHEET EXTRACTOR LOGIC =================
 let loadedSourceWorkbook = null;
 let selectedUploadedTabs = [];
+const GOOGLE_SHEET_ID = "1yIl9mDCsW6b4Sx3XsE0aPild8Es1K4-x";
 
 window.addEventListener('DOMContentLoaded', () => {
-    loadMasterFromCacheOrFetch();
+    loadMasterFromCacheOrCloud();
 });
 
-function loadMasterFromCacheOrFetch() {
+function loadMasterFromCacheOrCloud() {
     const badge = document.getElementById("syncStatusBadge");
     badge.className = "status-badge status-loading";
-    badge.innerText = "⏳ Checking Browser Cache...";
+    badge.innerText = "⏳ Checking Local Cache...";
 
     const cachedBase64 = localStorage.getItem('cachedMasterExcel');
 
     if (cachedBase64) {
-        // Cache se load karein
         try {
             const buffer = base64ToArrayBuffer(cachedBase64);
             loadedSourceWorkbook = new ExcelJS.Workbook();
@@ -665,39 +665,35 @@ function loadMasterFromCacheOrFetch() {
             });
             return;
         } catch (e) {
-            console.warn("Cache parse error, fetching fresh...", e);
+            console.warn("Cache load failed, fetching from cloud...", e);
         }
     }
 
-    // Agar cache mein nahi hai toh GitHub se fetch karein aur cache mein save karein
-    const rawFileUrl = 'https://raw.githubusercontent.com/sagar7869/SampleDataGenerreator/main/Master_Data.xlsx';
+    // Agar cache mein nahi hai toh Google Sheet export link se fetch karein
+    badge.innerText = "⏳ Downloading from Google Cloud...";
+    const exportUrl = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/export?format=xlsx`;
 
-    fetch(rawFileUrl)
+    fetch(exportUrl)
         .then(res => {
-            if (!res.ok) throw new Error("GitHub Fetch Failed");
+            if (!res.ok) throw new Error("Cloud Sheet fetch failed");
             return res.arrayBuffer();
-        })
-        .catch(() => {
-            // Fallback to local file
-            return fetch('Master_Data.xlsx').then(r => r.arrayBuffer());
         })
         .then(buffer => {
             loadedSourceWorkbook = new ExcelJS.Workbook();
             return loadedSourceWorkbook.xlsx.load(buffer).then(() => {
-                // Save to localStorage as base64 for future offline caching
                 saveArrayBufferToCache(buffer);
                 selectedUploadedTabs = [];
                 populateUploadedTabDropdown();
                 renderUploadedTabTags();
                 badge.className = "status-badge status-ready";
-                badge.innerText = "✅ Master Excel Synced & Cached";
+                badge.innerText = "✅ Cloud Sheet Synced & Cached";
             });
         })
         .catch(err => {
             badge.className = "status-badge";
             badge.style.background = "#fee2e2";
             badge.style.color = "#991b1b";
-            badge.innerText = "⚠️ Please Upload File Manually";
+            badge.innerText = "⚠️ Manual File Upload Required";
         });
 }
 
@@ -734,14 +730,13 @@ function loadUploadedExcelFile() {
         loadedSourceWorkbook = new ExcelJS.Workbook();
 
         loadedSourceWorkbook.xlsx.load(arrayBuffer).then(() => {
-            // Cache mein save kar lein
             saveArrayBufferToCache(arrayBuffer);
             selectedUploadedTabs = [];
             populateUploadedTabDropdown();
             renderUploadedTabTags();
             const badge = document.getElementById("syncStatusBadge");
             badge.className = "status-badge status-ready";
-            badge.innerText = "✅ Custom File Saved to Cache";
+            badge.innerText = "✅ Manual File Saved to Cache";
             alert(`File Read & Cached Successfully! ${loadedSourceWorkbook.worksheets.length} Tabs mil gaye.`);
         }).catch(err => {
             alert("Excel file load karne me error aaya: " + err.message);
@@ -752,7 +747,7 @@ function loadUploadedExcelFile() {
 }
 
 function clearCacheAndReload() {
-    if (confirm("Kya aap cache clear karke reset karna chahte hain?")) {
+    if (confirm("Kya aap cache clear karke cloud se fresh sync karna chahte hain?")) {
         localStorage.removeItem('cachedMasterExcel');
         alert("Cache cleared successfully! Page reload ho raha hai.");
         location.reload();
@@ -819,7 +814,7 @@ function renderUploadedTabTags() {
 
 function exportSelectedUploadedTabs() {
     if (!loadedSourceWorkbook) {
-        alert("Master Excel load nahi hai. Kripya file upload karein.");
+        alert("Cloud Master Sheet load nahi hai. Kripya page refresh karein.");
         return;
     }
     if (selectedUploadedTabs.length === 0) {
@@ -833,7 +828,7 @@ function exportSelectedUploadedTabs() {
         const sourceSheet = loadedSourceWorkbook.getWorksheet(tabName);
         if (!sourceSheet) return;
 
-        const newSheet = outputWorkbook.addWorksheet(tabName);
+        const newSheet = outputWorkbook.outputWorksheet ? null : outputWorkbook.addWorksheet(tabName);
 
         // Copy column dimensions/widths
         sourceSheet.columns.forEach((col, colIndex) => {
