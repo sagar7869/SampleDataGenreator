@@ -3,19 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quality Inspection Management Portal - Exact Sequence & Specs</title>
+    <title>Quality Inspection Management Portal - Advanced Formatting Engine</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1e3a8a">
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js')
-        .then((reg) => console.log('Service Worker registered successfully:', reg.scope))
-        .catch((err) => console.log('Service Worker registration failed:', err));
-    });
-  }
-</script>
-
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -73,6 +63,8 @@
         .status-badge { display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
         .status-loading { background: #fef08a; color: #854d0e; }
         .status-ready { background: #dcfce7; color: #166534; }
+
+        .cat-config-card { background: #ffffff; border: 1px solid var(--border); border-left: 4px solid var(--primary); padding: 15px; border-radius: 6px; margin-bottom: 15px; }
     </style>
 </head>
 <body>
@@ -80,7 +72,7 @@
 <div class="container">
     <div class="header">
         <h2>Quality Inspection Management Portal</h2>
-        <p style="margin: 5px 0 0 0; opacity: 0.9;">Exact Sub-Item Sequence & Reference-Bound Standards</p>
+        <p style="margin: 5px 0 0 0; opacity: 0.9;">Formatted Multi-Tab Precision Report Generator</p>
     </div>
 
     <div class="mode-switcher">
@@ -114,7 +106,7 @@
                 <div>
                     <label>Generation Mode</label>
                     <select id="singleMode" onchange="toggleSingleMode()">
-                        <option value="auto">Reference-Bound Auto Mode</option>
+                        <option value="auto">Reference Positive-Biased Mode (Recommended)</option>
                         <option value="manual">Manual Custom Range Mode</option>
                     </select>
                 </div>
@@ -137,22 +129,22 @@
                 <div>
                     <label>Coating Min - Max (μm)</label>
                     <div style="display: flex; gap: 5px;">
-                        <input type="number" id="sCoatMin" value="22.0" disabled>
-                        <input type="number" id="sCoatMax" value="28.0" disabled>
+                        <input type="number" id="sCoatMin" value="65.0" disabled>
+                        <input type="number" id="sCoatMax" value="120.0" disabled>
                     </div>
                 </div>
                 <div>
                     <label>Thickness Min - Max (mm)</label>
                     <div style="display: flex; gap: 5px;">
-                        <input type="number" id="sThickMin" step="0.001" value="0.980" disabled>
-                        <input type="number" id="sThickMax" step="0.001" value="1.020" disabled>
+                        <input type="number" id="sThickMin" step="0.001" value="1.985" disabled>
+                        <input type="number" id="sThickMax" step="0.001" value="2.080" disabled>
                     </div>
                 </div>
                 <div id="sBasePlateInputBox" style="display:none;">
                     <label>Base Plate Min - Max (mm)</label>
                     <div style="display: flex; gap: 5px;">
-                        <input type="number" id="sBaseMin" step="0.001" value="2.950" disabled>
-                        <input type="number" id="sBaseMax" step="0.001" value="3.050" disabled>
+                        <input type="number" id="sBaseMin" step="0.001" value="3.000" disabled>
+                        <input type="number" id="sBaseMax" step="0.001" value="3.120" disabled>
                     </div>
                 </div>
             </div>
@@ -163,7 +155,7 @@
         <div class="card" id="singlePreviewCard" style="display:none;">
             <div class="preview-header">
                 <h3 style="margin: 0;">Generated Inspection Report Display</h3>
-                <button class="btn btn-success" onclick="downloadSingleExcel()">📥 Download Excel Report</button>
+                <button class="btn btn-success" onclick="downloadSingleExcel()">📥 Download Formatted Excel Report</button>
             </div>
             <div style="overflow-x: auto; max-height: 400px;">
                 <table>
@@ -213,60 +205,20 @@
         </div>
 
         <div class="card">
-            <h3>Step 2: Select Parameters & Quantities</h3>
+            <h3>Step 2: Category-Wise Configurations & Quantities</h3>
+            <p style="font-size: 12px; color: #64748b; margin-top: -5px;">Har category ke liye sample count aur ranges ek dusre se poori tarah alag rahegi.</p>
             
-            <label>1. Select Parameter(s) Required:</label>
-            <div class="checkbox-group">
-                <label class="checkbox-item"><input type="checkbox" id="chkCoating" checked> Coating (μm) [5 Spot + Avg]</label>
-                <label class="checkbox-item"><input type="checkbox" id="chkThickness" checked> Section Thickness (mm)</label>
-                <label class="checkbox-item" id="basePlateGroup" style="display:none;"><input type="checkbox" id="chkBasePlate"> Base Plate Thickness (mm)</label>
+            <div id="categoryWiseConfigContainer">
+                <span style="color: #94a3b8; font-size: 13px;">Pehle Step 1 se kam se kam ek Sub-Item select karein.</span>
             </div>
 
-            <div class="form-grid" style="margin-top: 15px;">
-                <div>
-                    <label>Generation Mode</label>
-                    <select id="mode" onchange="toggleMode()">
-                        <option value="auto">Reference-Bound Auto Mode</option>
-                        <option value="manual">Manual Custom Range Mode</option>
-                    </select>
-                </div>
-                <div>
-                    <label>Quantity of Samples (per item)</label>
-                    <input type="number" id="sampleCount" value="3" min="1" max="100">
-                </div>
-            </div>
-
-            <div id="manualPanel" class="form-grid" style="margin-top: 15px; display: none; background: #fff7ed; padding: 15px; border-radius: 6px; border: 1px solid #ffedd5;">
-                <div>
-                    <label>Coating Min-Max (μm)</label>
-                    <div style="display: flex; gap: 5px;">
-                        <input type="number" id="coatMin" value="22.0">
-                        <input type="number" id="coatMax" value="28.0">
-                    </div>
-                </div>
-                <div>
-                    <label>Thickness Min-Max (mm)</label>
-                    <div style="display: flex; gap: 5px;">
-                        <input type="number" id="thickMin" step="0.001" value="0.980">
-                        <input type="number" id="thickMax" step="0.001" value="1.020">
-                    </div>
-                </div>
-                <div id="basePlateInputBox" style="display:none;">
-                    <label>Base Plate Min-Max (mm)</label>
-                    <div style="display: flex; gap: 5px;">
-                        <input type="number" id="baseMin" step="0.001" value="2.950">
-                        <input type="number" id="baseMax" step="0.001" value="3.050">
-                    </div>
-                </div>
-            </div>
-
-            <button class="btn btn-primary" onclick="generateGroupReport()">⚡ Generate Report</button>
+            <button class="btn btn-primary" onclick="generateGroupReport()">⚡ Generate Multi-Tab Report</button>
         </div>
 
         <div class="card" id="groupPreviewCard" style="display:none;">
             <div class="preview-header">
                 <h3 style="margin: 0;">Generated Multi-Tab Inspection Report Display</h3>
-                <button class="btn btn-success" onclick="downloadGroupExcel()">📥 Download Complete Multi-Tab Excel Report</button>
+                <button class="btn btn-success" onclick="downloadGroupExcel()">📥 Download Formatted Multi-Tab Excel</button>
             </div>
             <div id="groupTabButtons" style="margin-bottom: 15px;"></div>
             <div style="overflow-x: auto; max-height: 400px;">
@@ -324,77 +276,77 @@
 </div>
 
 <script>
-// EXACT PRECISE SUB-ITEM SPECS & STRICT REFERENCE-BOUND RANGES
+// SUB-ITEM SPECS WITH REFERRED VALUES
 const subItemSpecs = {
     // PURLINE
-    "P2L": { coatMin: 22.0, coatMax: 28.0, thickMin: 0.980, thickMax: 1.020, hasBasePlate: false },
-    "P2M": { coatMin: 22.0, coatMax: 28.0, thickMin: 1.180, thickMax: 1.220, hasBasePlate: false },
-    "P2H": { coatMin: 22.0, coatMax: 26.0, thickMin: 1.580, thickMax: 1.620, hasBasePlate: false },
-    "P3L": { coatMin: 22.0, coatMax: 28.0, thickMin: 0.980, thickMax: 1.020, hasBasePlate: false },
-    "P3M": { coatMin: 22.0, coatMax: 28.0, thickMin: 1.180, thickMax: 1.220, hasBasePlate: false },
-    "P3H": { coatMin: 22.0, coatMax: 26.0, thickMin: 1.580, thickMax: 1.620, hasBasePlate: false },
+    "P2L": { refThick: 1.000, refCoat: 18.0, coatMin: 22.0, coatMax: 34.0, thickMin: 0.990, thickMax: 1.045, hasBasePlate: false },
+    "P2M": { refThick: 1.200, refCoat: 18.0, coatMin: 22.0, coatMax: 34.0, thickMin: 1.190, thickMax: 1.250, hasBasePlate: false },
+    "P2H": { refThick: 1.600, refCoat: 18.0, coatMin: 22.0, coatMax: 26.0, thickMin: 1.590, thickMax: 1.660, hasBasePlate: false },
+    "P3L": { refThick: 1.000, refCoat: 18.0, coatMin: 22.0, coatMax: 34.0, thickMin: 0.990, thickMax: 1.045, hasBasePlate: false },
+    "P3M": { refThick: 1.200, refCoat: 18.0, coatMin: 22.0, coatMax: 34.0, thickMin: 1.190, thickMax: 1.250, hasBasePlate: false },
+    "P3H": { refThick: 1.600, refCoat: 18.0, coatMin: 22.0, coatMax: 26.0, thickMin: 1.590, thickMax: 1.660, hasBasePlate: false },
 
-    // COLUMNS (Exact Sequence as per master list)
-    "COLU-1620": { coatMin: 65.0, coatMax: 85.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "COLU-1820": { coatMin: 65.0, coatMax: 85.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "COLU-2611": { coatMin: 65.0, coatMax: 85.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "COLU-2612": { coatMin: 65.0, coatMax: 85.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "COLU-2613": { coatMin: 65.0, coatMax: 85.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "COLU-2621": { coatMin: 65.0, coatMax: 85.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "COLU-2622": { coatMin: 65.0, coatMax: 85.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "COLU-2623": { coatMin: 65.0, coatMax: 85.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "COLU-2811": { coatMin: 65.0, coatMax: 85.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "COLU-2812": { coatMin: 65.0, coatMax: 85.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "COLU-2813": { coatMin: 65.0, coatMax: 85.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "COLU-2821": { coatMin: 65.0, coatMax: 85.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "COLU-2822": { coatMin: 65.0, coatMax: 85.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "COLU-2823": { coatMin: 65.0, coatMax: 85.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "COLU-2824": { coatMin: 65.0, coatMax: 85.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "COLU-3611": { coatMin: 65.0, coatMax: 85.0, thickMin: 2.950, thickMax: 3.050, hasBasePlate: false },
-    "COLU-3612": { coatMin: 65.0, coatMax: 85.0, thickMin: 2.950, thickMax: 3.050, hasBasePlate: false },
-    "COLU-3613": { coatMin: 65.0, coatMax: 85.0, thickMin: 2.950, thickMax: 3.050, hasBasePlate: false },
-    "COLU-3621": { coatMin: 65.0, coatMax: 85.0, thickMin: 2.950, thickMax: 3.050, hasBasePlate: false },
-    "COLU-3622": { coatMin: 65.0, coatMax: 85.0, thickMin: 2.950, thickMax: 3.050, hasBasePlate: false },
-    "COLU-3623": { coatMin: 65.0, coatMax: 85.0, thickMin: 2.950, thickMax: 3.050, hasBasePlate: false },
-    "COLU-3811": { coatMin: 65.0, coatMax: 85.0, thickMin: 2.950, thickMax: 3.050, hasBasePlate: false },
-    "COLU-3812": { coatMin: 65.0, coatMax: 85.0, thickMin: 2.950, thickMax: 3.050, hasBasePlate: false },
-    "COLU-3813": { coatMin: 65.0, coatMax: 85.0, thickMin: 2.950, thickMax: 3.050, hasBasePlate: false },
-    "COLU-3821": { coatMin: 65.0, coatMax: 85.0, thickMin: 2.950, thickMax: 3.050, hasBasePlate: false },
-    "COLU-3822": { coatMin: 65.0, coatMax: 85.0, thickMin: 2.950, thickMax: 3.050, hasBasePlate: false },
-    "COLU-3823": { coatMin: 65.0, coatMax: 85.0, thickMin: 2.950, thickMax: 3.050, hasBasePlate: false },
+    // COLUMNS (Ref Coat: 80 μm)
+    "COLU-1620": { refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
+    "COLU-1820": { refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
+    "COLU-2611": { refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
+    "COLU-2612": { refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
+    "COLU-2613": { refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
+    "COLU-2621": { refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
+    "COLU-2622": { refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
+    "COLU-2623": { refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
+    "COLU-2811": { refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
+    "COLU-2812": { refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
+    "COLU-2813": { refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
+    "COLU-2821": { refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
+    "COLU-2822": { refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
+    "COLU-2823": { refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
+    "COLU-2824": { refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
+    "COLU-3611": { refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
+    "COLU-3612": { refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
+    "COLU-3613": { refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
+    "COLU-3621": { refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
+    "COLU-3622": { refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
+    "COLU-3623": { refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
+    "COLU-3811": { refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
+    "COLU-3812": { refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
+    "COLU-3813": { refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
+    "COLU-3821": { refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
+    "COLU-3822": { refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
+    "COLU-3823": { refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
 
-    // RAFTER (Exact Sequence)
-    "RAFT-0101": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.480, thickMax: 1.520, hasBasePlate: false },
-    "RAFT-0102": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.480, thickMax: 1.520, hasBasePlate: false },
-    "RAFT-0103": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.480, thickMax: 1.520, hasBasePlate: false },
-    "RAFT-0201": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.180, thickMax: 1.220, hasBasePlate: false },
-    "RAFT-0202": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.180, thickMax: 1.220, hasBasePlate: false },
-    "RAFT-0203": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "RAFT-0311": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.480, thickMax: 1.520, hasBasePlate: false },
-    "RAFT-0312": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "RAFT-0313": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "RAFT-0321": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.480, thickMax: 1.520, hasBasePlate: false },
-    "RAFT-0322": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "RAFT-0323": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "RAFT-1202": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.480, thickMax: 1.520, hasBasePlate: false },
-    "RAFT-1203": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "RAFT-1204": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "RAFT-1312": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "RAFT-1313": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "RAFT-1322": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "RAFT-1323": { coatMin: 18.0, coatMax: 22.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
+    // RAFTER
+    "RAFT-0101": { refThick: 1.200, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.185, thickMax: 1.235, hasBasePlate: false },
+    "RAFT-0102": { refThick: 1.200, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.185, thickMax: 1.235, hasBasePlate: false },
+    "RAFT-0103": { refThick: 1.500, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.485, thickMax: 1.540, hasBasePlate: false },
+    "RAFT-0201": { refThick: 1.200, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.185, thickMax: 1.235, hasBasePlate: false },
+    "RAFT-0202": { refThick: 1.200, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.185, thickMax: 1.235, hasBasePlate: false },
+    "RAFT-0203": { refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
+    "RAFT-0311": { refThick: 1.500, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.485, thickMax: 1.540, hasBasePlate: false },
+    "RAFT-0312": { refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
+    "RAFT-0313": { refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
+    "RAFT-0321": { refThick: 1.500, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.485, thickMax: 1.540, hasBasePlate: false },
+    "RAFT-0322": { refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
+    "RAFT-0323": { refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
+    "RAFT-1202": { refThick: 1.500, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.485, thickMax: 1.540, hasBasePlate: false },
+    "RAFT-1203": { refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
+    "RAFT-1204": { refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
+    "RAFT-1312": { refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
+    "RAFT-1313": { refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
+    "RAFT-1322": { refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
+    "RAFT-1323": { refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
 
-    // JOINTER (Exact Sequence)
-    "331": { coatMin: 70.0, coatMax: 90.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "332": { coatMin: 70.0, coatMax: 90.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "333": { coatMin: 70.0, coatMax: 90.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "RAFT-0331": { coatMin: 70.0, coatMax: 90.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "RAFT-0332": { coatMin: 70.0, coatMax: 90.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
-    "RAFT-0333": { coatMin: 70.0, coatMax: 90.0, thickMin: 1.950, thickMax: 2.050, hasBasePlate: false },
+    // JOINTER
+    "331": { refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
+    "332": { refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
+    "333": { refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
+    "RAFT-0331": { refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
+    "RAFT-0332": { refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
+    "RAFT-0333": { refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
 
-    // LA (Exact Sequence)
-    "LA-0032": { coatMin: 70.0, coatMax: 90.0, thickMin: 2.950, thickMax: 3.050, baseMin: 2.950, baseMax: 3.050, hasBasePlate: true },
-    "LA-0046": { coatMin: 70.0, coatMax: 90.0, thickMin: 2.050, thickMax: 2.150, baseMin: 3.100, baseMax: 3.200, hasBasePlate: true }
+    // LA (Ref Coat: 80 μm)
+    "LA-0032": { refThick: 3.000, refCoat: 80.0, coatMin: 70.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.080, baseMin: 3.000, baseMax: 3.120, hasBasePlate: true },
+    "LA-0046": { refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, baseMin: 3.100, baseMax: 3.220, hasBasePlate: true }
 };
 
 const categoryRefSpecs = {
@@ -404,6 +356,57 @@ const categoryRefSpecs = {
     "Rafter": { items: ["RAFT-0101", "RAFT-0102", "RAFT-0103", "RAFT-0201", "RAFT-0202", "RAFT-0203", "RAFT-0311", "RAFT-0312", "RAFT-0313", "RAFT-0321", "RAFT-0322", "RAFT-0323", "RAFT-1202", "RAFT-1203", "RAFT-1204", "RAFT-1312", "RAFT-1313", "RAFT-1322", "RAFT-1323"], hasBasePlate: false },
     "Jointer": { items: ["331", "332", "333", "RAFT-0331", "RAFT-0332", "RAFT-0333"], hasBasePlate: false }
 };
+
+// COATING AVERAGE GENERATOR FOR COLUMNS & LA WITH SPECIFIC PROPORTIONS
+function generateCoatingsWithTargetAverage(cat) {
+    let targetAvg = 80.0;
+
+    if (cat === "COLUMNS" || cat === "LA") {
+        let randProportion = Math.random();
+        if (randProportion < 0.01) {
+            // 1% Samples: Average ~105 - 120 μm
+            targetAvg = +(Math.random() * (120 - 105.1) + 105.1).toFixed(1);
+        } else if (randProportion < 0.04) {
+            // 3% Samples: Average ~100 - 105 μm
+            targetAvg = +(Math.random() * (105 - 100) + 100).toFixed(1);
+        } else if (randProportion < 0.34) {
+            // 30% Samples: Average ~85 - 94.9 μm (Near 90 μm)
+            targetAvg = +(Math.random() * (94.9 - 85) + 85).toFixed(1);
+        } else {
+            // ~66% Samples: Standard Average ~75 - 84.9 μm
+            targetAvg = +(Math.random() * (84.9 - 75) + 75).toFixed(1);
+        }
+    } else {
+        // PURLINE, Rafter, Jointer Standard Averages
+        targetAvg = +(Math.random() * (26 - 22) + 22).toFixed(1);
+    }
+
+    // Generate 5 spot readings around targetAvg
+    let c1 = +(targetAvg + (Math.random() * 10 - 5)).toFixed(1);
+    let c2 = +(targetAvg + (Math.random() * 10 - 5)).toFixed(1);
+    let c3 = +(targetAvg + (Math.random() * 10 - 5)).toFixed(1);
+    let c4 = +(targetAvg + (Math.random() * 10 - 5)).toFixed(1);
+    let c5 = +((targetAvg * 5) - (c1 + c2 + c3 + c4)).toFixed(1);
+
+    if (c5 < 15) c5 = targetAvg; // Safeguard
+
+    let calculatedAvg = +((c1 + c2 + c3 + c4 + c5) / 5).toFixed(1);
+    return { c1, c2, c3, c4, c5, calculatedAvg };
+}
+
+// BIASED THICKNESS GENERATOR
+function generateBiasedThickness(refValue, minVal, maxVal) {
+    let rand = Math.random();
+    let val;
+    if (rand < 0.90) {
+        let lowerBound = Math.max(refValue, minVal);
+        val = (Math.random() * (maxVal - lowerBound)) + lowerBound;
+    } else {
+        let upperBound = Math.min(refValue, maxVal);
+        val = (Math.random() * (upperBound - minVal)) + minVal;
+    }
+    return +val.toFixed(3);
+}
 
 function switchMode(mode) {
     document.getElementById('singleModeSection').style.display = (mode === 'single') ? 'block' : 'none';
@@ -485,7 +488,8 @@ function generateSingleReport() {
         return;
     }
 
-    const spec = subItemSpecs[currentSingleItemName] || { hasBasePlate: false };
+    const spec = subItemSpecs[currentSingleItemName] || { refThick: 1.000, refCoat: 18.0, coatMin: 22.0, coatMax: 28.0, thickMin: 0.990, thickMax: 1.045, hasBasePlate: false };
+    const isManual = (document.getElementById("singleMode").value === "manual");
     const doCoating = document.getElementById("sChkCoating").checked;
     const doThickness = document.getElementById("sChkThickness").checked;
     const doBasePlate = document.getElementById("sChkBasePlate").checked && spec.hasBasePlate;
@@ -495,12 +499,10 @@ function generateSingleReport() {
         return;
     }
 
-    const coatMin = parseFloat(document.getElementById("sCoatMin").value);
-    const coatMax = parseFloat(document.getElementById("sCoatMax").value);
     const thickMin = parseFloat(document.getElementById("sThickMin").value);
     const thickMax = parseFloat(document.getElementById("sThickMax").value);
-    const baseMin = parseFloat(document.getElementById("sBaseMin").value || 2.950);
-    const baseMax = parseFloat(document.getElementById("sBaseMax").value || 3.050);
+    const baseMin = parseFloat(document.getElementById("sBaseMin").value || 3.000);
+    const baseMax = parseFloat(document.getElementById("sBaseMax").value || 3.120);
 
     singleGeneratedRows = [];
 
@@ -508,19 +510,22 @@ function generateSingleReport() {
         let row = { "Sub-Item Name": currentSingleItemName, "Sample #": `SAMPLE ${i}` };
 
         if (doCoating) {
-            let c1 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
-            let c2 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
-            let c3 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
-            let c4 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
-            let c5 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
-            row["Coating 1 (μm)"] = c1; row["Coating 2 (μm)"] = c2; row["Coating 3 (μm)"] = c3; row["Coating 4 (μm)"] = c4; row["Coating 5 (μm)"] = c5;
-            row["Coating Avg (μm)"] = +((c1+c2+c3+c4+c5)/5).toFixed(1);
+            let cObj = generateCoatingsWithTargetAverage(currentSingleCat);
+            row["Coating 1 (μm)"] = cObj.c1;
+            row["Coating 2 (μm)"] = cObj.c2;
+            row["Coating 3 (μm)"] = cObj.c3;
+            row["Coating 4 (μm)"] = cObj.c4;
+            row["Coating 5 (μm)"] = cObj.c5;
+            row["Coating Avg (μm)"] = cObj.calculatedAvg;
+            row["Reference Coating (μm)"] = `${spec.refCoat} μm`;
         }
         if (doThickness) {
-            row["Section Thickness (mm)"] = +(Math.random() * (thickMax - thickMin) + thickMin).toFixed(3);
+            row["Section Thickness (mm)"] = isManual ? +(Math.random()*(thickMax-thickMin)+thickMin).toFixed(3) : generateBiasedThickness(spec.refThick, thickMin, thickMax);
+            row["Reference Thickness (mm)"] = `${spec.refThick} mm`;
         }
         if (doBasePlate) {
-            row["Base Plate Thickness (mm)"] = +(Math.random() * (baseMax - baseMin) + baseMin).toFixed(3);
+            row["Base Plate Thickness (mm)"] = isManual ? +(Math.random()*(baseMax-baseMin)+baseMin).toFixed(3) : generateBiasedThickness(3.000, baseMin, baseMax);
+            row["Reference BasePlate (mm)"] = `3.0 mm`;
         }
         row["Status"] = "PASSED";
         singleGeneratedRows.push(row);
@@ -541,63 +546,26 @@ function generateSingleReport() {
 
 function downloadSingleExcel() {
     if (singleGeneratedRows.length === 0) return;
-    const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet(currentSingleCat);
-    
-    const cols = Object.keys(singleGeneratedRows[0]);
-    sheet.addRow(cols);
-    singleGeneratedRows.forEach(r => {
-        sheet.addRow(cols.map(c => r[c]));
-    });
-
-    workbook.xlsx.writeBuffer().then(buffer => {
-        saveAs(new Blob([buffer]), `Single_Inspection_${currentSingleItemName}.xlsx`);
-    });
+    exportFormattedExcel({ [currentSingleCat]: singleGeneratedRows }, `Single_Inspection_${currentSingleItemName}.xlsx`);
 }
 
 // MODE 2
 let selectedItemsList = [];
+let categoryConfigs = {};
 let categoryDataMapGlobal = {};
 
 function onCategoryChange() {
     const cat = document.getElementById("category").value;
     const searchInput = document.getElementById("itemSearchInput");
-    const multiBox = document.getElementById("groupMultiselectBox");
 
-    const basePlateGroup = document.getElementById("basePlateGroup");
-    const basePlateInputBox = document.getElementById("basePlateInputBox");
-    const chkBase = document.getElementById("chkBasePlate");
-
-    searchInput.value = "";
     if (cat && categoryRefSpecs[cat]) {
         searchInput.disabled = false;
-        searchInput.placeholder = "Search item & hit Enter...";
-
-        const firstItem = categoryRefSpecs[cat].items[0];
-        const spec = subItemSpecs[firstItem] || { coatMin: 22.0, coatMax: 28.0, thickMin: 0.980, thickMax: 1.020, hasBasePlate: false };
-
-        document.getElementById("coatMin").value = spec.coatMin;
-        document.getElementById("coatMax").value = spec.coatMax;
-        document.getElementById("thickMin").value = spec.thickMin;
-        document.getElementById("thickMax").value = spec.thickMax;
-
-        if (categoryRefSpecs[cat].hasBasePlate) {
-            basePlateGroup.style.display = "flex";
-            basePlateInputBox.style.display = "block";
-            chkBase.checked = true;
-            document.getElementById("baseMin").value = spec.baseMin || 2.950;
-            document.getElementById("baseMax").value = spec.baseMax || 3.050;
-        } else {
-            basePlateGroup.style.display = "none";
-            basePlateInputBox.style.display = "none";
-            chkBase.checked = false;
-        }
-
+        searchInput.placeholder = `Search item in ${cat} & hit Enter...`;
         renderMultiselectBox(cat);
     } else {
         searchInput.disabled = true;
         searchInput.placeholder = "Pehle Category Chunein...";
-        multiBox.innerHTML = '<span style="color: #94a3b8; font-size: 13px;">Pehle Category Chunein...</span>';
+        document.getElementById("groupMultiselectBox").innerHTML = '<span style="color: #94a3b8; font-size: 13px;">Pehle Category Chunein...</span>';
     }
 }
 
@@ -612,7 +580,7 @@ function renderMultiselectBox(cat) {
     selectAllDiv.style.borderBottom = "1px solid #e2e8f0";
     selectAllDiv.style.paddingBottom = "5px";
     selectAllDiv.style.fontWeight = "bold";
-    selectAllDiv.innerHTML = `<input type="checkbox" id="chkSelectAll" onchange="toggleSelectAllItems('${cat}', this.checked)"> <label for="chkSelectAll">Select All Items</label>`;
+    selectAllDiv.innerHTML = `<input type="checkbox" id="chkSelectAll" onchange="toggleSelectAllItems('${cat}', this.checked)"> <label for="chkSelectAll">Select All Items in ${cat}</label>`;
     multiBox.appendChild(selectAllDiv);
 
     items.forEach(it => {
@@ -633,6 +601,7 @@ function toggleItemSelection(cat, item, isChecked) {
         selectedItemsList = selectedItemsList.filter(s => !(s.cat === cat && s.item === item));
     }
     renderTags();
+    updateCategoryWiseConfigCards();
 }
 
 function toggleSelectAllItems(cat, isChecked) {
@@ -667,6 +636,7 @@ function removeSelectedItem(idx) {
     const itemToRemove = selectedItemsList[idx];
     selectedItemsList.splice(idx, 1);
     renderTags();
+    updateCategoryWiseConfigCards();
 
     const currentCat = document.getElementById("category").value;
     if (currentCat && itemToRemove && itemToRemove.cat === currentCat) {
@@ -691,9 +661,104 @@ function renderTags() {
     });
 }
 
-function toggleMode() {
-    const mode = document.getElementById("mode").value;
-    document.getElementById("manualPanel").style.display = (mode === "manual") ? "grid" : "none";
+function updateCategoryWiseConfigCards() {
+    const container = document.getElementById("categoryWiseConfigContainer");
+    const activeCategories = [...new Set(selectedItemsList.map(s => s.cat))];
+
+    if (activeCategories.length === 0) {
+        container.innerHTML = '<span style="color: #94a3b8; font-size: 13px;">Pehle Step 1 se kam se kam ek Sub-Item select karein.</span>';
+        categoryConfigs = {};
+        return;
+    }
+
+    activeCategories.forEach(cat => {
+        if (!categoryConfigs[cat]) {
+            const hasBP = categoryRefSpecs[cat].hasBasePlate;
+            categoryConfigs[cat] = {
+                sampleCount: 3,
+                mode: "auto",
+                doCoating: true,
+                doThickness: true,
+                doBasePlate: hasBP,
+                coatMin: 65.0, coatMax: 120.0,
+                thickMin: 1.985, thickMax: 2.080,
+                baseMin: 3.000, baseMax: 3.120
+            };
+        }
+    });
+
+    Object.keys(categoryConfigs).forEach(cat => {
+        if (!activeCategories.includes(cat)) delete categoryConfigs[cat];
+    });
+
+    container.innerHTML = "";
+
+    activeCategories.forEach(cat => {
+        const cfg = categoryConfigs[cat];
+        const hasBP = categoryRefSpecs[cat].hasBasePlate;
+
+        const card = document.createElement("div");
+        card.className = "cat-config-card";
+        card.innerHTML = `
+            <h4 style="margin: 0 0 10px 0; color: var(--primary);">⚙️ Category: ${cat} Configuration</h4>
+            
+            <div class="form-grid">
+                <div>
+                    <label>Sample Quantity for ${cat} (per item):</label>
+                    <input type="number" value="${cfg.sampleCount}" min="1" max="100" onchange="updateCatSetting('${cat}', 'sampleCount', parseInt(this.value))">
+                </div>
+                <div>
+                    <label>Generation Mode:</label>
+                    <select onchange="updateCatSetting('${cat}', 'mode', this.value); updateCategoryWiseConfigCards();">
+                        <option value="auto" ${cfg.mode === 'auto' ? 'selected' : ''}>Reference Positive-Biased Mode</option>
+                        <option value="manual" ${cfg.mode === 'manual' ? 'selected' : ''}>Manual Custom Range Mode</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="margin-top: 10px;">
+                <label>Active Parameters:</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-item"><input type="checkbox" ${cfg.doCoating ? 'checked' : ''} onchange="updateCatSetting('${cat}', 'doCoating', this.checked)"> Coating (μm)</label>
+                    <label class="checkbox-item"><input type="checkbox" ${cfg.doThickness ? 'checked' : ''} onchange="updateCatSetting('${cat}', 'doThickness', this.checked)"> Section Thickness (mm)</label>
+                    ${hasBP ? `<label class="checkbox-item"><input type="checkbox" ${cfg.doBasePlate ? 'checked' : ''} onchange="updateCatSetting('${cat}', 'doBasePlate', this.checked)"> Base Plate Thickness (mm)</label>` : ''}
+                </div>
+            </div>
+
+            ${cfg.mode === 'manual' ? `
+            <div class="form-grid" style="margin-top: 10px; background: #fff7ed; padding: 10px; border-radius: 6px; border: 1px solid #ffedd5;">
+                <div>
+                    <label>Coating Min-Max (μm)</label>
+                    <div style="display: flex; gap: 5px;">
+                        <input type="number" value="${cfg.coatMin}" onchange="updateCatSetting('${cat}', 'coatMin', parseFloat(this.value))">
+                        <input type="number" value="${cfg.coatMax}" onchange="updateCatSetting('${cat}', 'coatMax', parseFloat(this.value))">
+                    </div>
+                </div>
+                <div>
+                    <label>Thickness Min-Max (mm)</label>
+                    <div style="display: flex; gap: 5px;">
+                        <input type="number" step="0.001" value="${cfg.thickMin}" onchange="updateCatSetting('${cat}', 'thickMin', parseFloat(this.value))">
+                        <input type="number" step="0.001" value="${cfg.thickMax}" onchange="updateCatSetting('${cat}', 'thickMax', parseFloat(this.value))">
+                    </div>
+                </div>
+                ${hasBP ? `
+                <div>
+                    <label>Base Plate Min-Max (mm)</label>
+                    <div style="display: flex; gap: 5px;">
+                        <input type="number" step="0.001" value="${cfg.baseMin}" onchange="updateCatSetting('${cat}', 'baseMin', parseFloat(this.value))">
+                        <input type="number" step="0.001" value="${cfg.baseMax}" onchange="updateCatSetting('${cat}', 'baseMax', parseFloat(this.value))">
+                    </div>
+                </div>` : ''}
+            </div>` : ''}
+        `;
+        container.appendChild(card);
+    });
+}
+
+function updateCatSetting(cat, key, val) {
+    if (categoryConfigs[cat]) {
+        categoryConfigs[cat][key] = val;
+    }
 }
 
 function generateGroupReport() {
@@ -702,50 +767,53 @@ function generateGroupReport() {
         return;
     }
 
-    const doCoating = document.getElementById("chkCoating").checked;
-    const doThickness = document.getElementById("chkThickness").checked;
-    const mode = document.getElementById("mode").value;
-    const count = parseInt(document.getElementById("sampleCount").value);
-
     categoryDataMapGlobal = {};
 
     selectedItemsList.forEach(s => {
-        if (!categoryDataMapGlobal[s.cat]) categoryDataMapGlobal[s.cat] = [];
+        const cat = s.cat;
+        const cfg = categoryConfigs[cat];
+        if (!cfg) return;
 
-        const spec = subItemSpecs[s.item] || { coatMin: 22.0, coatMax: 28.0, thickMin: 1.0, thickMax: 1.5, hasBasePlate: false };
-        const hasBP = spec.hasBasePlate;
-        const doBasePlate = document.getElementById("chkBasePlate").checked && hasBP;
+        if (!categoryDataMapGlobal[cat]) categoryDataMapGlobal[cat] = [];
+
+        const spec = subItemSpecs[s.item] || { refThick: 1.000, refCoat: 18.0, coatMin: 22.0, coatMax: 28.0, thickMin: 0.990, thickMax: 1.045, hasBasePlate: false };
+        const isManual = (cfg.mode === "manual");
+
+        const doCoating = cfg.doCoating;
+        const doThickness = cfg.doThickness;
+        const doBasePlate = cfg.doBasePlate && spec.hasBasePlate;
 
         if (!doCoating && !doThickness && !doBasePlate) return;
 
-        let coatMin = doCoating ? (mode === "manual" ? parseFloat(document.getElementById("coatMin").value) : spec.coatMin) : 0;
-        let coatMax = doCoating ? (mode === "manual" ? parseFloat(document.getElementById("coatMax").value) : spec.coatMax) : 0;
-        let thickMin = doThickness ? (mode === "manual" ? parseFloat(document.getElementById("thickMin").value) : spec.thickMin) : 0;
-        let thickMax = doThickness ? (mode === "manual" ? parseFloat(document.getElementById("thickMax").value) : spec.thickMax) : 0;
-        let baseMin = doBasePlate ? (mode === "manual" ? parseFloat(document.getElementById("baseMin").value) : (spec.baseMin || 2.950)) : 0;
-        let baseMax = doBasePlate ? (mode === "manual" ? parseFloat(document.getElementById("baseMax").value) : (spec.baseMax || 3.050)) : 0;
+        let thickMin = isManual ? cfg.thickMin : spec.thickMin;
+        let thickMax = isManual ? cfg.thickMax : spec.thickMax;
+        let baseMin = isManual ? cfg.baseMin : (spec.baseMin || 3.000);
+        let baseMax = isManual ? cfg.baseMax : (spec.baseMax || 3.120);
 
-        for (let i = 1; i <= count; i++) {
+        for (let i = 1; i <= cfg.sampleCount; i++) {
             let rowObj = { "Sub-Item Name": s.item, "Sample #": `SAMPLE ${i}` };
 
             if (doCoating) {
-                let c1 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
-                let c2 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
-                let c3 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
-                let c4 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
-                let c5 = +(Math.random() * (coatMax - coatMin) + coatMin).toFixed(1);
-                rowObj["Coating 1 (μm)"] = c1; rowObj["Coating 2 (μm)"] = c2; rowObj["Coating 3 (μm)"] = c3; rowObj["Coating 4 (μm)"] = c4; rowObj["Coating 5 (μm)"] = c5;
-                rowObj["Coating Avg (μm)"] = +((c1 + c2 + c3 + c4 + c5) / 5).toFixed(1);
+                let cObj = generateCoatingsWithTargetAverage(cat);
+                rowObj["Coating 1 (μm)"] = cObj.c1;
+                rowObj["Coating 2 (μm)"] = cObj.c2;
+                rowObj["Coating 3 (μm)"] = cObj.c3;
+                rowObj["Coating 4 (μm)"] = cObj.c4;
+                rowObj["Coating 5 (μm)"] = cObj.c5;
+                rowObj["Coating Avg (μm)"] = cObj.calculatedAvg;
+                rowObj["Reference Coating (μm)"] = `${spec.refCoat} μm`;
             }
             if (doThickness) {
-                rowObj["Section Thickness (mm)"] = +(Math.random() * (thickMax - thickMin) + thickMin).toFixed(3);
+                rowObj["Section Thickness (mm)"] = isManual ? +(Math.random()*(thickMax-thickMin)+thickMin).toFixed(3) : generateBiasedThickness(spec.refThick, thickMin, thickMax);
+                rowObj["Reference Thickness (mm)"] = `${spec.refThick} mm`;
             }
             if (doBasePlate) {
-                rowObj["Base Plate Thickness (mm)"] = +(Math.random() * (baseMax - baseMin) + baseMin).toFixed(3);
+                rowObj["Base Plate Thickness (mm)"] = isManual ? +(Math.random()*(baseMax-baseMin)+baseMin).toFixed(3) : generateBiasedThickness(3.000, baseMin, baseMax);
+                rowObj["Reference BasePlate (mm)"] = `3.0 mm`;
             }
             rowObj["Status"] = "PASSED";
 
-            categoryDataMapGlobal[s.cat].push(rowObj);
+            categoryDataMapGlobal[cat].push(rowObj);
         }
     });
 
@@ -792,25 +860,78 @@ function showGroupPreviewTable(cat, activeBtn) {
 
 function downloadGroupExcel() {
     if (Object.keys(categoryDataMapGlobal).length === 0) return;
+    exportFormattedExcel(categoryDataMapGlobal, "Consolidated_Quality_Inspection_Report.xlsx");
+}
+
+// EXCELJS STYLING ENGINE (ALL BORDER, CENTER ALIGN, BOLD HEADER & LIGHT BLUE FILL, AUTOFIT)
+function exportFormattedExcel(dataMap, filename) {
     const workbook = new ExcelJS.Workbook();
 
-    for (let cat in categoryDataMapGlobal) {
-        if (categoryDataMapGlobal[cat].length > 0) {
-            const sheet = workbook.addWorksheet(cat);
-            const cols = Object.keys(categoryDataMapGlobal[cat][0]);
-            sheet.addRow(cols);
-            categoryDataMapGlobal[cat].forEach(r => {
-                sheet.addRow(cols.map(c => r[c]));
+    for (let sheetName in dataMap) {
+        const rows = dataMap[sheetName];
+        if (!rows || rows.length === 0) continue;
+
+        const worksheet = workbook.addWorksheet(sheetName);
+        const headers = Object.keys(rows[0]);
+
+        // Add Header Row
+        const headerRow = worksheet.addRow(headers);
+        headerRow.height = 26;
+
+        // Header Styling: Bold, Center, Light Blue Fill
+        headerRow.eachCell((cell) => {
+            cell.font = { name: 'Segoe UI', size: 11, bold: true, color: { argb: 'FFFFFF' } };
+            cell.fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: '1E3A8A' } // Light/Royal Blue
+            };
+            cell.alignment = { vertical: 'middle', horizontal: 'center' };
+            cell.border = {
+                top: { style: 'thin', color: { argb: '94A3B8' } },
+                left: { style: 'thin', color: { argb: '94A3B8' } },
+                bottom: { style: 'thin', color: { argb: '94A3B8' } },
+                right: { style: 'thin', color: { argb: '94A3B8' } }
+            };
+        });
+
+        // Add Data Rows
+        rows.forEach(r => {
+            const rowVals = headers.map(h => r[h]);
+            const dataRow = worksheet.addRow(rowVals);
+            dataRow.height = 20;
+
+            dataRow.eachCell((cell) => {
+                cell.font = { name: 'Segoe UI', size: 10 };
+                cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                cell.border = {
+                    top: { style: 'thin', color: { argb: 'CBD5E1' } },
+                    left: { style: 'thin', color: { argb: 'CBD5E1' } },
+                    bottom: { style: 'thin', color: { argb: 'CBD5E1' } },
+                    right: { style: 'thin', color: { argb: 'CBD5E1' } }
+                };
             });
-        }
+        });
+
+        // Auto-Fit Columns Width
+        worksheet.columns.forEach(column => {
+            let maxLength = 0;
+            column.eachCell({ includeEmpty: true }, cell => {
+                const columnLength = cell.value ? cell.value.toString().length : 10;
+                if (columnLength > maxLength) {
+                    maxLength = columnLength;
+                }
+            });
+            column.width = Math.max(maxLength + 4, 14);
+        });
     }
 
     workbook.xlsx.writeBuffer().then(buffer => {
-        saveAs(new Blob([buffer]), "Consolidated_Quality_Inspection_Report.xlsx");
+        saveAs(new Blob([buffer]), filename);
     });
 }
 
-// MODE 3
+// MODE 3 LOGIC
 let loadedSourceWorkbook = null;
 let selectedUploadedTabs = [];
 const GOOGLE_SHEET_ID = "1yIl9mDCsW6b4Sx3XsE0aPild8Es1K4-x";
