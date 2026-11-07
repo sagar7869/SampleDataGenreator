@@ -65,8 +65,6 @@
 
         .cat-config-card { background: #ffffff; border: 1px solid var(--border); border-left: 4px solid var(--primary); padding: 15px; border-radius: 6px; margin-bottom: 15px; }
         .check-locked { background-color: #dcfce7 !important; }
-        .sample-weight-grid { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; justify-content: center; }
-        .sample-weight-box { background: #f1f5f9; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border); font-size: 12px; }
     </style>
 </head>
 <body>
@@ -74,14 +72,14 @@
 <div class="container">
     <div class="header">
         <h2>Quality Inspection Management Portal</h2>
-        <p style="margin: 5px 0 0 0; opacity: 0.9;">Multi-Tab Sync, Individual Sample Weights & Dedicated Checklist Engine</p>
+        <p style="margin: 5px 0 0 0; opacity: 0.9;">Multi-Tab Sync & Dedicated Checklist / Weight Tabs Engine</p>
     </div>
 
     <div class="mode-switcher">
-        <button class="mode-btn active" id="btnSingleMode" onclick="switchMode('single')">📌 Mode 1: Single Generator</button>
-        <button class="mode-btn" id="btnGroupMode" onclick="switchMode('group')">📁 Mode 2: Multi-Tab Portal</button>
-        <button class="mode-btn" id="btnDriveMode" onclick="switchMode('drive')">⚡ Mode 3: Cloud Sync & Push</button>
-        <button class="mode-btn" id="btnChecklistMode" onclick="switchMode('checklist')">✅ Mode 4: Dedicated Checklist & Weights</button>
+        <button class="mode-btn active" id="btnSingleMode" onclick="switchMode('single')">📌 Mode 1: Single</button>
+        <button class="mode-btn" id="btnGroupMode" onclick="switchMode('group')">📁 Mode 2: Multi-Tab</button>
+        <button class="mode-btn" id="btnDriveMode" onclick="switchMode('drive')">⚡ Mode 3: Cloud Sync</button>
+        <button class="mode-btn" id="btnChecklistMode" onclick="switchMode('checklist')">✅ Mode 4: Checklist & Weights</button>
     </div>
 
     <!-- MODE 1 -->
@@ -172,7 +170,7 @@
     <!-- MODE 2 -->
     <div id="groupModeSection" style="display: none;">
         <div class="card">
-            <h3>Step 1: Select Category & Sub-Items (Short-Code Search Enabled)</h3>
+            <h3>Step 1: Select Category & Sub-Items</h3>
             <div class="form-grid">
                 <div>
                     <label>1. Category Chunein</label>
@@ -185,15 +183,14 @@
                         <option value="Jointer">Jointer</option>
                     </select>
                 </div>
-
                 <div>
-                    <label>2. Number / Name (e.g. 1620, 0032 & Hit Enter)</label>
-                    <input type="text" id="itemSearchInput" placeholder="Type name or code & hit Enter..." disabled onkeydown="handleSearchKeyPress(event)">
+                    <label>2. Type & Hit Enter (Quick Add)</label>
+                    <input type="text" id="itemSearchInput" placeholder="Pehle Category Chunein..." disabled onkeydown="handleSearchKeyPress(event)">
                 </div>
             </div>
 
             <div style="margin-top: 15px;">
-                <label>3. Multiselect Sub-Items (Checkboxes se ek sath chunein):</label>
+                <label>3. Multiselect Sub-Items (Checkboxes):</label>
                 <div id="groupMultiselectBox" class="multi-select-box">
                     <span style="color: #94a3b8; font-size: 13px;">Pehle Category Chunein...</span>
                 </div>
@@ -205,6 +202,11 @@
                     <span style="color: #94a3b8; font-size: 13px;">Koi item select nahi hua hai.</span>
                 </div>
             </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                <button class="btn btn-primary" style="flex: 1; margin:0;" onclick="pushMode2ToMode3()">⚡ Push Selected to Mode 3</button>
+                <button class="btn btn-success" style="flex: 1; margin:0;" onclick="pushMode2ToMode4()">✅ Push Selected to Mode 4</button>
+            </div>
         </div>
 
         <div class="card">
@@ -212,7 +214,6 @@
             <div id="categoryWiseConfigContainer">
                 <span style="color: #94a3b8; font-size: 13px;">Pehle Step 1 se kam se kam ek Sub-Item select karein.</span>
             </div>
-
             <button class="btn btn-primary" onclick="generateGroupReport()">⚡ Generate Multi-Tab Report</button>
         </div>
 
@@ -235,59 +236,49 @@
     <div id="driveModeSection" style="display: none;">
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                <h3>Google Cloud Sheet Sync & Push Portal</h3>
+                <h3>Google Cloud Sheet Sync & Checkbox Selector</h3>
                 <span id="syncStatusBadge" class="status-badge status-loading">⏳ Connecting Cloud Sheet...</span>
             </div>
-            <p style="font-size: 13px; color: #64748b; margin-top: 5px;">Yahan select hone wale tabs ko aap Mode 2 (Inspection) ya Mode 4 (Checklist) mein direct push kar sakte hain.</p>
+            <p style="font-size: 13px; color: #64748b; margin-top: 5px;">Yahan available tabs ki checkbox list se tabs select karke Mode 2 ya Mode 4 mein push karein.</p>
             
             <div style="margin-top: 15px;">
                 <label>Optional: Manual Excel File Upload Backup:</label>
                 <input type="file" id="excelFileInput" accept=".xlsx, .xls" onchange="loadUploadedExcelFile()">
             </div>
-            
             <button class="btn btn-danger" onclick="clearCacheAndReload()">🗑️ Clear Cache / Reset</button>
         </div>
 
-        <div class="card" id="uploadedTabSelectionCard">
-            <h3>Select Tabs to Extract & Sync</h3>
-            
-            <div class="form-grid">
-                <div>
-                    <label>Search / Type Tab Name or Code (Hit Enter):</label>
-                    <input type="text" id="mode3SearchInput" placeholder="Type name or code & hit Enter..." oninput="filterMode3Tabs()" onkeydown="handleMode3SearchKeyPress(event)">
-                </div>
-                <div>
-                    <label>Choose Tab from Dropdown:</label>
-                    <select id="uploadedTabDropdown" onchange="addUploadedTab()">
-                        <option value="">-- Choose Tab --</option>
-                    </select>
-                </div>
-            </div>
-
-            <label style="margin-top: 15px;">Selected Tabs:</label>
-            <div class="selected-box">
-                <div id="uploadedSelectedTabsTags" class="tag-container">
-                    <span style="color: #94a3b8; font-size: 13px;">Koi tab select nahi hua hai.</span>
-                </div>
+        <div class="card">
+            <h3>Available Cloud / Sheet Tabs (Checkbox Selection)</h3>
+            <div id="mode3CheckboxContainer" class="multi-select-box" style="max-height: 220px;">
+                <span style="color: #94a3b8; font-size: 13px;">Sheets load ho rahi hain...</span>
             </div>
 
             <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
                 <button class="btn btn-success" style="flex: 1;" onclick="exportSelectedUploadedTabs()">📥 Download Selected Tabs (.xlsx)</button>
-                <button class="btn btn-primary" style="flex: 1; margin-top:0;" onclick="pushMode3TabsToMode2()">🚀 Push to Mode 2 (Inspection)</button>
-                <button class="btn btn-primary" style="flex: 1; margin-top:0; background-color: var(--success);" onclick="pushMode3TabsToMode4()">✅ Push to Mode 4 (Checklist)</button>
+                <button class="btn btn-primary" style="flex: 1; margin:0;" onclick="pushMode3TabsToMode2()">🚀 Push to Mode 2 (Inspection)</button>
+                <button class="btn btn-primary" style="flex: 1; margin:0; background-color: var(--success);" onclick="pushMode3TabsToMode4()">✅ Push to Mode 4 (Checklist)</button>
             </div>
         </div>
     </div>
 
-    <!-- MODE 4: DEDICATED CHECKLIST & INDIVIDUAL SAMPLE WEIGHT CALCULATOR -->
+    <!-- MODE 4: SPLIT TABS FOR CHECKLIST & WEIGHT CALCULATOR -->
     <div id="checklistModeSection" style="display: none;">
-        <div class="card">
-            <h3>Dedicated Physical Material Checklist & Individual Sample Weights</h3>
-            <p style="font-size: 13px; color: #64748b;">Yahan aap Category aur Sub-Item dropdown se direct select karke ya Mode 3 se sync karke items add kar sakte hain, aur har sample ka individual weight daal sakte hain.</p>
-            
+        <div class="card" style="padding: 10px 20px;">
+            <div style="display: flex; gap: 10px;">
+                <button class="tab-btn active" id="mode4TabBtn1" onclick="switchMode4Tab(1)">✅ Tab 1: Physical Checklist</button>
+                <button class="tab-btn" id="mode4TabBtn2" onclick="switchMode4Tab(2)">⚖️ Tab 2: Weight Calculator</button>
+            </div>
+        </div>
+
+        <!-- TAB 1 VIEW: CHECKLIST -->
+        <div class="card" id="mode4View1">
+            <div class="preview-header">
+                <h3 style="margin: 0;">Physical Material Checklist & Locking</h3>
+            </div>
             <div class="form-grid">
                 <div>
-                    <label>1. Select Category</label>
+                    <label>Select Category</label>
                     <select id="chkCategory" onchange="onChkCategoryChange()">
                         <option value="">-- Choose Category --</option>
                         <option value="COLUMNS">COLUMNS</option>
@@ -298,37 +289,53 @@
                     </select>
                 </div>
                 <div>
-                    <label>2. Select Sub-Item Name</label>
+                    <label>Select Sub-Item Name</label>
                     <select id="chkItemSelect">
                         <option value="">Pehle Category Chunein</option>
                     </select>
                 </div>
             </div>
-            <button class="btn btn-primary" style="margin-top: 15px;" onclick="addChecklistItemFromDropdown()">➕ Add Selected Item to Checklist</button>
-        </div>
+            <button class="btn btn-primary" style="margin-top: 15px;" onclick="addChecklistItemFromDropdown()">➕ Add Item to Checklist & Weight Calculator</button>
 
-        <div class="card">
-            <div class="preview-header">
-                <h3 style="margin: 0;">Material Checklist & Sample Weight Breakdown Table</h3>
-                <button class="btn btn-success" onclick="exportChecklistExcel()">📥 Export Checklist & Weight Report (.xlsx)</button>
-            </div>
-
-            <div style="overflow-x: auto;">
+            <div style="overflow-x: auto; margin-top: 15px;">
                 <table id="checklistTable">
                     <thead>
                         <tr>
                             <th>Lock / Check</th>
                             <th>Category</th>
                             <th>Sub-Item Name</th>
-                            <th>Sample Qty</th>
-                            <th>Individual Sample Weights (kg)</th>
-                            <th>Total Weight (kg)</th>
-                            <th>Status</th>
+                            <th>Verification Status</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody id="checklistBody">
-                        <tr><td colspan="8" style="color: #94a3b8;">Abhi koi item checklist mein nahi hai.</td></tr>
+                        <tr><td colspan="5" style="color: #94a3b8;">Abhi koi item checklist mein nahi hai.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 2 VIEW: WEIGHT CALCULATOR -->
+        <div class="card" id="mode4View2" style="display: none;">
+            <div class="preview-header">
+                <h3 style="margin: 0;">Weight Calculator (Weight 1 & Weight 2)</h3>
+                <button class="btn btn-success" onclick="exportWeightExcel()">📥 Export Weight Report (.xlsx)</button>
+            </div>
+            <p style="font-size: 13px; color: #64748b;">Yahan aapke saare added items ke liye Weight 1 aur Weight 2 enter karne ka dedicated view hai.</p>
+
+            <div style="overflow-x: auto;">
+                <table id="weightTable">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Sub-Item Name</th>
+                            <th>Weight 1 (kg)</th>
+                            <th>Weight 2 (kg)</th>
+                            <th>Total Weight (kg)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="weightBody">
+                        <tr><td colspan="5" style="color: #94a3b8;">Weight calculation ke liye items add karein.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -338,9 +345,7 @@
 </div>
 
 <script>
-// SUB-ITEM SPECS WITH REFERRED VALUES
 const subItemSpecs = {
-    // PURLINE
     "P2L": { cat: "PURLINE", refThick: 1.000, refCoat: 18.0, coatMin: 22.0, coatMax: 34.0, thickMin: 0.990, thickMax: 1.045, hasBasePlate: false },
     "P2M": { cat: "PURLINE", refThick: 1.200, refCoat: 18.0, coatMin: 22.0, coatMax: 34.0, thickMin: 1.190, thickMax: 1.250, hasBasePlate: false },
     "P2H": { cat: "PURLINE", refThick: 1.600, refCoat: 18.0, coatMin: 22.0, coatMax: 26.0, thickMin: 1.590, thickMax: 1.660, hasBasePlate: false },
@@ -348,7 +353,6 @@ const subItemSpecs = {
     "P3M": { cat: "PURLINE", refThick: 1.200, refCoat: 18.0, coatMin: 22.0, coatMax: 34.0, thickMin: 1.190, thickMax: 1.250, hasBasePlate: false },
     "P3H": { cat: "PURLINE", refThick: 1.600, refCoat: 18.0, coatMin: 22.0, coatMax: 26.0, thickMin: 1.590, thickMax: 1.660, hasBasePlate: false },
 
-    // COLUMNS
     "COLU-1620": { cat: "COLUMNS", refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
     "COLU-1820": { cat: "COLUMNS", refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
     "COLU-2611": { cat: "COLUMNS", refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
@@ -377,7 +381,6 @@ const subItemSpecs = {
     "COLU-3822": { cat: "COLUMNS", refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
     "COLU-3823": { cat: "COLUMNS", refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
 
-    // RAFTER
     "RAFT-0101": { cat: "Rafter", refThick: 1.200, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.185, thickMax: 1.235, hasBasePlate: false },
     "RAFT-0102": { cat: "Rafter", refThick: 1.200, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.185, thickMax: 1.235, hasBasePlate: false },
     "RAFT-0103": { cat: "Rafter", refThick: 1.500, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.485, thickMax: 1.540, hasBasePlate: false },
@@ -398,7 +401,6 @@ const subItemSpecs = {
     "RAFT-1322": { cat: "Rafter", refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
     "RAFT-1323": { cat: "Rafter", refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
 
-    // JOINTER
     "331": { cat: "Jointer", refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
     "332": { cat: "Jointer", refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
     "333": { cat: "Jointer", refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
@@ -406,7 +408,6 @@ const subItemSpecs = {
     "RAFT-0332": { cat: "Jointer", refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
     "RAFT-0333": { cat: "Jointer", refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
 
-    // LA
     "LA-0032": { cat: "LA", refThick: 3.000, refCoat: 80.0, coatMin: 70.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.080, baseMin: 3.000, baseMax: 3.120, hasBasePlate: true },
     "LA-0046": { cat: "LA", refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, baseMin: 3.100, baseMax: 3.220, hasBasePlate: true }
 };
@@ -419,7 +420,6 @@ const categoryRefSpecs = {
     "Jointer": { items: ["331", "332", "333", "RAFT-0331", "RAFT-0332", "RAFT-0333"], hasBasePlate: false }
 };
 
-// COATING GENERATOR
 function generateCoatingsWithTargetAverage(cat) {
     let targetAvg = 80.0;
     if (cat === "COLUMNS" || cat === "LA") {
@@ -471,6 +471,13 @@ function switchMode(mode) {
     document.getElementById('btnGroupMode').classList.toggle('active', mode === 'group');
     document.getElementById('btnDriveMode').classList.toggle('active', mode === 'drive');
     document.getElementById('btnChecklistMode').classList.toggle('active', mode === 'checklist');
+}
+
+function switchMode4Tab(tabNum) {
+    document.getElementById('mode4View1').style.display = (tabNum === 1) ? 'block' : 'none';
+    document.getElementById('mode4View2').style.display = (tabNum === 2) ? 'block' : 'none';
+    document.getElementById('mode4TabBtn1').classList.toggle('active', tabNum === 1);
+    document.getElementById('mode4TabBtn2').classList.toggle('active', tabNum === 2);
 }
 
 // MODE 1 LOGIC
@@ -604,7 +611,7 @@ function downloadSingleExcel() {
     exportFormattedExcel({ [currentSingleCat]: singleGeneratedRows }, `Single_Inspection_${currentSingleItemName}.xlsx`);
 }
 
-// MODE 2 LOGIC (SHORT-CODE MATCHING ENABLED)
+// MODE 2 LOGIC
 let selectedItemsList = [];
 let categoryConfigs = {};
 let categoryDataMapGlobal = {};
@@ -918,7 +925,45 @@ function downloadGroupExcel() {
     exportFormattedExcel(categoryDataMapGlobal, "Consolidated_Quality_Inspection_Report.xlsx");
 }
 
-// MODE 3 LOGIC (SYNC SUPPORT)
+function pushMode2ToMode3() {
+    if (selectedItemsList.length === 0) {
+        alert("Pehle Mode 2 mein kuch items select karein!");
+        return;
+    }
+    selectedItemsList.forEach(s => {
+        if (!selectedUploadedTabs.includes(s.item)) {
+            selectedUploadedTabs.push(s.item);
+        }
+    });
+    populateMode3Checkboxes();
+    switchMode('drive');
+    alert("🚀 Mode 2 ke items Mode 3 Cloud Sync mein push ho gaye hain!");
+}
+
+function pushMode2ToMode4() {
+    if (selectedItemsList.length === 0) {
+        alert("Pehle Mode 2 mein kuch items select karein!");
+        return;
+    }
+    selectedItemsList.forEach(s => {
+        if (!checklistItems.some(i => i.name === s.item)) {
+            checklistItems.push({
+                id: Date.now() + Math.random(),
+                name: s.item,
+                category: s.cat,
+                weight1: 0.0,
+                weight2: 0.0,
+                checked: false,
+                locked: false
+            });
+        }
+    });
+    renderChecklistTables();
+    switchMode('checklist');
+    alert("✅ Mode 2 ke items Mode 4 Checklist & Weights mein push ho gaye hain!");
+}
+
+// MODE 3 LOGIC
 let loadedSourceWorkbook = null;
 let selectedUploadedTabs = [];
 const GOOGLE_SHEET_ID = "1yIl9mDCsW6b4Sx3XsE0aPild8Es1K4-x";
@@ -939,15 +984,13 @@ function loadMasterFromCacheOrCloud() {
             const buffer = base64ToArrayBuffer(cachedBase64);
             loadedSourceWorkbook = new ExcelJS.Workbook();
             loadedSourceWorkbook.xlsx.load(buffer).then(() => {
-                selectedUploadedTabs = [];
-                populateUploadedTabDropdown();
-                renderUploadedTabTags();
+                populateMode3Checkboxes();
                 badge.className = "status-badge status-ready";
                 badge.innerText = "✅ Loaded from Browser Cache";
             });
             return;
         } catch (e) {
-            console.warn("Cache load failed, fetching from cloud...", e);
+            console.warn("Cache load failed", e);
         }
     }
 
@@ -963,9 +1006,7 @@ function loadMasterFromCacheOrCloud() {
             loadedSourceWorkbook = new ExcelJS.Workbook();
             return loadedSourceWorkbook.xlsx.load(buffer).then(() => {
                 saveArrayBufferToCache(buffer);
-                selectedUploadedTabs = [];
-                populateUploadedTabDropdown();
-                renderUploadedTabTags();
+                populateMode3Checkboxes();
                 badge.className = "status-badge status-ready";
                 badge.innerText = "✅ Cloud Sheet Synced & Cached";
             });
@@ -975,6 +1016,7 @@ function loadMasterFromCacheOrCloud() {
             badge.style.background = "#fee2e2";
             badge.style.color = "#991b1b";
             badge.innerText = "⚠️ Manual File Upload Required";
+            populateMode3CheckboxesDefault();
         });
 }
 
@@ -985,8 +1027,7 @@ function saveArrayBufferToCache(buffer) {
     for (let i = 0; i < len; i++) {
         binary += String.fromCharCode(bytes[i]);
     }
-    const base64 = window.btoa(binary);
-    localStorage.setItem('cachedMasterExcel', base64);
+    localStorage.setItem('cachedMasterExcel', window.btoa(binary));
 }
 
 function base64ToArrayBuffer(base64) {
@@ -1012,122 +1053,68 @@ function loadUploadedExcelFile() {
 
         loadedSourceWorkbook.xlsx.load(arrayBuffer).then(() => {
             saveArrayBufferToCache(arrayBuffer);
-            selectedUploadedTabs = [];
-            populateUploadedTabDropdown();
-            renderUploadedTabTags();
+            populateMode3Checkboxes();
             const badge = document.getElementById("syncStatusBadge");
             badge.className = "status-badge status-ready";
             badge.innerText = "✅ Manual File Saved to Cache";
-            alert(`File Read & Cached Successfully! ${loadedSourceWorkbook.worksheets.length} Tabs mil gaye.`);
-        }).catch(err => {
-            alert("Excel file load karne me error aaya: " + err.message);
+            alert(`File Read Successfully! ${loadedSourceWorkbook.worksheets.length} Tabs mil gaye.`);
         });
     };
-
     reader.readAsArrayBuffer(file);
 }
 
 function clearCacheAndReload() {
-    if (confirm("Kya aap cache clear karke fresh sync karna chahte hain?")) {
+    if (confirm("Kya aap cache clear karna chahte hain?")) {
         localStorage.removeItem('cachedMasterExcel');
-        alert("Cache cleared successfully! Page reload ho raha hai.");
         location.reload();
     }
 }
 
-function populateUploadedTabDropdown(filterText = "") {
-    const dropdown = document.getElementById("uploadedTabDropdown");
-    dropdown.innerHTML = '<option value="">-- Choose Tab --</option>';
-    
-    if (!loadedSourceWorkbook || !loadedSourceWorkbook.worksheets) return;
-
-    loadedSourceWorkbook.worksheets.forEach(ws => {
-        if (!selectedUploadedTabs.includes(ws.name)) {
-            if (!filterText || ws.name.toUpperCase().includes(filterText.toUpperCase())) {
-                const opt = document.createElement("option");
-                opt.value = ws.name;
-                opt.innerText = ws.name;
-                dropdown.appendChild(opt);
-            }
-        }
-    });
-}
-
-function filterMode3Tabs() {
-    const text = document.getElementById("mode3SearchInput").value.trim();
-    populateUploadedTabDropdown(text);
-}
-
-function handleMode3SearchKeyPress(e) {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        const text = document.getElementById("mode3SearchInput").value.trim().toUpperCase();
-        if (!text || !loadedSourceWorkbook) return;
-
-        const matchedWs = loadedSourceWorkbook.worksheets.find(ws => 
-            !selectedUploadedTabs.includes(ws.name) && ws.name.toUpperCase().includes(text)
-        );
-
-        if (matchedWs) {
-            selectedUploadedTabs.push(matchedWs.name);
-            renderUploadedTabTags();
-            document.getElementById("mode3SearchInput").value = "";
-            populateUploadedTabDropdown();
-        } else {
-            alert("Matching tab nahi mila ya pehle se selected hai!");
-        }
-    }
-}
-
-function addUploadedTab() {
-    const dropdown = document.getElementById("uploadedTabDropdown");
-    const val = dropdown.value;
-    if (val && !selectedUploadedTabs.includes(val)) {
-        selectedUploadedTabs.push(val);
-        renderUploadedTabTags();
-        populateUploadedTabDropdown(document.getElementById("mode3SearchInput").value);
-    }
-}
-
-function removeUploadedTab(idx) {
-    selectedUploadedTabs.splice(idx, 1);
-    renderUploadedTabTags();
-    populateUploadedTabDropdown(document.getElementById("mode3SearchInput").value);
-}
-
-function renderUploadedTabTags() {
-    const container = document.getElementById("uploadedSelectedTabsTags");
+function populateMode3Checkboxes() {
+    const container = document.getElementById("mode3CheckboxContainer");
     container.innerHTML = "";
-    if (selectedUploadedTabs.length === 0) {
-        container.innerHTML = '<span style="color: #94a3b8; font-size: 13px;">Koi tab select nahi hua hai.</span>';
-        return;
+
+    let allTabs = [];
+    if (loadedSourceWorkbook && loadedSourceWorkbook.worksheets) {
+        allTabs = loadedSourceWorkbook.worksheets.map(ws => ws.name);
+    } else {
+        allTabs = Object.keys(subItemSpecs);
     }
-    selectedUploadedTabs.forEach((tab, idx) => {
-        const tag = document.createElement("div");
-        tag.className = "item-tag";
 
-        const name = document.createElement("span");
-        name.textContent = tab;
-
-        const remove = document.createElement("span");
-        remove.className = "remove-btn";
-        remove.textContent = "✕";
-        remove.title = "Remove tab";
-        remove.onclick = () => removeUploadedTab(idx);
-
-        tag.appendChild(name);
-        tag.appendChild(remove);
-        container.appendChild(tag);
+    allTabs.forEach(tabName => {
+        const isChecked = selectedUploadedTabs.includes(tabName);
+        const row = document.createElement("div");
+        row.className = "checkbox-row";
+        row.innerHTML = `<input type="checkbox" id="m3_chk_${tabName}" ${isChecked ? 'checked' : ''} onchange="toggleMode3Tab('${tabName}', this.checked)"> <label for="m3_chk_${tabName}">${tabName}</label>`;
+        container.appendChild(row);
     });
 }
 
-// PUSH TO MODE 2
+function populateMode3CheckboxesDefault() {
+    const container = document.getElementById("mode3CheckboxContainer");
+    container.innerHTML = "";
+    Object.keys(subItemSpecs).forEach(tabName => {
+        const isChecked = selectedUploadedTabs.includes(tabName);
+        const row = document.createElement("div");
+        row.className = "checkbox-row";
+        row.innerHTML = `<input type="checkbox" id="m3_chk_${tabName}" ${isChecked ? 'checked' : ''} onchange="toggleMode3Tab('${tabName}', this.checked)"> <label for="m3_chk_${tabName}">${tabName}</label>`;
+        container.appendChild(row);
+    });
+}
+
+function toggleMode3Tab(tabName, isChecked) {
+    if (isChecked) {
+        if (!selectedUploadedTabs.includes(tabName)) selectedUploadedTabs.push(tabName);
+    } else {
+        selectedUploadedTabs = selectedUploadedTabs.filter(t => t !== tabName);
+    }
+}
+
 function pushMode3TabsToMode2() {
     if (selectedUploadedTabs.length === 0) {
-        alert("Pehle Mode 3 mein kam se kam ek Tab select karein!");
+        alert("Pehle Mode 3 mein kam se kam ek tab checkbox select karein!");
         return;
     }
-
     let addedCount = 0;
     selectedUploadedTabs.forEach(tabName => {
         let cleanName = tabName.trim().toUpperCase();
@@ -1141,88 +1128,65 @@ function pushMode3TabsToMode2() {
             }
         }
     });
-
     renderTags();
     updateCategoryWiseConfigCards();
     switchMode('group');
-    alert(`🚀 ${addedCount} Items successfully Mode 2 Multi-Tab Portal mein push ho gaye hain!`);
+    alert(`🚀 ${addedCount} Items successfully Mode 2 mein push ho gaye hain!`);
 }
 
-// PUSH TO MODE 4 CHECKLIST
 function pushMode3TabsToMode4() {
     if (selectedUploadedTabs.length === 0) {
-        alert("Pehle Mode 3 mein kam se kam ek Tab select karein!");
+        alert("Pehle Mode 3 mein kam se kam ek tab checkbox select karein!");
         return;
     }
-
     let addedCount = 0;
     selectedUploadedTabs.forEach(tabName => {
         let cleanName = tabName.trim().toUpperCase();
         let matchedKey = Object.keys(subItemSpecs).find(k => k.toUpperCase().includes(cleanName) || cleanName.includes(k.toUpperCase()));
-        
         let itemName = matchedKey || tabName;
         let cat = matchedKey ? subItemSpecs[matchedKey].cat : "COLUMNS";
 
         if (!checklistItems.some(i => i.name === itemName)) {
-            let defaultSamples = 3;
-            let weights = [5.0, 5.2, 4.8];
             checklistItems.push({
                 id: Date.now() + Math.random(),
                 name: itemName,
                 category: cat,
-                samples: defaultSamples,
-                sampleWeights: weights,
-                totalWeight: weights.reduce((a,b)=>a+b, 0),
+                weight1: 0.0,
+                weight2: 0.0,
                 checked: false,
                 locked: false
             });
             addedCount++;
         }
     });
-
-    renderChecklistTable();
+    renderChecklistTables();
     switchMode('checklist');
-    alert(`✅ ${addedCount} Items successfully Mode 4 Checklist mein push ho gaye hain!`);
+    alert(`✅ ${addedCount} Items successfully Mode 4 Checklist & Weights mein push ho gaye hain!`);
 }
 
 function exportSelectedUploadedTabs() {
-    if (!loadedSourceWorkbook) {
-        alert("Cloud Master Sheet load nahi hai. Kripya page refresh karein.");
+    if (!loadedSourceWorkbook || selectedUploadedTabs.length === 0) {
+        alert("Kripya kam se kam ek tab select karein!");
         return;
     }
-    if (selectedUploadedTabs.length === 0) {
-        alert("Kam se kam ek tab select karein!");
-        return;
-    }
-
     const outputWorkbook = new ExcelJS.Workbook();
     selectedUploadedTabs.forEach(tabName => {
         const sourceSheet = loadedSourceWorkbook.getWorksheet(tabName);
         if (!sourceSheet) return;
         const newSheet = outputWorkbook.addWorksheet(tabName);
-
-        sourceSheet.columns.forEach((col, colIndex) => {
-            if (col && col.width) newSheet.getColumn(colIndex + 1).width = col.width;
-        });
-
         sourceSheet.eachRow({ includeEmpty: true }, (row, rowIndex) => {
             const newRow = newSheet.getRow(rowIndex);
-            if (row.height) newRow.height = row.height;
             row.eachCell({ includeEmpty: true }, (cell, colIndex) => {
-                const newCell = newRow.getCell(colIndex);
-                newCell.value = cell.value;
-                if (cell.style) newCell.style = JSON.parse(JSON.stringify(cell.style));
+                newRow.getCell(colIndex).value = cell.value;
             });
         });
     });
-
     outputWorkbook.xlsx.writeBuffer().then(buffer => {
         saveAs(new Blob([buffer]), "Formatted_Extracted_Report.xlsx");
-        alert("Excel File exact styling ke saath download ho gayi hai!");
     });
 }
 
-// MODE 4 LOGIC: DEDICATED CHECKLIST & INDIVIDUAL SAMPLE WEIGHTS
+// MODE 4 LOGIC: CHECKLIST & WEIGHT CALCULATOR SEPARATE TABS
 let checklistItems = [];
 
 function onChkCategoryChange() {
@@ -1251,196 +1215,140 @@ function addChecklistItemFromDropdown() {
     }
 
     if (checklistItems.some(i => i.name === itemName && i.category === cat)) {
-        alert("Yeh item pehle se checklist mein maujood hai!");
+        alert("Yeh item pehle se maujood hai!");
         return;
     }
 
-    let defaultSamples = 3;
-    let initialWeights = [5.0, 5.2, 4.8];
-
-    let itemObj = {
+    checklistItems.push({
         id: Date.now(),
         name: itemName,
         category: cat,
-        samples: defaultSamples,
-        sampleWeights: initialWeights,
-        totalWeight: initialWeights.reduce((a,b)=>a+b, 0),
+        weight1: 0.0,
+        weight2: 0.0,
         checked: false,
         locked: false
-    };
+    });
 
-    checklistItems.push(itemObj);
-    renderChecklistTable();
+    renderChecklistTables();
 }
 
-function renderChecklistTable() {
-    const body = document.getElementById("checklistBody");
-    body.innerHTML = "";
+function renderChecklistTables() {
+    const chkBody = document.getElementById("checklistBody");
+    const wtBody = document.getElementById("weightBody");
+    
+    chkBody.innerHTML = "";
+    wtBody.innerHTML = "";
 
     if (checklistItems.length === 0) {
-        body.innerHTML = '<tr><td colspan="8" style="color: #94a3b8;">Abhi koi item checklist mein nahi hai.</td></tr>';
+        chkBody.innerHTML = '<tr><td colspan="5" style="color: #94a3b8;">Abhi koi item checklist mein nahi hai.</td></tr>';
+        wtBody.innerHTML = '<tr><td colspan="5" style="color: #94a3b8;">Weight calculation ke liye items add karein.</td></tr>';
         return;
     }
 
     checklistItems.forEach((item, idx) => {
-        const tr = document.createElement("tr");
-        if (item.locked) tr.className = "check-locked";
-
-        let weightInputsHtml = `<div class="sample-weight-grid">`;
-        for (let s = 0; s < item.samples; s++) {
-            let wVal = item.sampleWeights[s] !== undefined ? item.sampleWeights[s] : 5.0;
-            weightInputsHtml += `
-                <div class="sample-weight-box">
-                    <span>S${s+1}:</span>
-                    <input type="number" step="0.01" value="${wVal}" ${item.locked ? 'disabled' : ''} onchange="updateIndividualSampleWeight(${idx}, ${s}, parseFloat(this.value))" style="width: 60px; text-align:center; padding: 2px;">
-                </div>`;
-        }
-        weightInputsHtml += `</div>`;
-
-        tr.innerHTML = `
-            <td>
-                <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="handleChecklistToggle(${idx}, this.checked)" style="width:20px; height:20px; cursor:pointer;">
-            </td>
+        // Tab 1 Row
+        const trChk = document.createElement("tr");
+        if (item.locked) trChk.className = "check-locked";
+        trChk.innerHTML = `
+            <td><input type="checkbox" ${item.checked ? 'checked' : ''} onchange="handleChecklistToggle(${idx}, this.checked)" style="width:20px; height:20px; cursor:pointer;"></td>
             <td>${item.category}</td>
             <td><strong>${item.name}</strong></td>
-            <td>
-                <input type="number" value="${item.samples}" min="1" max="20" ${item.locked ? 'disabled' : ''} onchange="updateSampleCount(${idx}, parseInt(this.value))" style="width: 60px; text-align:center;">
-            </td>
-            <td>${weightInputsHtml}</td>
-            <td><strong>${item.totalWeight.toFixed(2)} kg</strong></td>
-            <td>
-                <span class="status-badge ${item.locked ? 'status-ready' : 'status-loading'}">
-                    ${item.locked ? '🔒 LOCKED' : '⏳ PENDING'}
-                </span>
-            </td>
-            <td>
-                <button class="btn btn-danger" style="padding: 4px 8px; font-size: 11px; margin:0;" onclick="removeChecklistItem(${idx})">🗑️</button>
-            </td>
+            <td><span class="status-badge ${item.locked ? 'status-ready' : 'status-loading'}">${item.locked ? '🔒 LOCKED' : '⏳ PENDING'}</span></td>
+            <td><button class="btn btn-danger" style="padding: 4px 8px; font-size: 11px; margin:0;" onclick="removeChecklistItem(${idx})">🗑️</button></td>
         `;
-        body.appendChild(tr);
+        chkBody.appendChild(trChk);
+
+        // Tab 2 Row (Values preserved in checklistItems array state)
+        const trWt = document.createElement("tr");
+        trWt.innerHTML = `
+            <td>${item.category}</td>
+            <td><strong>${item.name}</strong></td>
+            <td><input type="number" step="0.01" value="${item.weight1}" onchange="updateWeight(${idx}, 'weight1', parseFloat(this.value))" style="width: 100px; text-align:center;"></td>
+            <td><input type="number" step="0.01" value="${item.weight2}" onchange="updateWeight(${idx}, 'weight2', parseFloat(this.value))" style="width: 100px; text-align:center;"></td>
+            <td><strong>${(item.weight1 + item.weight2).toFixed(2)} kg</strong></td>
+        `;
+        wtBody.appendChild(trWt);
     });
 }
 
 function handleChecklistToggle(idx, isChecked) {
     const item = checklistItems[idx];
-
     if (isChecked) {
         item.checked = true;
         item.locked = true;
-        renderChecklistTable();
+        renderChecklistTables();
     } else {
-        const confirmUnlock = confirm(`⚠️ Kya aap "${item.name}" ko unlock karke uncheck karna chahte hain?`);
-        if (confirmUnlock) {
+        if (confirm(`⚠️ Kya aap "${item.name}" ko unlock karna chahte hain?`)) {
             item.checked = false;
             item.locked = false;
         }
-        renderChecklistTable();
+        renderChecklistTables();
     }
 }
 
-function updateSampleCount(idx, newCount) {
-    if (isNaN(newCount) || newCount < 1) return;
-    let item = checklistItems[idx];
-    item.samples = newCount;
-    
-    while(item.sampleWeights.length < newCount) {
-        item.sampleWeights.push(5.0);
+function updateWeight(idx, key, val) {
+    if (checklistItems[idx]) {
+        checklistItems[idx][key] = isNaN(val) ? 0 : val;
     }
-    item.sampleWeights = item.sampleWeights.slice(0, newCount);
-    item.totalWeight = item.sampleWeights.reduce((a,b)=>a+b, 0);
-    renderChecklistTable();
-}
-
-function updateIndividualSampleWeight(itemIdx, sampleIdx, val) {
-    let item = checklistItems[itemIdx];
-    item.sampleWeights[sampleIdx] = isNaN(val) ? 0 : val;
-    item.totalWeight = item.sampleWeights.reduce((a,b)=>a+b, 0);
-    renderChecklistTable();
 }
 
 function removeChecklistItem(idx) {
-    if (checklistItems[idx].locked) {
-        if (!confirm("⚠️ Yeh item locked hai. Kya aap fir bhi delete karna chahte hain?")) return;
-    }
+    if (checklistItems[idx].locked && !confirm("⚠️ Yeh item locked hai. Kya aap fir bhi delete karna chahte hain?")) return;
     checklistItems.splice(idx, 1);
-    renderChecklistTable();
+    renderChecklistTables();
 }
 
-function exportChecklistExcel() {
+function exportWeightExcel() {
     if (checklistItems.length === 0) {
-        alert("Checklist khali hai!");
+        alert("Weight table khali hai!");
         return;
     }
 
-    const rows = checklistItems.map(it => {
-        let rowObj = {
-            "Category": it.category,
-            "Sub-Item Name": it.name,
-            "Sample Quantity": it.samples,
-        };
-        it.sampleWeights.forEach((w, i) => {
-            rowObj[`Sample ${i+1} Weight (kg)`] = w;
-        });
-        rowObj["Total Weight (kg)"] = +it.totalWeight.toFixed(2);
-        rowObj["Verification Status"] = it.locked ? "PASSED & LOCKED" : "PENDING";
-        return rowObj;
-    });
+    const rows = checklistItems.map(it => ({
+        "Category": it.category,
+        "Sub-Item Name": it.name,
+        "Weight 1 (kg)": it.weight1,
+        "Weight 2 (kg)": it.weight2,
+        "Total Weight (kg)": +(it.weight1 + it.weight2).toFixed(2),
+        "Status": it.locked ? "LOCKED" : "PENDING"
+    }));
 
-    exportFormattedExcel({ "Physical Checklist": rows }, "Material_Checklist_Weights_Report.xlsx");
+    exportFormattedExcel({ "Weight Calculation": rows }, "Material_Weight_Calculation_Report.xlsx");
 }
 
 // EXCELJS FORMATTING ENGINE
 function exportFormattedExcel(dataMap, filename) {
     const workbook = new ExcelJS.Workbook();
-
     for (let sheetName in dataMap) {
         const rows = dataMap[sheetName];
         if (!rows || rows.length === 0) continue;
-
         const worksheet = workbook.addWorksheet(sheetName);
         const headers = Object.keys(rows[0]);
 
         const headerRow = worksheet.addRow(headers);
         headerRow.height = 26;
-
         headerRow.eachCell((cell) => {
             cell.font = { name: 'Segoe UI', size: 11, bold: true, color: { argb: 'FFFFFF' } };
-            cell.fill = {
-                type: 'pattern',
-                pattern: 'solid',
-                fgColor: { argb: '1E3A8A' }
-            };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '1E3A8A' } };
             cell.alignment = { vertical: 'middle', horizontal: 'center' };
-            cell.border = {
-                top: { style: 'thin', color: { argb: '94A3B8' } },
-                left: { style: 'thin', color: { argb: '94A3B8' } },
-                bottom: { style: 'thin', color: { argb: '94A3B8' } },
-                right: { style: 'thin', color: { argb: '94A3B8' } }
-            };
+            cell.border = { top: { style: 'thin', color: { argb: '94A3B8' } }, left: { style: 'thin', color: { argb: '94A3B8' } }, bottom: { style: 'thin', color: { argb: '94A3B8' } }, right: { style: 'thin', color: { argb: '94A3B8' } } };
         });
 
         rows.forEach(r => {
             const rowVals = headers.map(h => r[h]);
             const dataRow = worksheet.addRow(rowVals);
             dataRow.height = 20;
-
             dataRow.eachCell((cell) => {
                 cell.font = { name: 'Segoe UI', size: 10 };
                 cell.alignment = { vertical: 'middle', horizontal: 'center' };
-                cell.border = {
-                    top: { style: 'thin', color: { argb: 'CBD5E1' } },
-                    left: { style: 'thin', color: { argb: 'CBD5E1' } },
-                    bottom: { style: 'thin', color: { argb: 'CBD5E1' } },
-                    right: { style: 'thin', color: { argb: 'CBD5E1' } }
-                };
+                cell.border = { top: { style: 'thin', color: { argb: 'CBD5E1' } }, left: { style: 'thin', color: { argb: 'CBD5E1' } }, bottom: { style: 'thin', color: { argb: 'CBD5E1' } }, right: { style: 'thin', color: { argb: 'CBD5E1' } } };
             });
         });
 
         worksheet.columns.forEach(column => {
             let maxLength = 0;
             column.eachCell({ includeEmpty: true }, cell => {
-                const columnLength = cell.value ? cell.value.toString().length : 10;
-                if (columnLength > maxLength) maxLength = columnLength;
+                if (cell.value && cell.value.toString().length > maxLength) maxLength = cell.value.toString().length;
             });
             column.width = Math.max(maxLength + 4, 14);
         });
