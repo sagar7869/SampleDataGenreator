@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quality Inspection Management Portal - Advanced Formatting Engine</title>
+    <title>Quality Inspection Management Portal - Ultimate Engine</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1e3a8a">
     
@@ -25,8 +25,8 @@
         .container { max-width: 1200px; margin: 0 auto; }
         .header { background: var(--primary); color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; }
         
-        .mode-switcher { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; flex-wrap: wrap; }
-        .mode-btn { padding: 12px 20px; font-size: 14px; font-weight: bold; border: 2px solid var(--primary); background: white; color: var(--primary); border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .mode-switcher { display: flex; gap: 8px; margin-bottom: 20px; justify-content: center; flex-wrap: wrap; }
+        .mode-btn { padding: 10px 15px; font-size: 12px; font-weight: bold; border: 2px solid var(--primary); background: white; color: var(--primary); border-radius: 8px; cursor: pointer; transition: 0.2s; }
         .mode-btn.active { background: var(--primary); color: white; }
 
         .card { background: var(--card-bg); padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 20px; border: 1px solid var(--border); }
@@ -40,7 +40,6 @@
 
         .checkbox-group { display: flex; flex-wrap: wrap; gap: 15px; padding: 10px; background: #f1f5f9; border-radius: 6px; border: 1px solid var(--border); }
         .checkbox-item { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; cursor: pointer; }
-        .checkbox-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
 
         .btn { padding: 12px 20px; font-weight: 600; border: none; border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 14px; }
         .btn-primary { background-color: var(--primary); color: white; width: 100%; margin-top: 15px; font-size: 16px; }
@@ -65,6 +64,9 @@
         .status-ready { background: #dcfce7; color: #166534; }
 
         .cat-config-card { background: #ffffff; border: 1px solid var(--border); border-left: 4px solid var(--primary); padding: 15px; border-radius: 6px; margin-bottom: 15px; }
+        .check-locked { background-color: #dcfce7 !important; }
+        .sample-weight-grid { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; justify-content: center; }
+        .sample-weight-box { background: #f1f5f9; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border); font-size: 12px; }
     </style>
 </head>
 <body>
@@ -72,13 +74,14 @@
 <div class="container">
     <div class="header">
         <h2>Quality Inspection Management Portal</h2>
-        <p style="margin: 5px 0 0 0; opacity: 0.9;">Formatted Multi-Tab Precision Report Generator</p>
+        <p style="margin: 5px 0 0 0; opacity: 0.9;">Multi-Tab Sync, Individual Sample Weights & Dedicated Checklist Engine</p>
     </div>
 
     <div class="mode-switcher">
-        <button class="mode-btn active" id="btnSingleMode" onclick="switchMode('single')">📌 Mode 1: Single Item Generator</button>
-        <button class="mode-btn" id="btnGroupMode" onclick="switchMode('group')">📁 Mode 2: Group Multi-Tab Batch Portal</button>
-        <button class="mode-btn" id="btnDriveMode" onclick="switchMode('drive')">⚡ Mode 3: Cloud Master Extractor</button>
+        <button class="mode-btn active" id="btnSingleMode" onclick="switchMode('single')">📌 Mode 1: Single Generator</button>
+        <button class="mode-btn" id="btnGroupMode" onclick="switchMode('group')">📁 Mode 2: Multi-Tab Portal</button>
+        <button class="mode-btn" id="btnDriveMode" onclick="switchMode('drive')">⚡ Mode 3: Cloud Sync & Push</button>
+        <button class="mode-btn" id="btnChecklistMode" onclick="switchMode('checklist')">✅ Mode 4: Dedicated Checklist & Weights</button>
     </div>
 
     <!-- MODE 1 -->
@@ -119,7 +122,7 @@
             <div style="margin-top: 15px;">
                 <label>Select Parameters Required:</label>
                 <div class="checkbox-group">
-                    <label class="checkbox-item"><input type="checkbox" id="sChkCoating" checked> Coating (μm) [5 Spot + Avg]</label>
+                    <label class="checkbox-item"><input type="checkbox" id="sChkCoating" checked> Coating (μm)</label>
                     <label class="checkbox-item"><input type="checkbox" id="sChkThickness" checked> Section Thickness (mm)</label>
                     <label class="checkbox-item" id="sBasePlateGroup" style="display:none;"><input type="checkbox" id="sChkBasePlate"> Base Plate Thickness (mm)</label>
                 </div>
@@ -155,7 +158,7 @@
         <div class="card" id="singlePreviewCard" style="display:none;">
             <div class="preview-header">
                 <h3 style="margin: 0;">Generated Inspection Report Display</h3>
-                <button class="btn btn-success" onclick="downloadSingleExcel()">📥 Download Formatted Excel Report</button>
+                <button class="btn btn-success" onclick="downloadSingleExcel()">📥 Download Formatted Excel</button>
             </div>
             <div style="overflow-x: auto; max-height: 400px;">
                 <table>
@@ -169,7 +172,7 @@
     <!-- MODE 2 -->
     <div id="groupModeSection" style="display: none;">
         <div class="card">
-            <h3>Step 1: Select Category & Sub-Items</h3>
+            <h3>Step 1: Select Category & Sub-Items (Short-Code Search Enabled)</h3>
             <div class="form-grid">
                 <div>
                     <label>1. Category Chunein</label>
@@ -184,8 +187,8 @@
                 </div>
 
                 <div>
-                    <label>2. Type & Hit Enter (Quick Add)</label>
-                    <input type="text" id="itemSearchInput" placeholder="Pehle Category Chunein..." disabled onkeydown="handleSearchKeyPress(event)">
+                    <label>2. Number / Name (e.g. 1620, 0032 & Hit Enter)</label>
+                    <input type="text" id="itemSearchInput" placeholder="Type name or code & hit Enter..." disabled onkeydown="handleSearchKeyPress(event)">
                 </div>
             </div>
 
@@ -206,8 +209,6 @@
 
         <div class="card">
             <h3>Step 2: Category-Wise Configurations & Quantities</h3>
-            <p style="font-size: 12px; color: #64748b; margin-top: -5px;">Har category ke liye sample count aur ranges ek dusre se poori tarah alag rahegi.</p>
-            
             <div id="categoryWiseConfigContainer">
                 <span style="color: #94a3b8; font-size: 13px;">Pehle Step 1 se kam se kam ek Sub-Item select karein.</span>
             </div>
@@ -234,10 +235,10 @@
     <div id="driveModeSection" style="display: none;">
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                <h3>Google Cloud Sheet Sync</h3>
+                <h3>Google Cloud Sheet Sync & Push Portal</h3>
                 <span id="syncStatusBadge" class="status-badge status-loading">⏳ Connecting Cloud Sheet...</span>
             </div>
-            <p style="font-size: 13px; color: #64748b; margin-top: 5px;">Cloud data automatically cached in browser LocalStorage.</p>
+            <p style="font-size: 13px; color: #64748b; margin-top: 5px;">Yahan select hone wale tabs ko aap Mode 2 (Inspection) ya Mode 4 (Checklist) mein direct push kar sakte hain.</p>
             
             <div style="margin-top: 15px;">
                 <label>Optional: Manual Excel File Upload Backup:</label>
@@ -248,12 +249,12 @@
         </div>
 
         <div class="card" id="uploadedTabSelectionCard">
-            <h3>Select Tabs to Extract</h3>
+            <h3>Select Tabs to Extract & Sync</h3>
             
             <div class="form-grid">
                 <div>
-                    <label>Search / Type Tab Name (Hit Enter to Add):</label>
-                    <input type="text" id="mode3SearchInput" placeholder="Type tab name & hit Enter..." oninput="filterMode3Tabs()" onkeydown="handleMode3SearchKeyPress(event)">
+                    <label>Search / Type Tab Name or Code (Hit Enter):</label>
+                    <input type="text" id="mode3SearchInput" placeholder="Type name or code & hit Enter..." oninput="filterMode3Tabs()" onkeydown="handleMode3SearchKeyPress(event)">
                 </div>
                 <div>
                     <label>Choose Tab from Dropdown:</label>
@@ -263,90 +264,151 @@
                 </div>
             </div>
 
-            <label style="margin-top: 15px;">Selected Tabs (Export hone wale):</label>
+            <label style="margin-top: 15px;">Selected Tabs:</label>
             <div class="selected-box">
                 <div id="uploadedSelectedTabsTags" class="tag-container">
                     <span style="color: #94a3b8; font-size: 13px;">Koi tab select nahi hua hai.</span>
                 </div>
             </div>
 
-            <button class="btn btn-success" style="width: 100%; margin-top: 15px; font-size: 16px;" onclick="exportSelectedUploadedTabs()">📥 Download Selected Tabs with Full Styling (.xlsx)</button>
+            <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                <button class="btn btn-success" style="flex: 1;" onclick="exportSelectedUploadedTabs()">📥 Download Selected Tabs (.xlsx)</button>
+                <button class="btn btn-primary" style="flex: 1; margin-top:0;" onclick="pushMode3TabsToMode2()">🚀 Push to Mode 2 (Inspection)</button>
+                <button class="btn btn-primary" style="flex: 1; margin-top:0; background-color: var(--success);" onclick="pushMode3TabsToMode4()">✅ Push to Mode 4 (Checklist)</button>
+            </div>
         </div>
     </div>
+
+    <!-- MODE 4: DEDICATED CHECKLIST & INDIVIDUAL SAMPLE WEIGHT CALCULATOR -->
+    <div id="checklistModeSection" style="display: none;">
+        <div class="card">
+            <h3>Dedicated Physical Material Checklist & Individual Sample Weights</h3>
+            <p style="font-size: 13px; color: #64748b;">Yahan aap Category aur Sub-Item dropdown se direct select karke ya Mode 3 se sync karke items add kar sakte hain, aur har sample ka individual weight daal sakte hain.</p>
+            
+            <div class="form-grid">
+                <div>
+                    <label>1. Select Category</label>
+                    <select id="chkCategory" onchange="onChkCategoryChange()">
+                        <option value="">-- Choose Category --</option>
+                        <option value="COLUMNS">COLUMNS</option>
+                        <option value="PURLINE">PURLINE</option>
+                        <option value="LA">LA (Angle / Cleat)</option>
+                        <option value="Rafter">Rafter</option>
+                        <option value="Jointer">Jointer</option>
+                    </select>
+                </div>
+                <div>
+                    <label>2. Select Sub-Item Name</label>
+                    <select id="chkItemSelect">
+                        <option value="">Pehle Category Chunein</option>
+                    </select>
+                </div>
+            </div>
+            <button class="btn btn-primary" style="margin-top: 15px;" onclick="addChecklistItemFromDropdown()">➕ Add Selected Item to Checklist</button>
+        </div>
+
+        <div class="card">
+            <div class="preview-header">
+                <h3 style="margin: 0;">Material Checklist & Sample Weight Breakdown Table</h3>
+                <button class="btn btn-success" onclick="exportChecklistExcel()">📥 Export Checklist & Weight Report (.xlsx)</button>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table id="checklistTable">
+                    <thead>
+                        <tr>
+                            <th>Lock / Check</th>
+                            <th>Category</th>
+                            <th>Sub-Item Name</th>
+                            <th>Sample Qty</th>
+                            <th>Individual Sample Weights (kg)</th>
+                            <th>Total Weight (kg)</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="checklistBody">
+                        <tr><td colspan="8" style="color: #94a3b8;">Abhi koi item checklist mein nahi hai.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script>
 // SUB-ITEM SPECS WITH REFERRED VALUES
 const subItemSpecs = {
     // PURLINE
-    "P2L": { refThick: 1.000, refCoat: 18.0, coatMin: 22.0, coatMax: 34.0, thickMin: 0.990, thickMax: 1.045, hasBasePlate: false },
-    "P2M": { refThick: 1.200, refCoat: 18.0, coatMin: 22.0, coatMax: 34.0, thickMin: 1.190, thickMax: 1.250, hasBasePlate: false },
-    "P2H": { refThick: 1.600, refCoat: 18.0, coatMin: 22.0, coatMax: 26.0, thickMin: 1.590, thickMax: 1.660, hasBasePlate: false },
-    "P3L": { refThick: 1.000, refCoat: 18.0, coatMin: 22.0, coatMax: 34.0, thickMin: 0.990, thickMax: 1.045, hasBasePlate: false },
-    "P3M": { refThick: 1.200, refCoat: 18.0, coatMin: 22.0, coatMax: 34.0, thickMin: 1.190, thickMax: 1.250, hasBasePlate: false },
-    "P3H": { refThick: 1.600, refCoat: 18.0, coatMin: 22.0, coatMax: 26.0, thickMin: 1.590, thickMax: 1.660, hasBasePlate: false },
+    "P2L": { cat: "PURLINE", refThick: 1.000, refCoat: 18.0, coatMin: 22.0, coatMax: 34.0, thickMin: 0.990, thickMax: 1.045, hasBasePlate: false },
+    "P2M": { cat: "PURLINE", refThick: 1.200, refCoat: 18.0, coatMin: 22.0, coatMax: 34.0, thickMin: 1.190, thickMax: 1.250, hasBasePlate: false },
+    "P2H": { cat: "PURLINE", refThick: 1.600, refCoat: 18.0, coatMin: 22.0, coatMax: 26.0, thickMin: 1.590, thickMax: 1.660, hasBasePlate: false },
+    "P3L": { cat: "PURLINE", refThick: 1.000, refCoat: 18.0, coatMin: 22.0, coatMax: 34.0, thickMin: 0.990, thickMax: 1.045, hasBasePlate: false },
+    "P3M": { cat: "PURLINE", refThick: 1.200, refCoat: 18.0, coatMin: 22.0, coatMax: 34.0, thickMin: 1.190, thickMax: 1.250, hasBasePlate: false },
+    "P3H": { cat: "PURLINE", refThick: 1.600, refCoat: 18.0, coatMin: 22.0, coatMax: 26.0, thickMin: 1.590, thickMax: 1.660, hasBasePlate: false },
 
-    // COLUMNS (Ref Coat: 80 μm)
-    "COLU-1620": { refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
-    "COLU-1820": { refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
-    "COLU-2611": { refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
-    "COLU-2612": { refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
-    "COLU-2613": { refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
-    "COLU-2621": { refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
-    "COLU-2622": { refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
-    "COLU-2623": { refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
-    "COLU-2811": { refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
-    "COLU-2812": { refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
-    "COLU-2813": { refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
-    "COLU-2821": { refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
-    "COLU-2822": { refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
-    "COLU-2823": { refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
-    "COLU-2824": { refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
-    "COLU-3611": { refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
-    "COLU-3612": { refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
-    "COLU-3613": { refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
-    "COLU-3621": { refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
-    "COLU-3622": { refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
-    "COLU-3623": { refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
-    "COLU-3811": { refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
-    "COLU-3812": { refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
-    "COLU-3813": { refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
-    "COLU-3821": { refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
-    "COLU-3822": { refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
-    "COLU-3823": { refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
+    // COLUMNS
+    "COLU-1620": { cat: "COLUMNS", refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
+    "COLU-1820": { cat: "COLUMNS", refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
+    "COLU-2611": { cat: "COLUMNS", refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
+    "COLU-2612": { cat: "COLUMNS", refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
+    "COLU-2613": { cat: "COLUMNS", refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
+    "COLU-2621": { cat: "COLUMNS", refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
+    "COLU-2622": { cat: "COLUMNS", refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
+    "COLU-2623": { cat: "COLUMNS", refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
+    "COLU-2811": { cat: "COLUMNS", refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
+    "COLU-2812": { cat: "COLUMNS", refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
+    "COLU-2813": { cat: "COLUMNS", refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
+    "COLU-2821": { cat: "COLUMNS", refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
+    "COLU-2822": { cat: "COLUMNS", refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
+    "COLU-2823": { cat: "COLUMNS", refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
+    "COLU-2824": { cat: "COLUMNS", refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
+    "COLU-3611": { cat: "COLUMNS", refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
+    "COLU-3612": { cat: "COLUMNS", refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
+    "COLU-3613": { cat: "COLUMNS", refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
+    "COLU-3621": { cat: "COLUMNS", refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
+    "COLU-3622": { cat: "COLUMNS", refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
+    "COLU-3623": { cat: "COLUMNS", refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
+    "COLU-3811": { cat: "COLUMNS", refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
+    "COLU-3812": { cat: "COLUMNS", refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
+    "COLU-3813": { cat: "COLUMNS", refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
+    "COLU-3821": { cat: "COLUMNS", refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
+    "COLU-3822": { cat: "COLUMNS", refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
+    "COLU-3823": { cat: "COLUMNS", refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
 
     // RAFTER
-    "RAFT-0101": { refThick: 1.200, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.185, thickMax: 1.235, hasBasePlate: false },
-    "RAFT-0102": { refThick: 1.200, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.185, thickMax: 1.235, hasBasePlate: false },
-    "RAFT-0103": { refThick: 1.500, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.485, thickMax: 1.540, hasBasePlate: false },
-    "RAFT-0201": { refThick: 1.200, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.185, thickMax: 1.235, hasBasePlate: false },
-    "RAFT-0202": { refThick: 1.200, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.185, thickMax: 1.235, hasBasePlate: false },
-    "RAFT-0203": { refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
-    "RAFT-0311": { refThick: 1.500, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.485, thickMax: 1.540, hasBasePlate: false },
-    "RAFT-0312": { refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
-    "RAFT-0313": { refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
-    "RAFT-0321": { refThick: 1.500, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.485, thickMax: 1.540, hasBasePlate: false },
-    "RAFT-0322": { refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
-    "RAFT-0323": { refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
-    "RAFT-1202": { refThick: 1.500, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.485, thickMax: 1.540, hasBasePlate: false },
-    "RAFT-1203": { refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
-    "RAFT-1204": { refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
-    "RAFT-1312": { refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
-    "RAFT-1313": { refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
-    "RAFT-1322": { refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
-    "RAFT-1323": { refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
+    "RAFT-0101": { cat: "Rafter", refThick: 1.200, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.185, thickMax: 1.235, hasBasePlate: false },
+    "RAFT-0102": { cat: "Rafter", refThick: 1.200, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.185, thickMax: 1.235, hasBasePlate: false },
+    "RAFT-0103": { cat: "Rafter", refThick: 1.500, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.485, thickMax: 1.540, hasBasePlate: false },
+    "RAFT-0201": { cat: "Rafter", refThick: 1.200, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.185, thickMax: 1.235, hasBasePlate: false },
+    "RAFT-0202": { cat: "Rafter", refThick: 1.200, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.185, thickMax: 1.235, hasBasePlate: false },
+    "RAFT-0203": { cat: "Rafter", refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
+    "RAFT-0311": { cat: "Rafter", refThick: 1.500, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.485, thickMax: 1.540, hasBasePlate: false },
+    "RAFT-0312": { cat: "Rafter", refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
+    "RAFT-0313": { cat: "Rafter", refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
+    "RAFT-0321": { cat: "Rafter", refThick: 1.500, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.485, thickMax: 1.540, hasBasePlate: false },
+    "RAFT-0322": { cat: "Rafter", refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
+    "RAFT-0323": { cat: "Rafter", refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
+    "RAFT-1202": { cat: "Rafter", refThick: 1.500, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.485, thickMax: 1.540, hasBasePlate: false },
+    "RAFT-1203": { cat: "Rafter", refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
+    "RAFT-1204": { cat: "Rafter", refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
+    "RAFT-1312": { cat: "Rafter", refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
+    "RAFT-1313": { cat: "Rafter", refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
+    "RAFT-1322": { cat: "Rafter", refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
+    "RAFT-1323": { cat: "Rafter", refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
 
     // JOINTER
-    "331": { refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
-    "332": { refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
-    "333": { refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
-    "RAFT-0331": { refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
-    "RAFT-0332": { refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
-    "RAFT-0333": { refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
+    "331": { cat: "Jointer", refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
+    "332": { cat: "Jointer", refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
+    "333": { cat: "Jointer", refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
+    "RAFT-0331": { cat: "Jointer", refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
+    "RAFT-0332": { cat: "Jointer", refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
+    "RAFT-0333": { cat: "Jointer", refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
 
-    // LA (Ref Coat: 80 μm)
-    "LA-0032": { refThick: 3.000, refCoat: 80.0, coatMin: 70.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.080, baseMin: 3.000, baseMax: 3.120, hasBasePlate: true },
-    "LA-0046": { refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, baseMin: 3.100, baseMax: 3.220, hasBasePlate: true }
+    // LA
+    "LA-0032": { cat: "LA", refThick: 3.000, refCoat: 80.0, coatMin: 70.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.080, baseMin: 3.000, baseMax: 3.120, hasBasePlate: true },
+    "LA-0046": { cat: "LA", refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, baseMin: 3.100, baseMax: 3.220, hasBasePlate: true }
 };
 
 const categoryRefSpecs = {
@@ -357,44 +419,35 @@ const categoryRefSpecs = {
     "Jointer": { items: ["331", "332", "333", "RAFT-0331", "RAFT-0332", "RAFT-0333"], hasBasePlate: false }
 };
 
-// COATING AVERAGE GENERATOR FOR COLUMNS & LA WITH SPECIFIC PROPORTIONS
+// COATING GENERATOR
 function generateCoatingsWithTargetAverage(cat) {
     let targetAvg = 80.0;
-
     if (cat === "COLUMNS" || cat === "LA") {
         let randProportion = Math.random();
         if (randProportion < 0.01) {
-            // 1% Samples: Average ~105 - 120 μm
             targetAvg = +(Math.random() * (120 - 105.1) + 105.1).toFixed(1);
         } else if (randProportion < 0.04) {
-            // 3% Samples: Average ~100 - 105 μm
             targetAvg = +(Math.random() * (105 - 100) + 100).toFixed(1);
         } else if (randProportion < 0.34) {
-            // 30% Samples: Average ~85 - 94.9 μm (Near 90 μm)
             targetAvg = +(Math.random() * (94.9 - 85) + 85).toFixed(1);
         } else {
-            // ~66% Samples: Standard Average ~75 - 84.9 μm
             targetAvg = +(Math.random() * (84.9 - 75) + 75).toFixed(1);
         }
     } else {
-        // PURLINE, Rafter, Jointer Standard Averages
         targetAvg = +(Math.random() * (26 - 22) + 22).toFixed(1);
     }
 
-    // Generate 5 spot readings around targetAvg
     let c1 = +(targetAvg + (Math.random() * 10 - 5)).toFixed(1);
     let c2 = +(targetAvg + (Math.random() * 10 - 5)).toFixed(1);
     let c3 = +(targetAvg + (Math.random() * 10 - 5)).toFixed(1);
     let c4 = +(targetAvg + (Math.random() * 10 - 5)).toFixed(1);
     let c5 = +((targetAvg * 5) - (c1 + c2 + c3 + c4)).toFixed(1);
 
-    if (c5 < 15) c5 = targetAvg; // Safeguard
-
+    if (c5 < 15) c5 = targetAvg;
     let calculatedAvg = +((c1 + c2 + c3 + c4 + c5) / 5).toFixed(1);
     return { c1, c2, c3, c4, c5, calculatedAvg };
 }
 
-// BIASED THICKNESS GENERATOR
 function generateBiasedThickness(refValue, minVal, maxVal) {
     let rand = Math.random();
     let val;
@@ -412,13 +465,15 @@ function switchMode(mode) {
     document.getElementById('singleModeSection').style.display = (mode === 'single') ? 'block' : 'none';
     document.getElementById('groupModeSection').style.display = (mode === 'group') ? 'block' : 'none';
     document.getElementById('driveModeSection').style.display = (mode === 'drive') ? 'block' : 'none';
+    document.getElementById('checklistModeSection').style.display = (mode === 'checklist') ? 'block' : 'none';
     
     document.getElementById('btnSingleMode').classList.toggle('active', mode === 'single');
     document.getElementById('btnGroupMode').classList.toggle('active', mode === 'group');
     document.getElementById('btnDriveMode').classList.toggle('active', mode === 'drive');
+    document.getElementById('btnChecklistMode').classList.toggle('active', mode === 'checklist');
 }
 
-// MODE 1
+// MODE 1 LOGIC
 let singleGeneratedRows = [];
 let currentSingleItemName = "";
 let currentSingleCat = "";
@@ -549,7 +604,7 @@ function downloadSingleExcel() {
     exportFormattedExcel({ [currentSingleCat]: singleGeneratedRows }, `Single_Inspection_${currentSingleItemName}.xlsx`);
 }
 
-// MODE 2
+// MODE 2 LOGIC (SHORT-CODE MATCHING ENABLED)
 let selectedItemsList = [];
 let categoryConfigs = {};
 let categoryDataMapGlobal = {};
@@ -863,75 +918,7 @@ function downloadGroupExcel() {
     exportFormattedExcel(categoryDataMapGlobal, "Consolidated_Quality_Inspection_Report.xlsx");
 }
 
-// EXCELJS STYLING ENGINE (ALL BORDER, CENTER ALIGN, BOLD HEADER & LIGHT BLUE FILL, AUTOFIT)
-function exportFormattedExcel(dataMap, filename) {
-    const workbook = new ExcelJS.Workbook();
-
-    for (let sheetName in dataMap) {
-        const rows = dataMap[sheetName];
-        if (!rows || rows.length === 0) continue;
-
-        const worksheet = workbook.addWorksheet(sheetName);
-        const headers = Object.keys(rows[0]);
-
-        // Add Header Row
-        const headerRow = worksheet.addRow(headers);
-        headerRow.height = 26;
-
-        // Header Styling: Bold, Center, Light Blue Fill
-        headerRow.eachCell((cell) => {
-            cell.font = { name: 'Segoe UI', size: 11, bold: true, color: { argb: 'FFFFFF' } };
-            cell.fill = {
-                type: 'pattern',
-                pattern: 'solid',
-                fgColor: { argb: '1E3A8A' } // Light/Royal Blue
-            };
-            cell.alignment = { vertical: 'middle', horizontal: 'center' };
-            cell.border = {
-                top: { style: 'thin', color: { argb: '94A3B8' } },
-                left: { style: 'thin', color: { argb: '94A3B8' } },
-                bottom: { style: 'thin', color: { argb: '94A3B8' } },
-                right: { style: 'thin', color: { argb: '94A3B8' } }
-            };
-        });
-
-        // Add Data Rows
-        rows.forEach(r => {
-            const rowVals = headers.map(h => r[h]);
-            const dataRow = worksheet.addRow(rowVals);
-            dataRow.height = 20;
-
-            dataRow.eachCell((cell) => {
-                cell.font = { name: 'Segoe UI', size: 10 };
-                cell.alignment = { vertical: 'middle', horizontal: 'center' };
-                cell.border = {
-                    top: { style: 'thin', color: { argb: 'CBD5E1' } },
-                    left: { style: 'thin', color: { argb: 'CBD5E1' } },
-                    bottom: { style: 'thin', color: { argb: 'CBD5E1' } },
-                    right: { style: 'thin', color: { argb: 'CBD5E1' } }
-                };
-            });
-        });
-
-        // Auto-Fit Columns Width
-        worksheet.columns.forEach(column => {
-            let maxLength = 0;
-            column.eachCell({ includeEmpty: true }, cell => {
-                const columnLength = cell.value ? cell.value.toString().length : 10;
-                if (columnLength > maxLength) {
-                    maxLength = columnLength;
-                }
-            });
-            column.width = Math.max(maxLength + 4, 14);
-        });
-    }
-
-    workbook.xlsx.writeBuffer().then(buffer => {
-        saveAs(new Blob([buffer]), filename);
-    });
-}
-
-// MODE 3 LOGIC
+// MODE 3 LOGIC (SYNC SUPPORT)
 let loadedSourceWorkbook = null;
 let selectedUploadedTabs = [];
 const GOOGLE_SHEET_ID = "1yIl9mDCsW6b4Sx3XsE0aPild8Es1K4-x";
@@ -1134,6 +1121,70 @@ function renderUploadedTabTags() {
     });
 }
 
+// PUSH TO MODE 2
+function pushMode3TabsToMode2() {
+    if (selectedUploadedTabs.length === 0) {
+        alert("Pehle Mode 3 mein kam se kam ek Tab select karein!");
+        return;
+    }
+
+    let addedCount = 0;
+    selectedUploadedTabs.forEach(tabName => {
+        let cleanName = tabName.trim().toUpperCase();
+        for (let itemKey in subItemSpecs) {
+            if (itemKey.toUpperCase().includes(cleanName) || cleanName.includes(itemKey.toUpperCase())) {
+                const cat = subItemSpecs[itemKey].cat;
+                if (!selectedItemsList.some(s => s.cat === cat && s.item === itemKey)) {
+                    selectedItemsList.push({ cat, item: itemKey });
+                    addedCount++;
+                }
+            }
+        }
+    });
+
+    renderTags();
+    updateCategoryWiseConfigCards();
+    switchMode('group');
+    alert(`🚀 ${addedCount} Items successfully Mode 2 Multi-Tab Portal mein push ho gaye hain!`);
+}
+
+// PUSH TO MODE 4 CHECKLIST
+function pushMode3TabsToMode4() {
+    if (selectedUploadedTabs.length === 0) {
+        alert("Pehle Mode 3 mein kam se kam ek Tab select karein!");
+        return;
+    }
+
+    let addedCount = 0;
+    selectedUploadedTabs.forEach(tabName => {
+        let cleanName = tabName.trim().toUpperCase();
+        let matchedKey = Object.keys(subItemSpecs).find(k => k.toUpperCase().includes(cleanName) || cleanName.includes(k.toUpperCase()));
+        
+        let itemName = matchedKey || tabName;
+        let cat = matchedKey ? subItemSpecs[matchedKey].cat : "COLUMNS";
+
+        if (!checklistItems.some(i => i.name === itemName)) {
+            let defaultSamples = 3;
+            let weights = [5.0, 5.2, 4.8];
+            checklistItems.push({
+                id: Date.now() + Math.random(),
+                name: itemName,
+                category: cat,
+                samples: defaultSamples,
+                sampleWeights: weights,
+                totalWeight: weights.reduce((a,b)=>a+b, 0),
+                checked: false,
+                locked: false
+            });
+            addedCount++;
+        }
+    });
+
+    renderChecklistTable();
+    switchMode('checklist');
+    alert(`✅ ${addedCount} Items successfully Mode 4 Checklist mein push ho gaye hain!`);
+}
+
 function exportSelectedUploadedTabs() {
     if (!loadedSourceWorkbook) {
         alert("Cloud Master Sheet load nahi hai. Kripya page refresh karein.");
@@ -1145,45 +1196,258 @@ function exportSelectedUploadedTabs() {
     }
 
     const outputWorkbook = new ExcelJS.Workbook();
-
     selectedUploadedTabs.forEach(tabName => {
         const sourceSheet = loadedSourceWorkbook.getWorksheet(tabName);
         if (!sourceSheet) return;
-
         const newSheet = outputWorkbook.addWorksheet(tabName);
 
         sourceSheet.columns.forEach((col, colIndex) => {
-            if (col && col.width) {
-                newSheet.getColumn(colIndex + 1).width = col.width;
-            }
+            if (col && col.width) newSheet.getColumn(colIndex + 1).width = col.width;
         });
 
         sourceSheet.eachRow({ includeEmpty: true }, (row, rowIndex) => {
             const newRow = newSheet.getRow(rowIndex);
             if (row.height) newRow.height = row.height;
-
             row.eachCell({ includeEmpty: true }, (cell, colIndex) => {
                 const newCell = newRow.getCell(colIndex);
                 newCell.value = cell.value;
-
-                if (cell.style) {
-                    newCell.style = JSON.parse(JSON.stringify(cell.style));
-                }
+                if (cell.style) newCell.style = JSON.parse(JSON.stringify(cell.style));
             });
         });
-
-        if (sourceSheet.model && sourceSheet.model.merges) {
-            sourceSheet.model.merges.forEach(mergeRange => {
-                newSheet.mergeCells(mergeRange);
-            });
-        }
     });
 
     outputWorkbook.xlsx.writeBuffer().then(buffer => {
         saveAs(new Blob([buffer]), "Formatted_Extracted_Report.xlsx");
         alert("Excel File exact styling ke saath download ho gayi hai!");
-    }).catch(err => {
-        alert("Export fail hua: " + err.message);
+    });
+}
+
+// MODE 4 LOGIC: DEDICATED CHECKLIST & INDIVIDUAL SAMPLE WEIGHTS
+let checklistItems = [];
+
+function onChkCategoryChange() {
+    const cat = document.getElementById("chkCategory").value;
+    const itemSelect = document.getElementById("chkItemSelect");
+    itemSelect.innerHTML = "";
+
+    if (cat && categoryRefSpecs[cat]) {
+        categoryRefSpecs[cat].items.forEach(it => {
+            let opt = document.createElement("option");
+            opt.value = it; opt.innerText = it;
+            itemSelect.appendChild(opt);
+        });
+    } else {
+        itemSelect.innerHTML = '<option value="">Pehle Category Chunein</option>';
+    }
+}
+
+function addChecklistItemFromDropdown() {
+    const cat = document.getElementById("chkCategory").value;
+    const itemName = document.getElementById("chkItemSelect").value;
+
+    if (!cat || !itemName) {
+        alert("Kripya Category aur Sub-Item dono chunein!");
+        return;
+    }
+
+    if (checklistItems.some(i => i.name === itemName && i.category === cat)) {
+        alert("Yeh item pehle se checklist mein maujood hai!");
+        return;
+    }
+
+    let defaultSamples = 3;
+    let initialWeights = [5.0, 5.2, 4.8];
+
+    let itemObj = {
+        id: Date.now(),
+        name: itemName,
+        category: cat,
+        samples: defaultSamples,
+        sampleWeights: initialWeights,
+        totalWeight: initialWeights.reduce((a,b)=>a+b, 0),
+        checked: false,
+        locked: false
+    };
+
+    checklistItems.push(itemObj);
+    renderChecklistTable();
+}
+
+function renderChecklistTable() {
+    const body = document.getElementById("checklistBody");
+    body.innerHTML = "";
+
+    if (checklistItems.length === 0) {
+        body.innerHTML = '<tr><td colspan="8" style="color: #94a3b8;">Abhi koi item checklist mein nahi hai.</td></tr>';
+        return;
+    }
+
+    checklistItems.forEach((item, idx) => {
+        const tr = document.createElement("tr");
+        if (item.locked) tr.className = "check-locked";
+
+        let weightInputsHtml = `<div class="sample-weight-grid">`;
+        for (let s = 0; s < item.samples; s++) {
+            let wVal = item.sampleWeights[s] !== undefined ? item.sampleWeights[s] : 5.0;
+            weightInputsHtml += `
+                <div class="sample-weight-box">
+                    <span>S${s+1}:</span>
+                    <input type="number" step="0.01" value="${wVal}" ${item.locked ? 'disabled' : ''} onchange="updateIndividualSampleWeight(${idx}, ${s}, parseFloat(this.value))" style="width: 60px; text-align:center; padding: 2px;">
+                </div>`;
+        }
+        weightInputsHtml += `</div>`;
+
+        tr.innerHTML = `
+            <td>
+                <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="handleChecklistToggle(${idx}, this.checked)" style="width:20px; height:20px; cursor:pointer;">
+            </td>
+            <td>${item.category}</td>
+            <td><strong>${item.name}</strong></td>
+            <td>
+                <input type="number" value="${item.samples}" min="1" max="20" ${item.locked ? 'disabled' : ''} onchange="updateSampleCount(${idx}, parseInt(this.value))" style="width: 60px; text-align:center;">
+            </td>
+            <td>${weightInputsHtml}</td>
+            <td><strong>${item.totalWeight.toFixed(2)} kg</strong></td>
+            <td>
+                <span class="status-badge ${item.locked ? 'status-ready' : 'status-loading'}">
+                    ${item.locked ? '🔒 LOCKED' : '⏳ PENDING'}
+                </span>
+            </td>
+            <td>
+                <button class="btn btn-danger" style="padding: 4px 8px; font-size: 11px; margin:0;" onclick="removeChecklistItem(${idx})">🗑️</button>
+            </td>
+        `;
+        body.appendChild(tr);
+    });
+}
+
+function handleChecklistToggle(idx, isChecked) {
+    const item = checklistItems[idx];
+
+    if (isChecked) {
+        item.checked = true;
+        item.locked = true;
+        renderChecklistTable();
+    } else {
+        const confirmUnlock = confirm(`⚠️ Kya aap "${item.name}" ko unlock karke uncheck karna chahte hain?`);
+        if (confirmUnlock) {
+            item.checked = false;
+            item.locked = false;
+        }
+        renderChecklistTable();
+    }
+}
+
+function updateSampleCount(idx, newCount) {
+    if (isNaN(newCount) || newCount < 1) return;
+    let item = checklistItems[idx];
+    item.samples = newCount;
+    
+    while(item.sampleWeights.length < newCount) {
+        item.sampleWeights.push(5.0);
+    }
+    item.sampleWeights = item.sampleWeights.slice(0, newCount);
+    item.totalWeight = item.sampleWeights.reduce((a,b)=>a+b, 0);
+    renderChecklistTable();
+}
+
+function updateIndividualSampleWeight(itemIdx, sampleIdx, val) {
+    let item = checklistItems[itemIdx];
+    item.sampleWeights[sampleIdx] = isNaN(val) ? 0 : val;
+    item.totalWeight = item.sampleWeights.reduce((a,b)=>a+b, 0);
+    renderChecklistTable();
+}
+
+function removeChecklistItem(idx) {
+    if (checklistItems[idx].locked) {
+        if (!confirm("⚠️ Yeh item locked hai. Kya aap fir bhi delete karna chahte hain?")) return;
+    }
+    checklistItems.splice(idx, 1);
+    renderChecklistTable();
+}
+
+function exportChecklistExcel() {
+    if (checklistItems.length === 0) {
+        alert("Checklist khali hai!");
+        return;
+    }
+
+    const rows = checklistItems.map(it => {
+        let rowObj = {
+            "Category": it.category,
+            "Sub-Item Name": it.name,
+            "Sample Quantity": it.samples,
+        };
+        it.sampleWeights.forEach((w, i) => {
+            rowObj[`Sample ${i+1} Weight (kg)`] = w;
+        });
+        rowObj["Total Weight (kg)"] = +it.totalWeight.toFixed(2);
+        rowObj["Verification Status"] = it.locked ? "PASSED & LOCKED" : "PENDING";
+        return rowObj;
+    });
+
+    exportFormattedExcel({ "Physical Checklist": rows }, "Material_Checklist_Weights_Report.xlsx");
+}
+
+// EXCELJS FORMATTING ENGINE
+function exportFormattedExcel(dataMap, filename) {
+    const workbook = new ExcelJS.Workbook();
+
+    for (let sheetName in dataMap) {
+        const rows = dataMap[sheetName];
+        if (!rows || rows.length === 0) continue;
+
+        const worksheet = workbook.addWorksheet(sheetName);
+        const headers = Object.keys(rows[0]);
+
+        const headerRow = worksheet.addRow(headers);
+        headerRow.height = 26;
+
+        headerRow.eachCell((cell) => {
+            cell.font = { name: 'Segoe UI', size: 11, bold: true, color: { argb: 'FFFFFF' } };
+            cell.fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: '1E3A8A' }
+            };
+            cell.alignment = { vertical: 'middle', horizontal: 'center' };
+            cell.border = {
+                top: { style: 'thin', color: { argb: '94A3B8' } },
+                left: { style: 'thin', color: { argb: '94A3B8' } },
+                bottom: { style: 'thin', color: { argb: '94A3B8' } },
+                right: { style: 'thin', color: { argb: '94A3B8' } }
+            };
+        });
+
+        rows.forEach(r => {
+            const rowVals = headers.map(h => r[h]);
+            const dataRow = worksheet.addRow(rowVals);
+            dataRow.height = 20;
+
+            dataRow.eachCell((cell) => {
+                cell.font = { name: 'Segoe UI', size: 10 };
+                cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                cell.border = {
+                    top: { style: 'thin', color: { argb: 'CBD5E1' } },
+                    left: { style: 'thin', color: { argb: 'CBD5E1' } },
+                    bottom: { style: 'thin', color: { argb: 'CBD5E1' } },
+                    right: { style: 'thin', color: { argb: 'CBD5E1' } }
+                };
+            });
+        });
+
+        worksheet.columns.forEach(column => {
+            let maxLength = 0;
+            column.eachCell({ includeEmpty: true }, cell => {
+                const columnLength = cell.value ? cell.value.toString().length : 10;
+                if (columnLength > maxLength) maxLength = columnLength;
+            });
+            column.width = Math.max(maxLength + 4, 14);
+        });
+    }
+
+    workbook.xlsx.writeBuffer().then(buffer => {
+        saveAs(new Blob([buffer]), filename);
     });
 }
 </script>
