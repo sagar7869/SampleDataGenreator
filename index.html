@@ -72,7 +72,7 @@
 <div class="container">
     <div class="header">
         <h2>Quality Inspection Management Portal</h2>
-        <p style="margin: 5px 0 0 0; opacity: 0.9;">Multi-Tab Sync & Dedicated Checklist / Weight Tabs Engine</p>
+        <p style="margin: 5px 0 0 0; opacity: 0.9;">Multi-Tab Sync, Checkboxes & Persistent State Engine</p>
     </div>
 
     <div class="mode-switcher">
@@ -260,25 +260,46 @@
                 <button class="btn btn-primary" style="flex: 1; margin:0; background-color: var(--success);" onclick="pushMode3TabsToMode4()">✅ Push to Mode 4 (Checklist)</button>
             </div>
         </div>
+
+        <!-- MODE 3 TABLE LAYOUT PREVIEW CONTAINER -->
+        <div class="card" id="mode3TablePreviewCard" style="display:none;">
+            <div class="preview-header">
+                <h3 style="margin: 0;">Mode 3 Extracted Sheet Data Preview</h3>
+                <button class="btn btn-success" onclick="exportSelectedUploadedTabs()">📥 Export Selected Table (.xlsx)</button>
+            </div>
+            <div id="mode3TabButtons" style="margin-bottom: 15px;"></div>
+            <div style="overflow-x: auto; max-height: 400px;">
+                <table>
+                    <thead id="mode3PreviewHead"></thead>
+                    <tbody id="mode3PreviewBody"></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
-    <!-- MODE 4: SPLIT TABS FOR CHECKLIST & WEIGHT CALCULATOR -->
+    <!-- MODE 4: SUB-ITEM CHECKBOXES & SPLIT TABS -->
     <div id="checklistModeSection" style="display: none;">
         <div class="card" style="padding: 10px 20px;">
-            <div style="display: flex; gap: 10px;">
-                <button class="tab-btn active" id="mode4TabBtn1" onclick="switchMode4Tab(1)">✅ Tab 1: Physical Checklist</button>
-                <button class="tab-btn" id="mode4TabBtn2" onclick="switchMode4Tab(2)">⚖️ Tab 2: Weight Calculator</button>
+            <div style="display: flex; gap: 10px; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                <div style="display: flex; gap: 10px;">
+                    <button class="tab-btn active" id="mode4TabBtn1" onclick="switchMode4Tab(1)">✅ Tab 1: Physical Checklist</button>
+                    <button class="tab-btn" id="mode4TabBtn2" onclick="switchMode4Tab(2)">⚖️ Tab 2: Weight Calculator</button>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px; margin:0;" onclick="pushMode4ToMode2()">🚀 Push to Mode 2</button>
+                    <button class="btn btn-success" style="padding: 6px 12px; font-size: 12px; margin:0;" onclick="pushMode4ToMode3()">⚡ Push to Mode 3</button>
+                </div>
             </div>
         </div>
 
-        <!-- TAB 1 VIEW: CHECKLIST -->
+        <!-- TAB 1 VIEW: CHECKLIST WITH CHECKBOXES -->
         <div class="card" id="mode4View1">
             <div class="preview-header">
-                <h3 style="margin: 0;">Physical Material Checklist & Locking</h3>
+                <h3 style="margin: 0;">Physical Material Checklist & Sub-Item Checkboxes</h3>
             </div>
             <div class="form-grid">
                 <div>
-                    <label>Select Category</label>
+                    <label>1. Category Chunein</label>
                     <select id="chkCategory" onchange="onChkCategoryChange()">
                         <option value="">-- Choose Category --</option>
                         <option value="COLUMNS">COLUMNS</option>
@@ -289,13 +310,17 @@
                     </select>
                 </div>
                 <div>
-                    <label>Select Sub-Item Name</label>
-                    <select id="chkItemSelect">
-                        <option value="">Pehle Category Chunein</option>
-                    </select>
+                    <label>2. Search Sub-Item (Hit Enter)</label>
+                    <input type="text" id="chkSearchInput" placeholder="Pehle Category Chunein..." disabled onkeydown="handleChkSearchKeyPress(event)">
                 </div>
             </div>
-            <button class="btn btn-primary" style="margin-top: 15px;" onclick="addChecklistItemFromDropdown()">➕ Add Item to Checklist & Weight Calculator</button>
+
+            <div style="margin-top: 15px;">
+                <label>3. Multiselect Sub-Items via Checkboxes:</label>
+                <div id="chkMultiselectBox" class="multi-select-box">
+                    <span style="color: #94a3b8; font-size: 13px;">Pehle Category Chunein...</span>
+                </div>
+            </div>
 
             <div style="overflow-x: auto; margin-top: 15px;">
                 <table id="checklistTable">
@@ -321,7 +346,7 @@
                 <h3 style="margin: 0;">Weight Calculator (Weight 1 & Weight 2)</h3>
                 <button class="btn btn-success" onclick="exportWeightExcel()">📥 Export Weight Report (.xlsx)</button>
             </div>
-            <p style="font-size: 13px; color: #64748b;">Yahan aapke saare added items ke liye Weight 1 aur Weight 2 enter karne ka dedicated view hai.</p>
+            <p style="font-size: 13px; color: #64748b;">Yahan aapke saare added items ke liye Weight 1 aur Weight 2 enter karne ka dedicated view hai. Refresh karne par bhi data save rahega.</p>
 
             <div style="overflow-x: auto;">
                 <table id="weightTable">
@@ -419,6 +444,30 @@ const categoryRefSpecs = {
     "Rafter": { items: ["RAFT-0101", "RAFT-0102", "RAFT-0103", "RAFT-0201", "RAFT-0202", "RAFT-0203", "RAFT-0311", "RAFT-0312", "RAFT-0313", "RAFT-0321", "RAFT-0322", "RAFT-0323", "RAFT-1202", "RAFT-1203", "RAFT-1204", "RAFT-1312", "RAFT-1313", "RAFT-1322", "RAFT-1323"], hasBasePlate: false },
     "Jointer": { items: ["331", "332", "333", "RAFT-0331", "RAFT-0332", "RAFT-0333"], hasBasePlate: false }
 };
+
+// LOCALSTORAGE PERSISTENT STATE SYNC
+let checklistItems = [];
+
+window.addEventListener('DOMContentLoaded', () => {
+    loadStateFromLocalStorage();
+    loadMasterFromCacheOrCloud();
+});
+
+function saveStateToLocalStorage() {
+    localStorage.setItem('portalChecklistItems', JSON.stringify(checklistItems));
+}
+
+function loadStateFromLocalStorage() {
+    const saved = localStorage.getItem('portalChecklistItems');
+    if (saved) {
+        try {
+            checklistItems = JSON.parse(saved);
+            renderChecklistTables();
+        } catch(e) {
+            console.error("Local storage parse error", e);
+        }
+    }
+}
 
 function generateCoatingsWithTargetAverage(cat) {
     let targetAvg = 80.0;
@@ -936,6 +985,7 @@ function pushMode2ToMode3() {
         }
     });
     populateMode3Checkboxes();
+    renderMode3TablePreview();
     switchMode('drive');
     alert("🚀 Mode 2 ke items Mode 3 Cloud Sync mein push ho gaye hain!");
 }
@@ -958,12 +1008,13 @@ function pushMode2ToMode4() {
             });
         }
     });
+    saveStateToLocalStorage();
     renderChecklistTables();
     switchMode('checklist');
     alert("✅ Mode 2 ke items Mode 4 Checklist & Weights mein push ho gaye hain!");
 }
 
-// MODE 3 LOGIC
+// MODE 3 LOGIC (FIXED TABLE LAYOUT & STYLING)
 let loadedSourceWorkbook = null;
 let selectedUploadedTabs = [];
 const GOOGLE_SHEET_ID = "1yIl9mDCsW6b4Sx3XsE0aPild8Es1K4-x";
@@ -985,6 +1036,7 @@ function loadMasterFromCacheOrCloud() {
             loadedSourceWorkbook = new ExcelJS.Workbook();
             loadedSourceWorkbook.xlsx.load(buffer).then(() => {
                 populateMode3Checkboxes();
+                renderMode3TablePreview();
                 badge.className = "status-badge status-ready";
                 badge.innerText = "✅ Loaded from Browser Cache";
             });
@@ -1007,6 +1059,7 @@ function loadMasterFromCacheOrCloud() {
             return loadedSourceWorkbook.xlsx.load(buffer).then(() => {
                 saveArrayBufferToCache(buffer);
                 populateMode3Checkboxes();
+                renderMode3TablePreview();
                 badge.className = "status-badge status-ready";
                 badge.innerText = "✅ Cloud Sheet Synced & Cached";
             });
@@ -1017,6 +1070,7 @@ function loadMasterFromCacheOrCloud() {
             badge.style.color = "#991b1b";
             badge.innerText = "⚠️ Manual File Upload Required";
             populateMode3CheckboxesDefault();
+            renderMode3TablePreview();
         });
 }
 
@@ -1054,6 +1108,7 @@ function loadUploadedExcelFile() {
         loadedSourceWorkbook.xlsx.load(arrayBuffer).then(() => {
             saveArrayBufferToCache(arrayBuffer);
             populateMode3Checkboxes();
+            renderMode3TablePreview();
             const badge = document.getElementById("syncStatusBadge");
             badge.className = "status-badge status-ready";
             badge.innerText = "✅ Manual File Saved to Cache";
@@ -1066,6 +1121,7 @@ function loadUploadedExcelFile() {
 function clearCacheAndReload() {
     if (confirm("Kya aap cache clear karna chahte hain?")) {
         localStorage.removeItem('cachedMasterExcel');
+        localStorage.removeItem('portalChecklistItems');
         location.reload();
     }
 }
@@ -1108,6 +1164,86 @@ function toggleMode3Tab(tabName, isChecked) {
     } else {
         selectedUploadedTabs = selectedUploadedTabs.filter(t => t !== tabName);
     }
+    renderMode3TablePreview();
+}
+
+// RENDER MODE 3 TABLE LAYOUT PREVIEW
+function renderMode3TablePreview() {
+    const card = document.getElementById("mode3TablePreviewCard");
+    const tabContainer = document.getElementById("mode3TabButtons");
+    const head = document.getElementById("mode3PreviewHead");
+    const body = document.getElementById("mode3PreviewBody");
+
+    if (selectedUploadedTabs.length === 0) {
+        card.style.display = "none";
+        return;
+    }
+
+    card.style.display = "block";
+    tabContainer.innerHTML = "";
+
+    selectedUploadedTabs.forEach((tabName, idx) => {
+        const btn = document.createElement("button");
+        btn.className = `tab-btn ${idx === 0 ? 'active' : ''}`;
+        btn.innerText = tabName;
+        btn.onclick = () => showMode3Table(tabName, btn);
+        tabContainer.appendChild(btn);
+    });
+
+    showMode3Table(selectedUploadedTabs[0]);
+}
+
+function showMode3Table(tabName, activeBtn) {
+    if (activeBtn) {
+        document.querySelectorAll("#mode3TabButtons .tab-btn").forEach(b => b.classList.remove("active"));
+        activeBtn.classList.add("active");
+    }
+
+    const head = document.getElementById("mode3PreviewHead");
+    const body = document.getElementById("mode3PreviewBody");
+    head.innerHTML = "";
+    body.innerHTML = "";
+
+    if (!loadedSourceWorkbook) {
+        head.innerHTML = "<tr><th>Info</th></tr>";
+        body.innerHTML = `<tr><td>Showing selected tab: ${tabName} (Manual File not loaded)</td></tr>`;
+        return;
+    }
+
+    const ws = loadedSourceWorkbook.getWorksheet(tabName);
+    if (!ws) {
+        head.innerHTML = "<tr><th>Info</th></tr>";
+        body.innerHTML = `<tr><td>Worksheet not found in workbook.</td></tr>`;
+        return;
+    }
+
+    let rowsData = [];
+    ws.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+        let rowVals = [];
+        row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+            rowVals[colNumber - 1] = cell.value !== undefined && cell.value !== null ? cell.value.toString() : "";
+        });
+        rowsData.push(rowVals);
+    });
+
+    if (rowsData.length === 0) return;
+
+    let headers = rowsData[0];
+    let dataRows = rowsData.slice(1);
+
+    head.innerHTML = `<tr>${headers.map(h => `<th>${h || ''}</th>`).join("")}</tr>`;
+    if (dataRows.length === 0) {
+        body.innerHTML = `<tr><td colspan="${headers.length}" style="color: #94a3b8;">No data rows in this tab.</td></tr>`;
+        return;
+    }
+
+    dataRows.forEach(r => {
+        let cellsHtml = "";
+        for (let i = 0; i < headers.length; i++) {
+            cellsHtml += `<td>${r[i] !== undefined ? r[i] : ''}</td>`;
+        }
+        body.innerHTML += `<tr>${cellsHtml}</tr>`;
+    });
 }
 
 function pushMode3TabsToMode2() {
@@ -1159,6 +1295,7 @@ function pushMode3TabsToMode4() {
             addedCount++;
         }
     });
+    saveStateToLocalStorage();
     renderChecklistTables();
     switchMode('checklist');
     alert(`✅ ${addedCount} Items successfully Mode 4 Checklist & Weights mein push ho gaye hain!`);
@@ -1186,50 +1323,123 @@ function exportSelectedUploadedTabs() {
     });
 }
 
-// MODE 4 LOGIC: CHECKLIST & WEIGHT CALCULATOR SEPARATE TABS
-let checklistItems = [];
-
+// MODE 4 LOGIC: SUB-ITEM CHECKBOXES & PERSISTENT WEIGHTS
 function onChkCategoryChange() {
     const cat = document.getElementById("chkCategory").value;
-    const itemSelect = document.getElementById("chkItemSelect");
-    itemSelect.innerHTML = "";
+    const searchInput = document.getElementById("chkSearchInput");
 
     if (cat && categoryRefSpecs[cat]) {
-        categoryRefSpecs[cat].items.forEach(it => {
-            let opt = document.createElement("option");
-            opt.value = it; opt.innerText = it;
-            itemSelect.appendChild(opt);
-        });
+        searchInput.disabled = false;
+        searchInput.placeholder = `Search item in ${cat} & hit Enter...`;
+        renderChkMultiselectBox(cat);
     } else {
-        itemSelect.innerHTML = '<option value="">Pehle Category Chunein</option>';
+        searchInput.disabled = true;
+        searchInput.placeholder = "Pehle Category Chunein...";
+        document.getElementById("chkMultiselectBox").innerHTML = '<span style="color: #94a3b8; font-size: 13px;">Pehle Category Chunein...</span>';
     }
 }
 
-function addChecklistItemFromDropdown() {
-    const cat = document.getElementById("chkCategory").value;
-    const itemName = document.getElementById("chkItemSelect").value;
+function renderChkMultiselectBox(cat) {
+    const multiBox = document.getElementById("chkMultiselectBox");
+    multiBox.innerHTML = "";
 
-    if (!cat || !itemName) {
-        alert("Kripya Category aur Sub-Item dono chunein!");
-        return;
-    }
+    const items = categoryRefSpecs[cat].items;
 
-    if (checklistItems.some(i => i.name === itemName && i.category === cat)) {
-        alert("Yeh item pehle se maujood hai!");
-        return;
-    }
+    const selectAllDiv = document.createElement("div");
+    selectAllDiv.className = "checkbox-row";
+    selectAllDiv.style.borderBottom = "1px solid #e2e8f0";
+    selectAllDiv.style.paddingBottom = "5px";
+    selectAllDiv.style.fontWeight = "bold";
+    selectAllDiv.innerHTML = `<input type="checkbox" id="chkAllMode4" onchange="toggleSelectAllMode4('${cat}', this.checked)"> <label for="chkAllMode4">Select All Items in ${cat}</label>`;
+    multiBox.appendChild(selectAllDiv);
 
-    checklistItems.push({
-        id: Date.now(),
-        name: itemName,
-        category: cat,
-        weight1: 0.0,
-        weight2: 0.0,
-        checked: false,
-        locked: false
+    items.forEach(it => {
+        const isChecked = checklistItems.some(i => i.category === cat && i.name === it);
+        const row = document.createElement("div");
+        row.className = "checkbox-row";
+        row.innerHTML = `<input type="checkbox" id="m4_item_${it}" ${isChecked ? 'checked' : ''} onchange="toggleMode4ItemSelection('${cat}', '${it}', this.checked)"> <label for="m4_item_${it}">${it}</label>`;
+        multiBox.appendChild(row);
     });
+}
 
+function toggleMode4ItemSelection(cat, item, isChecked) {
+    if (isChecked) {
+        if (!checklistItems.some(i => i.category === cat && i.name === item)) {
+            checklistItems.push({
+                id: Date.now() + Math.random(),
+                name: item,
+                category: cat,
+                weight1: 0.0,
+                weight2: 0.0,
+                checked: false,
+                locked: false
+            });
+        }
+    } else {
+        checklistItems = checklistItems.filter(i => !(i.category === cat && i.name === item));
+    }
+    saveStateToLocalStorage();
     renderChecklistTables();
+}
+
+function toggleSelectAllMode4(cat, isChecked) {
+    const items = categoryRefSpecs[cat].items;
+    items.forEach(it => {
+        toggleMode4ItemSelection(cat, it, isChecked);
+        const chk = document.getElementById(`m4_item_${it}`);
+        if (chk) chk.checked = isChecked;
+    });
+}
+
+function handleChkSearchKeyPress(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        const cat = document.getElementById("chkCategory").value;
+        const query = document.getElementById("chkSearchInput").value.trim().toUpperCase();
+
+        if (!cat || !query) return;
+
+        const matched = categoryRefSpecs[cat].items.find(it => it.toUpperCase().includes(query));
+        if (matched) {
+            toggleMode4ItemSelection(cat, matched, true);
+            renderChkMultiselectBox(cat);
+            document.getElementById("chkSearchInput").value = "";
+        } else {
+            alert("Koi matching item nahi mila!");
+        }
+    }
+}
+
+function pushMode4ToMode2() {
+    if (checklistItems.length === 0) {
+        alert("Pehle Mode 4 mein items select karein!");
+        return;
+    }
+    checklistItems.forEach(item => {
+        if (!selectedItemsList.some(s => s.cat === item.category && s.item === item.name)) {
+            selectedItemsList.push({ cat: item.category, item: item.name });
+        }
+    });
+    renderTags();
+    updateCategoryWiseConfigCards();
+    switchMode('group');
+    alert("🚀 Mode 4 ke items Mode 2 Multi-Tab mein push ho gaye hain!");
+}
+
+function pushMode4ToMode3() {
+    if (checklistItems.length === 0) {
+        alert("Pehle Mode 4 mein items select karein!");
+        return;
+    }
+    checklistItems.forEach(item => {
+        if (!selectedUploadedTabs.includes(item.name)) {
+            selectedUploadedTabs.push(item.name);
+        }
+    });
+    populateMode3Checkboxes();
+    renderMode3TablePreview();
+    switchMode('drive');
+    alert("⚡ Mode 4 ke items Mode 3 Cloud Sync mein push ho gaye hain!");
 }
 
 function renderChecklistTables() {
@@ -1258,7 +1468,7 @@ function renderChecklistTables() {
         `;
         chkBody.appendChild(trChk);
 
-        // Tab 2 Row (Values preserved in checklistItems array state)
+        // Tab 2 Row
         const trWt = document.createElement("tr");
         trWt.innerHTML = `
             <td>${item.category}</td>
@@ -1276,26 +1486,41 @@ function handleChecklistToggle(idx, isChecked) {
     if (isChecked) {
         item.checked = true;
         item.locked = true;
-        renderChecklistTables();
     } else {
         if (confirm(`⚠️ Kya aap "${item.name}" ko unlock karna chahte hain?`)) {
             item.checked = false;
             item.locked = false;
+        } else {
+            item.checked = true;
+            item.locked = true;
         }
-        renderChecklistTables();
     }
+    saveStateToLocalStorage();
+    renderChecklistTables();
 }
 
 function updateWeight(idx, key, val) {
     if (checklistItems[idx]) {
         checklistItems[idx][key] = isNaN(val) ? 0 : val;
+        saveStateToLocalStorage();
     }
 }
 
 function removeChecklistItem(idx) {
-    if (checklistItems[idx].locked && !confirm("⚠️ Yeh item locked hai. Kya aap fir bhi delete karna chahte hain?")) return;
+    const item = checklistItems[idx];
+    if (item.locked && !confirm("⚠️ Yeh item locked hai. Kya aap fir bhi delete karna chahte hain?")) return;
+    
+    // Uncheck in checkbox box if present
+    const cat = item.category;
+    const name = item.name;
     checklistItems.splice(idx, 1);
+    saveStateToLocalStorage();
     renderChecklistTables();
+
+    const currentCat = document.getElementById("chkCategory").value;
+    if (currentCat === cat) {
+        renderChkMultiselectBox(cat);
+    }
 }
 
 function exportWeightExcel() {
