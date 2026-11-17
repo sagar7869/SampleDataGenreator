@@ -72,7 +72,7 @@
 <div class="container">
     <div class="header">
         <h2>Quality Inspection Management Portal</h2>
-        <p style="margin: 5px 0 0 0; opacity: 0.9;">Multi-Tab Sync, Deduplicated Master Specs & Persistent Engine</p>
+        <p style="margin: 5px 0 0 0; opacity: 0.9;">Multi-Tab Sync, Clean Jointer Specs & Formatted Excel Engine</p>
     </div>
 
     <div class="mode-switcher">
@@ -255,7 +255,7 @@
             </div>
 
             <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
-                <button class="btn btn-success" style="flex: 1;" onclick="exportSelectedUploadedTabs()">📥 Download Selected Tabs (.xlsx)</button>
+                <button class="btn btn-success" style="flex: 1;" onclick="exportSelectedUploadedTabs()">📥 Download Formatted Tabs (.xlsx)</button>
                 <button class="btn btn-primary" style="flex: 1; margin:0;" onclick="pushMode3TabsToMode2()">🚀 Push to Mode 2 (Inspection)</button>
                 <button class="btn btn-primary" style="flex: 1; margin:0; background-color: var(--success);" onclick="pushMode3TabsToMode4()">✅ Push to Mode 4 (Checklist)</button>
             </div>
@@ -265,7 +265,7 @@
         <div class="card" id="mode3TablePreviewCard" style="display:none;">
             <div class="preview-header">
                 <h3 style="margin: 0;">Mode 3 Extracted Sheet Data Preview</h3>
-                <button class="btn btn-success" onclick="exportSelectedUploadedTabs()">📥 Export Selected Table (.xlsx)</button>
+                <button class="btn btn-success" onclick="exportSelectedUploadedTabs()">📥 Export Formatted Table (.xlsx)</button>
             </div>
             <div id="mode3TabButtons" style="margin-bottom: 15px;"></div>
             <div style="overflow-x: auto; max-height: 400px;">
@@ -370,7 +370,7 @@
 </div>
 
 <script>
-// DEDUPLICATED MASTER SPECS (NO OVERLAPS BETWEEN PURLINE & JOINTER)
+// DEDUPLICATED & UNIQUE MASTER SPECS (NO DUPLICATES IN JOINTER OR PURLINE)
 const subItemSpecs = {
     // PURLINE
     "P2L": { cat: "PURLINE", refThick: 1.000, refCoat: 18.0, coatMin: 22.0, coatMax: 34.0, thickMin: 0.990, thickMax: 1.045, hasBasePlate: false },
@@ -430,10 +430,7 @@ const subItemSpecs = {
     "RAFT-1322": { cat: "Rafter", refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
     "RAFT-1323": { cat: "Rafter", refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
 
-    // JOINTER (Deduplicated properly)
-    "JOINT-331": { cat: "Jointer", refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
-    "JOINT-332": { cat: "Jointer", refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
-    "JOINT-333": { cat: "Jointer", refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
+    // JOINTER (Strictly unique items, duplicates removed)
     "JOINT-0331": { cat: "Jointer", refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
     "JOINT-0332": { cat: "Jointer", refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
     "JOINT-0333": { cat: "Jointer", refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
@@ -448,7 +445,7 @@ const categoryRefSpecs = {
     "LA": { items: ["LA-0032", "LA-0046"], hasBasePlate: true },
     "COLUMNS": { items: ["COLU-1620", "COLU-1820", "COLU-2611", "COLU-2612", "COLU-2613", "COLU-2621", "COLU-2622", "COLU-2623", "COLU-2811", "COLU-2812", "COLU-2813", "COLU-2821", "COLU-2822", "COLU-2823", "COLU-2824", "COLU-3611", "COLU-3612", "COLU-3613", "COLU-3621", "COLU-3622", "COLU-3623", "COLU-3811", "COLU-3812", "COLU-3813", "COLU-3821", "COLU-3822", "COLU-3823"], hasBasePlate: false },
     "Rafter": { items: ["RAFT-0101", "RAFT-0102", "RAFT-0103", "RAFT-0201", "RAFT-0202", "RAFT-0203", "RAFT-0311", "RAFT-0312", "RAFT-0313", "RAFT-0321", "RAFT-0322", "RAFT-0323", "RAFT-1202", "RAFT-1203", "RAFT-1204", "RAFT-1312", "RAFT-1313", "RAFT-1322", "RAFT-1323"], hasBasePlate: false },
-    "Jointer": { items: ["JOINT-331", "JOINT-332", "JOINT-333", "JOINT-0331", "JOINT-0332", "JOINT-0333"], hasBasePlate: false }
+    "Jointer": { items: ["JOINT-0331", "JOINT-0332", "JOINT-0333"], hasBasePlate: false }
 };
 
 // LOCALSTORAGE PERSISTENT STATE SYNC
@@ -467,7 +464,10 @@ function loadStateFromLocalStorage() {
     const saved = localStorage.getItem('portalChecklistItems');
     if (saved) {
         try {
-            checklistItems = JSON.parse(saved);
+            let parsed = JSON.parse(saved);
+            // Clean up any old duplicate JOINT-331/332/333 entries automatically if stored in cache
+            checklistItems = parsed.filter(item => !["JOINT-331", "JOINT-332", "JOINT-333"].includes(item.name));
+            saveStateToLocalStorage();
             renderChecklistTables();
         } catch(e) {
             console.error("Local storage parse error", e);
@@ -1020,7 +1020,7 @@ function pushMode2ToMode4() {
     alert("✅ Mode 2 ke items Mode 4 Checklist & Weights mein push ho gaye hain!");
 }
 
-// MODE 3 LOGIC
+// MODE 3 LOGIC (FIXED FORMATTED EXCEL DOWNLOAD + CLEAN TABLE PREVIEW)
 let loadedSourceWorkbook = null;
 let selectedUploadedTabs = [];
 const GOOGLE_SHEET_ID = "1yIl9mDCsW6b4Sx3XsE0aPild8Es1K4-x";
@@ -1143,7 +1143,10 @@ function populateMode3Checkboxes() {
         allTabs = Object.keys(subItemSpecs);
     }
 
-    allTabs.forEach(tabName => {
+    // Deduplicate tab names cleanly
+    const uniqueTabs = [...new Set(allTabs)].filter(t => !["JOINT-331", "JOINT-332", "JOINT-333"].includes(t.toUpperCase()));
+
+    uniqueTabs.forEach(tabName => {
         const isChecked = selectedUploadedTabs.includes(tabName);
         const row = document.createElement("div");
         row.className = "checkbox-row";
@@ -1176,8 +1179,6 @@ function toggleMode3Tab(tabName, isChecked) {
 function renderMode3TablePreview() {
     const card = document.getElementById("mode3TablePreviewCard");
     const tabContainer = document.getElementById("mode3TabButtons");
-    const head = document.getElementById("mode3PreviewHead");
-    const body = document.getElementById("mode3PreviewBody");
 
     if (selectedUploadedTabs.length === 0) {
         card.style.display = "none";
@@ -1211,19 +1212,19 @@ function showMode3Table(tabName, activeBtn) {
 
     if (!loadedSourceWorkbook) {
         head.innerHTML = "<tr><th>Info</th></tr>";
-        body.innerHTML = `<tr><td>Showing selected tab: ${tabName} (Manual File not loaded)</td></tr>`;
+        body.innerHTML = `<tr><td>Showing selected tab: ${tabName} (Upload Excel or Sync Cloud Sheet to see full layout)</td></tr>`;
         return;
     }
 
     const ws = loadedSourceWorkbook.getWorksheet(tabName);
     if (!ws) {
         head.innerHTML = "<tr><th>Info</th></tr>";
-        body.innerHTML = `<tr><td>Worksheet not found in workbook.</td></tr>`;
+        body.innerHTML = `<tr><td>Worksheet "${tabName}" not found in source file.</td></tr>`;
         return;
     }
 
     let rowsData = [];
-    ws.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+    ws.eachRow({ includeEmpty: false }, (row) => {
         let rowVals = [];
         row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
             rowVals[colNumber - 1] = cell.value !== undefined && cell.value !== null ? cell.value.toString() : "";
@@ -1260,7 +1261,7 @@ function pushMode3TabsToMode2() {
     selectedUploadedTabs.forEach(tabName => {
         let cleanName = tabName.trim().toUpperCase();
         for (let itemKey in subItemSpecs) {
-            if (itemKey.toUpperCase().includes(cleanName) || cleanName.includes(itemKey.toUpperCase())) {
+            if (itemKey.toUpperCase() === cleanName || itemKey.toUpperCase().includes(cleanName) || cleanName.includes(itemKey.toUpperCase())) {
                 const cat = subItemSpecs[itemKey].cat;
                 if (!selectedItemsList.some(s => s.cat === cat && s.item === itemKey)) {
                     selectedItemsList.push({ cat, item: itemKey });
@@ -1283,7 +1284,7 @@ function pushMode3TabsToMode4() {
     let addedCount = 0;
     selectedUploadedTabs.forEach(tabName => {
         let cleanName = tabName.trim().toUpperCase();
-        let matchedKey = Object.keys(subItemSpecs).find(k => k.toUpperCase().includes(cleanName) || cleanName.includes(k.toUpperCase()));
+        let matchedKey = Object.keys(subItemSpecs).find(k => k.toUpperCase() === cleanName || k.toUpperCase().includes(cleanName) || cleanName.includes(k.toUpperCase()));
         let itemName = matchedKey || tabName;
         let cat = matchedKey ? subItemSpecs[matchedKey].cat : "COLUMNS";
 
@@ -1306,29 +1307,86 @@ function pushMode3TabsToMode4() {
     alert(`✅ ${addedCount} Items successfully Mode 4 Checklist & Weights mein push ho gaye hain!`);
 }
 
+// MODE 3 FORMATTED EXCEL EXPORT (WITH HEADER COLORS, ALL-BORDERS & AUTO-FIT)
 function exportSelectedUploadedTabs() {
     if (!loadedSourceWorkbook || selectedUploadedTabs.length === 0) {
-        alert("Kripya kam se kam ek tab select karein!");
+        alert("Kripya kam se kam ek tab select karein aur source sheet load karein!");
         return;
     }
+
     const outputWorkbook = new ExcelJS.Workbook();
+    let exportedCount = 0;
+
     selectedUploadedTabs.forEach(tabName => {
         const sourceSheet = loadedSourceWorkbook.getWorksheet(tabName);
         if (!sourceSheet) return;
+
         const newSheet = outputWorkbook.addWorksheet(tabName);
-        sourceSheet.eachRow({ includeEmpty: true }, (row, rowIndex) => {
-            const newRow = newSheet.getRow(rowIndex);
+        let rowCount = 0;
+
+        sourceSheet.eachRow({ includeEmpty: false }, (row) => {
+            rowCount++;
+            const rowVals = [];
             row.eachCell({ includeEmpty: true }, (cell, colIndex) => {
-                newRow.getCell(colIndex).value = cell.value;
+                rowVals[colIndex - 1] = cell.value;
             });
+
+            const addedRow = newSheet.addRow(rowVals);
+            if (rowCount === 1) {
+                // Header Formatting
+                addedRow.height = 26;
+                addedRow.eachCell((cell) => {
+                    cell.font = { name: 'Segoe UI', size: 11, bold: true, color: { argb: 'FFFFFF' } };
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '1E3A8A' } };
+                    cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                    cell.border = {
+                        top: { style: 'thin', color: { argb: '94A3B8' } },
+                        left: { style: 'thin', color: { argb: '94A3B8' } },
+                        bottom: { style: 'thin', color: { argb: '94A3B8' } },
+                        right: { style: 'thin', color: { argb: '94A3B8' } }
+                    };
+                });
+            } else {
+                // Data Rows Formatting
+                addedRow.height = 20;
+                addedRow.eachCell((cell) => {
+                    cell.font = { name: 'Segoe UI', size: 10 };
+                    cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                    cell.border = {
+                        top: { style: 'thin', color: { argb: 'CBD5E1' } },
+                        left: { style: 'thin', color: { argb: 'CBD5E1' } },
+                        bottom: { style: 'thin', color: { argb: 'CBD5E1' } },
+                        right: { style: 'thin', color: { argb: 'CBD5E1' } }
+                    };
+                });
+            }
         });
+
+        // Auto-fit Column Widths
+        newSheet.columns.forEach(column => {
+            let maxLength = 0;
+            column.eachCell({ includeEmpty: true }, cell => {
+                if (cell.value && cell.value.toString().length > maxLength) {
+                    maxLength = cell.value.toString().length;
+                }
+            });
+            column.width = Math.max(maxLength + 4, 14);
+        });
+
+        exportedCount++;
     });
+
+    if (exportedCount === 0) {
+        alert("Selected tabs workbook mein nahi mile!");
+        return;
+    }
+
     outputWorkbook.xlsx.writeBuffer().then(buffer => {
-        saveAs(new Blob([buffer]), "Formatted_Extracted_Report.xlsx");
+        saveAs(new Blob([buffer]), "Formatted_Cloud_Extracted_Report.xlsx");
     });
 }
 
-// MODE 4 LOGIC
+// MODE 4 LOGIC: SUB-ITEM CHECKBOXES & PERSISTENT WEIGHTS
 function onChkCategoryChange() {
     const cat = document.getElementById("chkCategory").value;
     const searchInput = document.getElementById("chkSearchInput");
@@ -1508,6 +1566,7 @@ function updateWeight(idx, key, val) {
     if (checklistItems[idx]) {
         checklistItems[idx][key] = isNaN(val) ? 0 : val;
         saveStateToLocalStorage();
+        renderChecklistTables();
     }
 }
 
@@ -1516,7 +1575,6 @@ function removeChecklistItem(idx) {
     if (item.locked && !confirm("⚠️ Yeh item locked hai. Kya aap fir bhi delete karna chahte hain?")) return;
     
     const cat = item.category;
-    const name = item.name;
     checklistItems.splice(idx, 1);
     saveStateToLocalStorage();
     renderChecklistTables();
@@ -1545,7 +1603,7 @@ function exportWeightExcel() {
     exportFormattedExcel({ "Weight Calculation": rows }, "Material_Weight_Calculation_Report.xlsx");
 }
 
-// EXCELJS FORMATTING ENGINE
+// STANDARD FORMATTED EXCEL EXPORT ENGINE
 function exportFormattedExcel(dataMap, filename) {
     const workbook = new ExcelJS.Workbook();
     for (let sheetName in dataMap) {
