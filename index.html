@@ -72,7 +72,7 @@
 <div class="container">
     <div class="header">
         <h2>Quality Inspection Management Portal</h2>
-        <p style="margin: 5px 0 0 0; opacity: 0.9;">Multi-Tab Sync, Checkboxes & Persistent State Engine</p>
+        <p style="margin: 5px 0 0 0; opacity: 0.9;">Multi-Tab Sync, Deduplicated Master Specs & Persistent Engine</p>
     </div>
 
     <div class="mode-switcher">
@@ -370,7 +370,9 @@
 </div>
 
 <script>
+// DEDUPLICATED MASTER SPECS (NO OVERLAPS BETWEEN PURLINE & JOINTER)
 const subItemSpecs = {
+    // PURLINE
     "P2L": { cat: "PURLINE", refThick: 1.000, refCoat: 18.0, coatMin: 22.0, coatMax: 34.0, thickMin: 0.990, thickMax: 1.045, hasBasePlate: false },
     "P2M": { cat: "PURLINE", refThick: 1.200, refCoat: 18.0, coatMin: 22.0, coatMax: 34.0, thickMin: 1.190, thickMax: 1.250, hasBasePlate: false },
     "P2H": { cat: "PURLINE", refThick: 1.600, refCoat: 18.0, coatMin: 22.0, coatMax: 26.0, thickMin: 1.590, thickMax: 1.660, hasBasePlate: false },
@@ -378,6 +380,7 @@ const subItemSpecs = {
     "P3M": { cat: "PURLINE", refThick: 1.200, refCoat: 18.0, coatMin: 22.0, coatMax: 34.0, thickMin: 1.190, thickMax: 1.250, hasBasePlate: false },
     "P3H": { cat: "PURLINE", refThick: 1.600, refCoat: 18.0, coatMin: 22.0, coatMax: 26.0, thickMin: 1.590, thickMax: 1.660, hasBasePlate: false },
 
+    // COLUMNS
     "COLU-1620": { cat: "COLUMNS", refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
     "COLU-1820": { cat: "COLUMNS", refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
     "COLU-2611": { cat: "COLUMNS", refThick: 2.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, hasBasePlate: false },
@@ -406,6 +409,7 @@ const subItemSpecs = {
     "COLU-3822": { cat: "COLUMNS", refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
     "COLU-3823": { cat: "COLUMNS", refThick: 3.000, refCoat: 80.0, coatMin: 65.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.090, hasBasePlate: false },
 
+    // RAFTER
     "RAFT-0101": { cat: "Rafter", refThick: 1.200, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.185, thickMax: 1.235, hasBasePlate: false },
     "RAFT-0102": { cat: "Rafter", refThick: 1.200, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.185, thickMax: 1.235, hasBasePlate: false },
     "RAFT-0103": { cat: "Rafter", refThick: 1.500, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.485, thickMax: 1.540, hasBasePlate: false },
@@ -426,13 +430,15 @@ const subItemSpecs = {
     "RAFT-1322": { cat: "Rafter", refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
     "RAFT-1323": { cat: "Rafter", refThick: 2.000, refCoat: 18.0, coatMin: 18.0, coatMax: 23.0, thickMin: 1.985, thickMax: 2.050, hasBasePlate: false },
 
-    "331": { cat: "Jointer", refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
-    "332": { cat: "Jointer", refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
-    "333": { cat: "Jointer", refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
-    "RAFT-0331": { cat: "Jointer", refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
-    "RAFT-0332": { cat: "Jointer", refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
-    "RAFT-0333": { cat: "Jointer", refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
+    // JOINTER (Deduplicated properly)
+    "JOINT-331": { cat: "Jointer", refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
+    "JOINT-332": { cat: "Jointer", refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
+    "JOINT-333": { cat: "Jointer", refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
+    "JOINT-0331": { cat: "Jointer", refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
+    "JOINT-0332": { cat: "Jointer", refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
+    "JOINT-0333": { cat: "Jointer", refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 90.0, thickMin: 1.985, thickMax: 2.040, hasBasePlate: false },
 
+    // LA
     "LA-0032": { cat: "LA", refThick: 3.000, refCoat: 80.0, coatMin: 70.0, coatMax: 120.0, thickMin: 2.985, thickMax: 3.080, baseMin: 3.000, baseMax: 3.120, hasBasePlate: true },
     "LA-0046": { cat: "LA", refThick: 2.000, refCoat: 80.0, coatMin: 70.0, coatMax: 120.0, thickMin: 1.985, thickMax: 2.080, baseMin: 3.100, baseMax: 3.220, hasBasePlate: true }
 };
@@ -442,7 +448,7 @@ const categoryRefSpecs = {
     "LA": { items: ["LA-0032", "LA-0046"], hasBasePlate: true },
     "COLUMNS": { items: ["COLU-1620", "COLU-1820", "COLU-2611", "COLU-2612", "COLU-2613", "COLU-2621", "COLU-2622", "COLU-2623", "COLU-2811", "COLU-2812", "COLU-2813", "COLU-2821", "COLU-2822", "COLU-2823", "COLU-2824", "COLU-3611", "COLU-3612", "COLU-3613", "COLU-3621", "COLU-3622", "COLU-3623", "COLU-3811", "COLU-3812", "COLU-3813", "COLU-3821", "COLU-3822", "COLU-3823"], hasBasePlate: false },
     "Rafter": { items: ["RAFT-0101", "RAFT-0102", "RAFT-0103", "RAFT-0201", "RAFT-0202", "RAFT-0203", "RAFT-0311", "RAFT-0312", "RAFT-0313", "RAFT-0321", "RAFT-0322", "RAFT-0323", "RAFT-1202", "RAFT-1203", "RAFT-1204", "RAFT-1312", "RAFT-1313", "RAFT-1322", "RAFT-1323"], hasBasePlate: false },
-    "Jointer": { items: ["331", "332", "333", "RAFT-0331", "RAFT-0332", "RAFT-0333"], hasBasePlate: false }
+    "Jointer": { items: ["JOINT-331", "JOINT-332", "JOINT-333", "JOINT-0331", "JOINT-0332", "JOINT-0333"], hasBasePlate: false }
 };
 
 // LOCALSTORAGE PERSISTENT STATE SYNC
@@ -1014,7 +1020,7 @@ function pushMode2ToMode4() {
     alert("✅ Mode 2 ke items Mode 4 Checklist & Weights mein push ho gaye hain!");
 }
 
-// MODE 3 LOGIC (FIXED TABLE LAYOUT & STYLING)
+// MODE 3 LOGIC
 let loadedSourceWorkbook = null;
 let selectedUploadedTabs = [];
 const GOOGLE_SHEET_ID = "1yIl9mDCsW6b4Sx3XsE0aPild8Es1K4-x";
@@ -1167,7 +1173,6 @@ function toggleMode3Tab(tabName, isChecked) {
     renderMode3TablePreview();
 }
 
-// RENDER MODE 3 TABLE LAYOUT PREVIEW
 function renderMode3TablePreview() {
     const card = document.getElementById("mode3TablePreviewCard");
     const tabContainer = document.getElementById("mode3TabButtons");
@@ -1323,7 +1328,7 @@ function exportSelectedUploadedTabs() {
     });
 }
 
-// MODE 4 LOGIC: SUB-ITEM CHECKBOXES & PERSISTENT WEIGHTS
+// MODE 4 LOGIC
 function onChkCategoryChange() {
     const cat = document.getElementById("chkCategory").value;
     const searchInput = document.getElementById("chkSearchInput");
@@ -1510,7 +1515,6 @@ function removeChecklistItem(idx) {
     const item = checklistItems[idx];
     if (item.locked && !confirm("⚠️ Yeh item locked hai. Kya aap fir bhi delete karna chahte hain?")) return;
     
-    // Uncheck in checkbox box if present
     const cat = item.category;
     const name = item.name;
     checklistItems.splice(idx, 1);
