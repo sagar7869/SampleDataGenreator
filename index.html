@@ -56,6 +56,16 @@
         th, td { border: 1px solid var(--border); padding: 8px; text-align: center; }
         th { background-color: var(--primary); color: white; }
         tr:nth-child(even) { background-color: #f8fafc; }
+        
+        /* Mode 3 Exact Sheet Preview Table (No forced header override) */
+        .exact-sheet-table th, .exact-sheet-table td {
+            border: 1px solid #94a3b8;
+            padding: 6px 10px;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        .exact-sheet-table tr:nth-child(even) { background-color: transparent; }
+
         .tab-btn { background: #e2e8f0; color: #334155; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px 6px 0 0; margin-right: 5px; cursor: pointer; font-weight: bold; }
         .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
         
@@ -72,7 +82,7 @@
 <div class="container">
     <div class="header">
         <h2>Quality Inspection Management Portal</h2>
-        <p style="margin: 5px 0 0 0; opacity: 0.9;">Multi-Tab Sync, Clean Jointer Specs & Formatted Excel Engine</p>
+        <p style="margin: 5px 0 0 0; opacity: 0.9;">Multi-Tab Sync, Clean Jointer Specs & Exact Sheet Copy Engine</p>
     </div>
 
     <div class="mode-switcher">
@@ -232,45 +242,47 @@
         </div>
     </div>
 
-    <!-- MODE 3 -->
+    <!-- MODE 3: EXACT REFERENCE SHEET COPY & SYNC -->
     <div id="driveModeSection" style="display: none;">
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                <h3>Google Cloud Sheet Sync & Checkbox Selector</h3>
+                <h3>Reference Sheet Exact Copy & Sync (Mode 3)</h3>
                 <span id="syncStatusBadge" class="status-badge status-loading">⏳ Connecting Cloud Sheet...</span>
             </div>
-            <p style="font-size: 13px; color: #64748b; margin-top: 5px;">Yahan available tabs ki checkbox list se tabs select karke Mode 2 ya Mode 4 mein push karein.</p>
+            <p style="font-size: 13px; color: #64748b; margin-top: 5px;">Yahan aapki di gayi reference sheet ke tabs bilkul same copy (original layout, merged cells, formulas & colors) mein load aur download hote hain.</p>
             
             <div style="margin-top: 15px;">
-                <label>Optional: Manual Excel File Upload Backup:</label>
+                <label>Reference Excel File Upload / Override (.xlsx):</label>
                 <input type="file" id="excelFileInput" accept=".xlsx, .xls" onchange="loadUploadedExcelFile()">
             </div>
-            <button class="btn btn-danger" onclick="clearCacheAndReload()">🗑️ Clear Cache / Reset</button>
+            <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+                <button class="btn btn-primary" style="width: auto; margin: 0; padding: 8px 15px; font-size: 13px;" onclick="syncFreshFromCloud()">🔄 Re-Sync Fresh Sheet from Cloud</button>
+                <button class="btn btn-danger" style="margin: 0; padding: 8px 15px;" onclick="clearCacheAndReload()">🗑️ Clear Cache / Reset</button>
+            </div>
         </div>
 
         <div class="card">
-            <h3>Available Cloud / Sheet Tabs (Checkbox Selection)</h3>
+            <h3>Reference Sheet Tabs (Select Tabs to Copy / Export)</h3>
             <div id="mode3CheckboxContainer" class="multi-select-box" style="max-height: 220px;">
-                <span style="color: #94a3b8; font-size: 13px;">Sheets load ho rahi hain...</span>
+                <span style="color: #94a3b8; font-size: 13px;">Reference sheet ke tabs load ho rahe hain...</span>
             </div>
 
             <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
-                <button class="btn btn-success" style="flex: 1;" onclick="exportSelectedUploadedTabs()">📥 Download Formatted Tabs (.xlsx)</button>
+                <button class="btn btn-success" style="flex: 1;" onclick="exportSelectedUploadedTabs()">📥 Download Exact Copy (.xlsx)</button>
                 <button class="btn btn-primary" style="flex: 1; margin:0;" onclick="pushMode3TabsToMode2()">🚀 Push to Mode 2 (Inspection)</button>
                 <button class="btn btn-primary" style="flex: 1; margin:0; background-color: var(--success);" onclick="pushMode3TabsToMode4()">✅ Push to Mode 4 (Checklist)</button>
             </div>
         </div>
 
-        <!-- MODE 3 TABLE LAYOUT PREVIEW CONTAINER -->
+        <!-- MODE 3 EXACT SHEET LAYOUT PREVIEW CONTAINER -->
         <div class="card" id="mode3TablePreviewCard" style="display:none;">
             <div class="preview-header">
-                <h3 style="margin: 0;">Mode 3 Extracted Sheet Data Preview</h3>
-                <button class="btn btn-success" onclick="exportSelectedUploadedTabs()">📥 Export Formatted Table (.xlsx)</button>
+                <h3 style="margin: 0;">Exact Reference Sheet Tab Preview</h3>
+                <button class="btn btn-success" onclick="exportSelectedUploadedTabs()">📥 Export Exact Same Copy (.xlsx)</button>
             </div>
-            <div id="mode3TabButtons" style="margin-bottom: 15px;"></div>
-            <div style="overflow-x: auto; max-height: 400px;">
-                <table>
-                    <thead id="mode3PreviewHead"></thead>
+            <div id="mode3TabButtons" style="margin-bottom: 15px; overflow-x: auto; white-space: nowrap; padding-bottom: 5px;"></div>
+            <div style="overflow-x: auto; max-height: 500px; border: 1px solid #cbd5e1;">
+                <table class="exact-sheet-table" id="mode3ExactTable" style="margin-top: 0;">
                     <tbody id="mode3PreviewBody"></tbody>
                 </table>
             </div>
@@ -465,7 +477,6 @@ function loadStateFromLocalStorage() {
     if (saved) {
         try {
             let parsed = JSON.parse(saved);
-            // Clean up any old duplicate JOINT-331/332/333 entries automatically if stored in cache
             checklistItems = parsed.filter(item => !["JOINT-331", "JOINT-332", "JOINT-333"].includes(item.name));
             saveStateToLocalStorage();
             renderChecklistTables();
@@ -1020,14 +1031,12 @@ function pushMode2ToMode4() {
     alert("✅ Mode 2 ke items Mode 4 Checklist & Weights mein push ho gaye hain!");
 }
 
-// MODE 3 LOGIC (FIXED FORMATTED EXCEL DOWNLOAD + CLEAN TABLE PREVIEW)
+// =========================================================================
+// MODE 3 LOGIC: EXACT REFERENCE SHEET COPY (MERGES, FORMULAS, STYLES, LAYOUT)
+// =========================================================================
 let loadedSourceWorkbook = null;
 let selectedUploadedTabs = [];
 const GOOGLE_SHEET_ID = "1yIl9mDCsW6b4Sx3XsE0aPild8Es1K4-x";
-
-window.addEventListener('DOMContentLoaded', () => {
-    loadMasterFromCacheOrCloud();
-});
 
 function loadMasterFromCacheOrCloud() {
     const badge = document.getElementById("syncStatusBadge");
@@ -1044,7 +1053,7 @@ function loadMasterFromCacheOrCloud() {
                 populateMode3Checkboxes();
                 renderMode3TablePreview();
                 badge.className = "status-badge status-ready";
-                badge.innerText = "✅ Loaded from Browser Cache";
+                badge.innerText = "✅ Reference Sheet Loaded from Cache";
             });
             return;
         } catch (e) {
@@ -1052,7 +1061,13 @@ function loadMasterFromCacheOrCloud() {
         }
     }
 
-    badge.innerText = "⏳ Downloading from Google Cloud...";
+    syncFreshFromCloud();
+}
+
+function syncFreshFromCloud() {
+    const badge = document.getElementById("syncStatusBadge");
+    badge.className = "status-badge status-loading";
+    badge.innerText = "⏳ Downloading Exact Reference Sheet...";
     const exportUrl = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/export?format=xlsx`;
 
     fetch(exportUrl)
@@ -1067,14 +1082,14 @@ function loadMasterFromCacheOrCloud() {
                 populateMode3Checkboxes();
                 renderMode3TablePreview();
                 badge.className = "status-badge status-ready";
-                badge.innerText = "✅ Cloud Sheet Synced & Cached";
+                badge.innerText = "✅ Exact Reference Sheet Synced";
             });
         })
         .catch(err => {
             badge.className = "status-badge";
             badge.style.background = "#fee2e2";
             badge.style.color = "#991b1b";
-            badge.innerText = "⚠️ Manual File Upload Required";
+            badge.innerText = "⚠️ Upload Reference Excel File";
             populateMode3CheckboxesDefault();
             renderMode3TablePreview();
         });
@@ -1117,15 +1132,15 @@ function loadUploadedExcelFile() {
             renderMode3TablePreview();
             const badge = document.getElementById("syncStatusBadge");
             badge.className = "status-badge status-ready";
-            badge.innerText = "✅ Manual File Saved to Cache";
-            alert(`File Read Successfully! ${loadedSourceWorkbook.worksheets.length} Tabs mil gaye.`);
+            badge.innerText = "✅ Reference Sheet Saved & Ready";
+            alert(`Reference Sheet Read Successfully! ${loadedSourceWorkbook.worksheets.length} Tabs mil gaye.`);
         });
     };
     reader.readAsArrayBuffer(file);
 }
 
 function clearCacheAndReload() {
-    if (confirm("Kya aap cache clear karna chahte hain?")) {
+    if (confirm("Kya aap cache clear karke fresh reference sheet load karna chahte hain?")) {
         localStorage.removeItem('cachedMasterExcel');
         localStorage.removeItem('portalChecklistItems');
         location.reload();
@@ -1143,7 +1158,6 @@ function populateMode3Checkboxes() {
         allTabs = Object.keys(subItemSpecs);
     }
 
-    // Deduplicate tab names cleanly
     const uniqueTabs = [...new Set(allTabs)].filter(t => !["JOINT-331", "JOINT-332", "JOINT-333"].includes(t.toUpperCase()));
 
     uniqueTabs.forEach(tabName => {
@@ -1199,57 +1213,125 @@ function renderMode3TablePreview() {
     showMode3Table(selectedUploadedTabs[0]);
 }
 
+function extractCellDisplayValue(val) {
+    if (val === null || val === undefined) return "";
+    if (typeof val === "object") {
+        if (val.result !== undefined) return val.result.toString();
+        if (val.richText && Array.isArray(val.richText)) {
+            return val.richText.map(rt => rt.text).join("");
+        }
+        if (val.text !== undefined) return val.text.toString();
+    }
+    return val.toString();
+}
+
+function argbToCssHex(argb) {
+    if (!argb || typeof argb !== "string") return "";
+    if (argb.length === 8) return "#" + argb.substring(2);
+    if (argb.length === 6) return "#" + argb;
+    return "";
+}
+
 function showMode3Table(tabName, activeBtn) {
     if (activeBtn) {
         document.querySelectorAll("#mode3TabButtons .tab-btn").forEach(b => b.classList.remove("active"));
         activeBtn.classList.add("active");
     }
 
-    const head = document.getElementById("mode3PreviewHead");
     const body = document.getElementById("mode3PreviewBody");
-    head.innerHTML = "";
     body.innerHTML = "";
 
     if (!loadedSourceWorkbook) {
-        head.innerHTML = "<tr><th>Info</th></tr>";
-        body.innerHTML = `<tr><td>Showing selected tab: ${tabName} (Upload Excel or Sync Cloud Sheet to see full layout)</td></tr>`;
+        body.innerHTML = `<tr><td>Showing selected tab: <strong>${tabName}</strong> (Reference Excel file abhi load nahi hui hai)</td></tr>`;
         return;
     }
 
     const ws = loadedSourceWorkbook.getWorksheet(tabName);
     if (!ws) {
-        head.innerHTML = "<tr><th>Info</th></tr>";
-        body.innerHTML = `<tr><td>Worksheet "${tabName}" not found in source file.</td></tr>`;
+        body.innerHTML = `<tr><td>Worksheet "${tabName}" reference sheet mein nahi mili.</td></tr>`;
         return;
     }
 
-    let rowsData = [];
-    ws.eachRow({ includeEmpty: false }, (row) => {
-        let rowVals = [];
-        row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
-            rowVals[colNumber - 1] = cell.value !== undefined && cell.value !== null ? cell.value.toString() : "";
+    // Build Merge Map so web preview shows exact merged cell layout
+    const mergeMasterMap = {};
+    const skipCellsSet = new Set();
+
+    if (ws.model && Array.isArray(ws.model.merges)) {
+        ws.model.merges.forEach(rangeStr => {
+            const parts = rangeStr.split(":");
+            if (parts.length === 2) {
+                const startCell = ws.getCell(parts[0]);
+                const endCell = ws.getCell(parts[1]);
+                const r1 = startCell.row, c1 = startCell.col;
+                const r2 = endCell.row, c2 = endCell.col;
+
+                mergeMasterMap[`${r1}_${c1}`] = {
+                    rowSpan: r2 - r1 + 1,
+                    colSpan: c2 - c1 + 1
+                };
+
+                for (let r = r1; r <= r2; r++) {
+                    for (let c = c1; c <= c2; c++) {
+                        if (!(r === r1 && c === c1)) {
+                            skipCellsSet.add(`${r}_${c}`);
+                        }
+                    }
+                }
+            }
         });
-        rowsData.push(rowVals);
-    });
+    }
 
-    if (rowsData.length === 0) return;
+    const maxRow = ws.rowCount || 0;
+    const maxCol = ws.columnCount || 0;
 
-    let headers = rowsData[0];
-    let dataRows = rowsData.slice(1);
-
-    head.innerHTML = `<tr>${headers.map(h => `<th>${h || ''}</th>`).join("")}</tr>`;
-    if (dataRows.length === 0) {
-        body.innerHTML = `<tr><td colspan="${headers.length}" style="color: #94a3b8;">No data rows in this tab.</td></tr>`;
+    if (maxRow === 0 || maxCol === 0) {
+        body.innerHTML = `<tr><td style="color: #94a3b8;">Is tab mein koi data nahi hai.</td></tr>`;
         return;
     }
 
-    dataRows.forEach(r => {
-        let cellsHtml = "";
-        for (let i = 0; i < headers.length; i++) {
-            cellsHtml += `<td>${r[i] !== undefined ? r[i] : ''}</td>`;
+    for (let r = 1; r <= maxRow; r++) {
+        const row = ws.getRow(r);
+        let trHtml = "<tr>";
+        let hasAnyCell = false;
+
+        for (let c = 1; c <= maxCol; c++) {
+            const key = `${r}_${c}`;
+            if (skipCellsSet.has(key)) continue;
+
+            hasAnyCell = true;
+            const cell = row.getCell(c);
+            const displayVal = extractCellDisplayValue(cell.value);
+
+            let spanAttrs = "";
+            if (mergeMasterMap[key]) {
+                if (mergeMasterMap[key].rowSpan > 1) spanAttrs += ` rowspan="${mergeMasterMap[key].rowSpan}"`;
+                if (mergeMasterMap[key].colSpan > 1) spanAttrs += ` colspan="${mergeMasterMap[key].colSpan}"`;
+            }
+
+            // Preserve original background fill, font weight, and alignment
+            let inlineStyles = [];
+            if (cell.fill && cell.fill.type === "pattern" && cell.fill.fgColor && cell.fill.fgColor.argb) {
+                const bg = argbToCssHex(cell.fill.fgColor.argb);
+                if (bg && bg.toLowerCase() !== "#000000") inlineStyles.push(`background-color: ${bg}`);
+            }
+            if (cell.font) {
+                if (cell.font.bold) inlineStyles.push("font-weight: bold");
+                if (cell.font.color && cell.font.color.argb) {
+                    const fg = argbToCssHex(cell.font.color.argb);
+                    if (fg) inlineStyles.push(`color: ${fg}`);
+                }
+            }
+            if (cell.alignment && cell.alignment.horizontal) {
+                inlineStyles.push(`text-align: ${cell.alignment.horizontal}`);
+            }
+
+            const styleAttr = inlineStyles.length > 0 ? ` style="${inlineStyles.join(";")}"` : "";
+            trHtml += `<td${spanAttrs}${styleAttr}>${displayVal}</td>`;
         }
-        body.innerHTML += `<tr>${cellsHtml}</tr>`;
-    });
+
+        trHtml += "</tr>";
+        if (hasAnyCell) body.innerHTML += trHtml;
+    }
 }
 
 function pushMode3TabsToMode2() {
@@ -1307,10 +1389,10 @@ function pushMode3TabsToMode4() {
     alert(`✅ ${addedCount} Items successfully Mode 4 Checklist & Weights mein push ho gaye hain!`);
 }
 
-// MODE 3 FORMATTED EXCEL EXPORT (WITH HEADER COLORS, ALL-BORDERS & AUTO-FIT)
+// EXACT 1:1 WORKSHEET CLONE EXPORT (PRESERVES ORIGINAL LAYOUT, MERGES, FORMULAS, WIDTHS & STYLES)
 function exportSelectedUploadedTabs() {
     if (!loadedSourceWorkbook || selectedUploadedTabs.length === 0) {
-        alert("Kripya kam se kam ek tab select karein aur source sheet load karein!");
+        alert("Kripya kam se kam ek tab select karein aur reference sheet load karein!");
         return;
     }
 
@@ -1321,68 +1403,72 @@ function exportSelectedUploadedTabs() {
         const sourceSheet = loadedSourceWorkbook.getWorksheet(tabName);
         if (!sourceSheet) return;
 
-        const newSheet = outputWorkbook.addWorksheet(tabName);
-        let rowCount = 0;
+        const targetSheet = outputWorkbook.addWorksheet(tabName);
 
-        sourceSheet.eachRow({ includeEmpty: false }, (row) => {
-            rowCount++;
-            const rowVals = [];
-            row.eachCell({ includeEmpty: true }, (cell, colIndex) => {
-                rowVals[colIndex - 1] = cell.value;
-            });
+        // 1. Copy Worksheet Properties & Views
+        if (sourceSheet.properties) {
+            targetSheet.properties = JSON.parse(JSON.stringify(sourceSheet.properties));
+        }
+        if (sourceSheet.views) {
+            targetSheet.views = JSON.parse(JSON.stringify(sourceSheet.views));
+        }
 
-            const addedRow = newSheet.addRow(rowVals);
-            if (rowCount === 1) {
-                // Header Formatting
-                addedRow.height = 26;
-                addedRow.eachCell((cell) => {
-                    cell.font = { name: 'Segoe UI', size: 11, bold: true, color: { argb: 'FFFFFF' } };
-                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '1E3A8A' } };
-                    cell.alignment = { vertical: 'middle', horizontal: 'center' };
-                    cell.border = {
-                        top: { style: 'thin', color: { argb: '94A3B8' } },
-                        left: { style: 'thin', color: { argb: '94A3B8' } },
-                        bottom: { style: 'thin', color: { argb: '94A3B8' } },
-                        right: { style: 'thin', color: { argb: '94A3B8' } }
-                    };
-                });
-            } else {
-                // Data Rows Formatting
-                addedRow.height = 20;
-                addedRow.eachCell((cell) => {
-                    cell.font = { name: 'Segoe UI', size: 10 };
-                    cell.alignment = { vertical: 'middle', horizontal: 'center' };
-                    cell.border = {
-                        top: { style: 'thin', color: { argb: 'CBD5E1' } },
-                        left: { style: 'thin', color: { argb: 'CBD5E1' } },
-                        bottom: { style: 'thin', color: { argb: 'CBD5E1' } },
-                        right: { style: 'thin', color: { argb: 'CBD5E1' } }
-                    };
-                });
-            }
-        });
+        // 2. Copy Exact Column Widths & Styles
+        if (sourceSheet.columns) {
+            targetSheet.columns = sourceSheet.columns.map(col => ({
+                header: col.header,
+                key: col.key,
+                width: col.width,
+                style: col.style ? JSON.parse(JSON.stringify(col.style)) : undefined,
+                hidden: col.hidden
+            }));
+        }
 
-        // Auto-fit Column Widths
-        newSheet.columns.forEach(column => {
-            let maxLength = 0;
-            column.eachCell({ includeEmpty: true }, cell => {
-                if (cell.value && cell.value.toString().length > maxLength) {
-                    maxLength = cell.value.toString().length;
+        // 3. Copy Every Row (Height, Values, Formulas, Formatting, Borders, Fills, Fonts)
+        sourceSheet.eachRow({ includeEmpty: true }, (sourceRow, rowNumber) => {
+            const targetRow = targetSheet.getRow(rowNumber);
+            if (sourceRow.height) targetRow.height = sourceRow.height;
+            if (sourceRow.hidden) targetRow.hidden = sourceRow.hidden;
+
+            sourceRow.eachCell({ includeEmpty: true }, (sourceCell, colNumber) => {
+                const targetCell = targetRow.getCell(colNumber);
+
+                // Copy Value or Formula verbatim
+                if (sourceCell.value !== null && typeof sourceCell.value === 'object') {
+                    targetCell.value = JSON.parse(JSON.stringify(sourceCell.value));
+                } else {
+                    targetCell.value = sourceCell.value;
+                }
+
+                // Copy Exact Cell Styling (Font, Fill, Border, Alignment, NumFmt)
+                if (sourceCell.style) {
+                    targetCell.style = JSON.parse(JSON.stringify(sourceCell.style));
                 }
             });
-            column.width = Math.max(maxLength + 4, 14);
+            targetRow.commit();
         });
+
+        // 4. Copy Exact Merged Cells
+        if (sourceSheet.model && Array.isArray(sourceSheet.model.merges)) {
+            sourceSheet.model.merges.forEach(mergeRange => {
+                try {
+                    targetSheet.mergeCells(mergeRange);
+                } catch (e) {
+                    console.warn("Merge skipped:", mergeRange, e);
+                }
+            });
+        }
 
         exportedCount++;
     });
 
     if (exportedCount === 0) {
-        alert("Selected tabs workbook mein nahi mile!");
+        alert("Selected tabs reference workbook mein nahi mile!");
         return;
     }
 
     outputWorkbook.xlsx.writeBuffer().then(buffer => {
-        saveAs(new Blob([buffer]), "Formatted_Cloud_Extracted_Report.xlsx");
+        saveAs(new Blob([buffer]), "Reference_Sheet_Exact_Copy.xlsx");
     });
 }
 
@@ -1603,7 +1689,7 @@ function exportWeightExcel() {
     exportFormattedExcel({ "Weight Calculation": rows }, "Material_Weight_Calculation_Report.xlsx");
 }
 
-// STANDARD FORMATTED EXCEL EXPORT ENGINE
+// STANDARD FORMATTED EXCEL EXPORT ENGINE (MODE 1, 2 & 4)
 function exportFormattedExcel(dataMap, filename) {
     const workbook = new ExcelJS.Workbook();
     for (let sheetName in dataMap) {
